@@ -1,0 +1,5 @@
+*.bin
+*.h~
+*.c~
+*.txt
+Makefile~
