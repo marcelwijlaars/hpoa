@@ -2,4 +2,5 @@
 *.h~
 *.c~
 *.txt
+dev
 Makefile~
