@@ -1,1 +1,0 @@
-gcc -L./ -Wl,-rpath=./ -Wall -o test test.c -luClibc
