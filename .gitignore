@@ -3,6 +3,8 @@
 *.c~
 *.txt
 *.txt~
+*.o
 .gitignore~
+gpio_states~
 dev
 Makefile~

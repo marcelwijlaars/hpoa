@@ -19,15 +19,16 @@
 #define H(X, Y, Z) ((X) ^ (Y) ^ (Z))
 #define I(X, Y, Z) ((Y) ^ ((X) | (~(Z))))
 
-static
-uint32_t rotl(uint32_t x, int s) { return (x << s) | (x >> (32 - s)); }
+static uint32_t rotl(uint32_t x, int s) { return (x << s) | (x >> (32 - s)); }
+
 #define STEP(OP, a, b, c, d, k, s, i) do{		\
     a = b + rotl(a + OP(b, c, d) + X[k] + i, s);	\
   }while(0)
 
 #define TO_I32(x,i) ((x[i]) | (x[i+1]<<8) | (x[i+2]<<16) | (x[i+3]<<24))
-static
-void md5_block(md5_context* ctx, const uint8_t m[64]) {
+
+
+static void md5_block(md5_context* ctx, const uint8_t m[64]) {
   assert(ctx != NULL);
 
   uint32_t X[16] = {

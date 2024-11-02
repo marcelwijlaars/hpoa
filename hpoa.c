@@ -103,6 +103,8 @@ int main(int argc,char **argv){
   bool b_2=false;
 
   int   *tmp_int_10,   *tmp_int_11;
+
+
   tmp_int_10=calloc(0x10,sizeof(unsigned int));
   tmp_int_11=calloc(0x10,sizeof(unsigned int));
 
@@ -150,7 +152,47 @@ int main(int argc,char **argv){
 #endif
 
 
-#if 1
+#if 0
+  tmp_int_10=calloc(6,sizeof(int));
+  tmp_int_11=calloc(6,sizeof(int));
+
+  *(tmp_int_11+0)=0x01020304;
+  *(tmp_int_11+1)=0x05060708;
+  *(tmp_int_11+2)=0x09101112;
+  *(tmp_int_11+3)=0x13141516;
+
+  part_of_MD5_calculations(tmp_int_10,tmp_int_11,4);
+  MD5_printf(tmp_int_10);
+  exit(-1);
+  
+#endif
+  
+
+#if 0
+  int len=0x20;
+  char value=0xAA;
+  unsigned int *p1, *p2;
+  p1=malloc(len*sizeof(int));
+  p2=calloc(len,sizeof(int));
+  for(i=0;i<len;i++) *(p1+i)=0x12345678;
+  
+  //kind_of_memset(p1,value,len*sizeof(int));
+
+  kind_of_memcpy(p2,p1,len);
+  
+  printf("p1 data: ");
+  for(i=0;i<len*sizeof(int);i++) printf("%.2X ",(unsigned char)*((unsigned char*)p1+i));
+  printf("\n");
+
+  printf("p2 data: ");
+  for(i=0;i<len*sizeof(int);i++) printf("%.2X ",(unsigned char)*((unsigned char*)p2+i));
+  printf("\n");
+  
+  exit(-1);
+#endif
+
+
+#if 0
     printf(BLUE);
     printf("/*********************************/\n");
     printf("/*   start MD5 and SHA256 test   */\n");
@@ -159,6 +201,8 @@ int main(int argc,char **argv){
 
   SHA256_CTX ctx;
   MD5_CTX md5ctx;
+  md5_context my_ctx;
+
   
   u_int8_t *results;
   results = calloc(SHA256_DIGEST_LENGTH,sizeof(u_int8_t));
@@ -208,18 +252,18 @@ int main(int argc,char **argv){
   printf("MD5 of '%s'\n",buf);
   n = strlen(buf);
 
-
-  
   unsigned int MD5_variables[0x24];
   MD5_initialize_variables(MD5_variables);
-  //MD5_printf(MD5_variables);
-  
-  MD5_encryption(MD5_variables,(unsigned int*)buf,n>>2);
   MD5_printf(MD5_variables);
   
-  FUN_10006944((unsigned int*)results,MD5_variables);
-  //MD5_printf(MD5_variables);
+  MD5_encryption(MD5_variables,(unsigned int*)buf,n);
+  MD5_printf(MD5_variables);
 
+  FUN_10006944((unsigned int*)results,MD5_variables);
+  MD5_printf(MD5_variables);
+
+
+  //exit(-1);
   
   printf("local MD5 of '%s'\n",buf);
   for(n=0; n<MD5_DIGEST_LENGTH; n++)
@@ -237,11 +281,8 @@ int main(int argc,char **argv){
   n = strlen(buf);
 
 
-  md5_context my_ctx;
   md5_init(&my_ctx);
   md5_digest(&my_ctx, buf, n);
-  
-  uint8_t md5_actual[16] = {0};
   md5_output(&my_ctx, results);
 
   printf("new local MD5 of '%s'\n",buf);
@@ -257,23 +298,22 @@ int main(int argc,char **argv){
   printf(DEFAULT);
 
 
-  exit(-1);
+  //exit(-1);
 #endif
 
-
-  
-
-  
   printf("Endianness: ");
   if(is_bigendian()) printf("big.\n"); else printf("little.\n");
-  
 
   tmp_int_2=1;
-
+  
   if(argc <= 1){
     printf("No firmware file. Usage: %s <filename>\n",argv[0]);
     return -1;
   }
+
+
+
+  
   strcpy(file_name,argv[optind]);
 
   fd=open(file_name,O_RDONLY); /*file_name = local_c48 */
@@ -308,9 +348,6 @@ int main(int argc,char **argv){
     j = j + 1;
     i = i + 0x15;
   } while (j < 4);
-
-  
-  
 #endif //INTERNAL 
   
   
@@ -811,7 +848,8 @@ int main(int argc,char **argv){
   
   while( true ) {
     current_location = lseek(fd,0,SEEK_CUR);
-
+    printf("current location: 0x%X\n",current_location);
+    
     iVar5 = iVar8;
     bVar1 = (3 < iVar9);
     iVar9 = iVar9 + 1;
@@ -820,10 +858,10 @@ int main(int argc,char **argv){
     //printf("*(unsigned int*)(read_buffer+1): 0x%X\n",*(unsigned int*)(read_buffer + 1) );
     ///printf("(unsigned int)(read_buffer+1)[1]: 0x%X\n",(unsigned int)(read_buffer+1)[1] );
 
-    printf("\n\niVar5: 0x%X\n",iVar5);
-    printf("address of (read_buffer+i+iVar5+1): 0x%lX, ",(unsigned long long int*)&read_buffer+iVar5+1+i);
-    for(i=0;i<0x10;i++){
-      printf("0x%.2X ",*(unsigned char*)(read_buffer+iVar5+1+i));
+    printf("\n\n");
+    printf("iVar5: 0x%X, (read_buffer+i+iVar5+1): ",iVar5);
+    for(i=0; i<MD5_DIGEST_LENGTH+5; i++){
+      printf("%.2X",*(unsigned char*)((unsigned char*)read_buffer+1+iVar5+i));
     }
     printf("\n");
 
@@ -831,9 +869,8 @@ int main(int argc,char **argv){
 
     // local_247 + 0 +iVar5 == local_248 + 1 + 0 +iVar5 //should give partition_nr
     partition_nr = (unsigned int)(read_buffer+1)[iVar5];  
-    partition_name = partition_selector(partition_nr);
+    partition_name = partition_selector(partition_nr);  //was FUN_10001edc
 
-    //was local_30[0] = FUN_10001edc(iVar2,uVar3,*(undefined4 *)(&local_247 + 1+ iVar5));
 
     ret_offset = *(__off_t*)(read_buffer+1 + iVar5 +1);
     if(!is_bigendian()) ret_offset = htobe32(ret_offset);
@@ -845,16 +882,26 @@ int main(int argc,char **argv){
 
     printf("output_internal returned: %i\n",local_5c[0]);
     if (local_5c[0] == 0) {
-      partition_nr = (unsigned int)(read_buffer+1)[iVar5]; // wasuVar3 = FUN_10002498((&local_247)[iVar5]);
+      partition_nr = (unsigned int)(read_buffer+1)[iVar5];
+      partition_name = partition_selector(partition_nr);  // FUN_10002498
 
       printf("partition_nr: %i\n",partition_nr);
-      //param_2 is teh size of the patition that needs to be read
+      //param_2 is the size of the patition that needs to be read
       //param_3 is the address of the memory that need to be compared
       
-      //local_5c[0] = open_mtd_for_input_internal(partition_name,*(uint32_t*)(read_buffer + 1 + iVar5 + 1),(uint32_t*)(&read_buffer + 1 + iVar5 + 5));
-      local_5c[0] = open_mtd_for_input_internal(partition_name,jump_size,(uint32_t*)(&read_buffer + 1 + iVar5 + 5));
-      printf("input_internal returned: %i\n",local_5c[0]);
+      ret_offset = *(__off_t*)(read_buffer+1 + iVar5 +1);
+      if(!is_bigendian()) ret_offset = htobe32(ret_offset);
+      jump_size=ret_offset; //need to find the right name for this variable
 
+      printf("address of param_3: 0x%llX\n",(unsigned long long int*)(&read_buffer + 1 + iVar5 + 5));
+      printf("iVar5: 0x%X, param_3: ",iVar5);
+      for(i=0; i<MD5_DIGEST_LENGTH; i++){
+	printf("%.2X",*(unsigned char*)((unsigned char*)read_buffer+1+iVar5+5+i));
+      }
+      printf("\n");
+      
+      local_5c[0] = open_mtd_for_input_internal(partition_name,jump_size,(&read_buffer + 1 + iVar5 + 5));
+      printf("input_internal returned: %i\n",local_5c[0]);
     }
   }
 
@@ -1171,12 +1218,28 @@ unsigned char check_something(int p1,int p2){
   return 1;
 }
 
+#define to_U8(x,o,i) do{			\
+    o[i+0] = ((x) >>  0) & 0xFF;		\
+    o[i+1] = ((x) >>  8) & 0xFF;		\
+    o[i+2] = ((x) >> 16) & 0xFF;		\
+    o[i+3] = ((x) >> 24) & 0xFF; }while(0)
 
 void MD5_printf(unsigned int* ABCD){
   int i;
-  for(i=0;i<6;i++){
-    printf("ABCD[%i]: 0x%4.4X\n",i,ABCD[i]);
+  uint8_t out[0x18];
+  for(i=0;i<0x18;i++) out[i]=0;
+  to_U8(ABCD[0], out, 0);
+  to_U8(ABCD[1], out, 4);
+  to_U8(ABCD[2], out, 8);
+  to_U8(ABCD[3], out, 12);
+  to_U8(ABCD[4], out, 16);
+  to_U8(ABCD[5], out, 20);
+
+  printf("ABCD: ");
+  for(i=0;i<0x18;i++){
+    printf("%2.2X",out[i]);
   }
+  printf("\n");
 }
 
 /* FUN_1000673c */
@@ -1203,8 +1266,8 @@ unsigned int MD5_processing(char *fw_file_name,void *param_2,size_t param_3){
   uint len;
   int i;
   char *s_pointer;
-  unsigned int MD5_variables[0x24];
-  unsigned char unsigned_char_array_of_zeros [16];
+  unsigned int MD5_variables[0x18];
+  unsigned char unsigned_char_array_of_zeros [0x10];
   char char_array_of_zeros [60];
   unsigned char *unsigned_char_pointer;
   int c=0;
@@ -1230,7 +1293,7 @@ unsigned int MD5_processing(char *fw_file_name,void *param_2,size_t param_3){
 	printf("loop should run 1830.7 times, loop counter: %i\n",c++);
         if ((int)len < 1) break;
 	printf("Read 0x%X bytes from file\n",len);
-        MD5_encryption(MD5_variables,(unsigned int*)image_data,len>>2);
+        MD5_encryption(MD5_variables,(unsigned int*)image_data,len);
       }
       printf("encryption done?\n");
       FUN_10006944((unsigned int*)unsigned_char_array_of_zeros,MD5_variables);
@@ -1274,11 +1337,6 @@ void FUN_10006944(unsigned int *param_1,unsigned int *ABCD){
   printf(DEFAULT);
   int i;
 
-  //  printf("address of param_1: 0x%llX\n",(unsigned long long int*)param_1);
-  //for(i=0;i<0x10;i++){
-  //  printf("ABCD[%i]: 0x%X, ",i,*(ABCD+i));
-  //  printf("param_1[%i]: 0x%X\n",i,*(unsigned int*)((unsigned long long int*)&param_1+i));
-  //}
   part_of_MD5_calculations((int*)unsigned_int_array,(int*)(ABCD + 4),8);
   
   local_28 = ((uint)ABCD[4] >> 3) & 0x3f;
@@ -1294,13 +1352,38 @@ void FUN_10006944(unsigned int *param_1,unsigned int *ABCD){
   MD5_encryption(ABCD,(unsigned int*)DAT_10022a68,local_20);
   MD5_encryption(ABCD,(unsigned int*)unsigned_int_array,8);
   part_of_MD5_calculations((int*)param_1,(int*)ABCD,0x10);
+
   kind_of_memset(ABCD,0,0x58);
   return;
 }
 
 
+#if 0
+void MD5_printf(unsigned int* ABCD){
+  int i;
+  uint8_t out[0x18];
+  for(i=0;i<0x18;i++) out[i]=0;
+  to_U8(ABCD[0], out, 0);
 
-void part_of_MD5_calculations(int *param_1,int *param_2,uint param_3){
+
+
+  
+void new_part_of_MD5_calculations(int *param_1,int *param_2,uint param_3){
+
+
+  
+  to_U8(param_2[0], (unsigned char*)param_1, 0);
+  to_U8(param_2[1], (unsigned char*)param_1, 4);
+  if(param_3==16){  
+    to_U8(param_2[2], (unsigned char*)param_1, 8);
+    to_U8(param_2[3], (unsigned char*)param_1, 12);
+  }
+}
+#endif
+
+/* FUN_10007FF0 */
+/* is dit zoiets als md5_Final????? */
+void old_part_of_MD5_calculations(int *param_1,int *param_2,uint param_3){
   int local_1c;
   uint local_18;
 
@@ -1325,31 +1408,27 @@ void part_of_MD5_calculations(int *param_1,int *param_2,uint param_3){
 }
 
 
+
+ 
 /* FUN_10007ff0 */
 /* some kind of strange memcopy */
-void old_part_of_MD5_calculations(unsigned int *param_1,unsigned int *param_2,uint len){
-  unsigned int i;
+void part_of_MD5_calculations(int *param_1,int *param_2,uint len){
+  unsigned int i,j;
+  unsigned char index=0;
 
   printf(RED);
   printf("Part of MD5 calculations, FUN_10007FF0.\n");
   printf(DEFAULT);
-
-  printf("param_2 should be B: %X\n",*param_2);
-
-  i=0;
-  for (i = 0; i < len; i=i+4) {
-    printf("i:%i, *param_2: %X\n",i,*param_2);
-    *((char*)param_1 + i + 0) = (char)*(param_2 + i +3) >> 0x00;
-    *((char*)param_1 + i + 1) = (char)*(param_2 + i +0) >> 0x08;
-    *((char*)param_1 + i + 2) = (char)*(param_2 + i +0) >> 0x10;
-    *((char*)param_1 + i + 3) = (char)*(param_2 + i +0) >> 0x18;
-
+  for(j=0;j<len;j++){
+    for (i = 0; i < sizeof(int); i++) {
+      //printf("sizeof(int): %i, index: %i, ",sizeof(int),(sizeof(int) - 1 - i) +j*4);
+      //printf("%2.2X\n",*((unsigned char*)param_2+         (sizeof(int) - 1 - i) +j*4) );
+      *((char*)param_1 + j*4 + i)= *((unsigned char*)param_2+         (sizeof(int) - 1 - i) +j*4);
+    }
   }
-  return;
+
+    return;
 }
-
-
-
 
 
 /* FUN_100067b4 */
@@ -1376,13 +1455,12 @@ void MD5_encryption(unsigned int *variables,unsigned int *image_data,unsigned in
   variables[5] = variables[5] + (len >> 0x1d);
   local_1c = 0x40 - local_18;
 
-  
+
   if (len < local_1c) {
     local_1c = 0;
   }
   else {
     kind_of_memcpy((variables + local_18 + 0x18),(unsigned int*)image_data,local_1c);
-
     MD5_follow_precomputed_table((unsigned int*)variables,(unsigned int*)(variables + 6));
     for (; (local_1c + 0x3f) < len; local_1c = local_1c + 0x40) {
       MD5_follow_precomputed_table((unsigned int*)variables,(unsigned int*)image_data + local_1c);
@@ -1390,7 +1468,6 @@ void MD5_encryption(unsigned int *variables,unsigned int *image_data,unsigned in
     local_18 = 0;
   }
   kind_of_memcpy((variables + local_18 + 0x18),(unsigned int*)(image_data + local_1c),len - local_1c);
-
   return;
 }
 
@@ -1463,7 +1540,7 @@ void kind_of_memset(unsigned int *p1,unsigned char value,uint len){
   //printf(DEFAULT);
   
   for (i=0; i < len; i=i+1) {
-    *(unsigned char*)(p1 + i) = value;
+    *(unsigned char*)((unsigned char*)p1 + i) = value;
   }
   return;
 }
@@ -1620,30 +1697,9 @@ void MD5_follow_precomputed_table(unsigned int *ABCD,unsigned int *param_2){
   uint C;
   uint D;
 
-  uint AA;
-  uint BB;
-  uint CC;
-  uint DD;
-
   uint uVar5=0;
-  unsigned int *local_50;
-  local_50=calloc(0x10,sizeof(unsigned int));
-  int local_4c=0;
-  int local_48=0;
-  int local_44=0;
-  int local_40=0;
-  int local_3c=0;
-  int local_38=0;
-  int local_34=0;
-  int local_30=0;
-  int local_2c=0;
-  int local_28=0;
-  int local_24=0;
-  int local_20=0;
-  int local_1c=0;
-  int local_18=0;
-  int local_14=0;
-
+  int *local_50;
+  local_50=calloc(0x10,sizeof(int));
 
   
   A = ABCD[0];
@@ -1653,144 +1709,143 @@ void MD5_follow_precomputed_table(unsigned int *ABCD,unsigned int *param_2){
 
   FUN_CONCAT(local_50,param_2,0x40);
 
-  uVar5 = ((B & C) | (~B & D)) + *local_50 + A + 0xd76aa478;
+  uVar5 = ((B & C) | (~B & D)) +              local_50[0] + A + 0xd76aa478;
   uVar5 = (uVar5 * 0x80 | uVar5 >> 0x19) + B;
-  D = ((uVar5 & B) | (~uVar5 & C)) + local_4c + D + 0xe8c7b756;
+  D = ((uVar5 & B) | (~uVar5 & C)) +          local_50[1] + D + 0xe8c7b756;
   D = (D * 0x1000 | D >> 0x14) + uVar5;
-  C = ((D & uVar5) | (~D & B)) + local_48 + C + 0x242070db;
+  C = ((D & uVar5) | (~D & B)) +              local_50[2] + C + 0x242070db;
   C = (C * 0x20000 | C >> 0xf) + D;
-  B = ((C & D) | (~C & uVar5)) + local_44 + B + 0xc1bdceee;
+  B = ((C & D) | (~C & uVar5)) +              local_50[3] + B + 0xc1bdceee;
   B = (B * 0x400000 | B >> 10) + C;
-  uVar5 = ((B & C) | (~B & D)) + local_40 + uVar5 + 0xf57c0faf;
+  uVar5 = ((B & C) | (~B & D)) +              local_50[4] + uVar5 + 0xf57c0faf;
   uVar5 = (uVar5 * 0x80 | uVar5 >> 0x19) + B;
-  D = ((uVar5 & B) | (~uVar5 & C)) + local_3c + D + 0x4787c62a;
+  D = ((uVar5 & B) | (~uVar5 & C)) +          local_50[5] + D + 0x4787c62a;
   D = (D * 0x1000 | D >> 0x14) + uVar5;
-  C = ((D & uVar5) | (~D & B)) + local_38 + C + 0xa8304613;
+  C = ((D & uVar5) | (~D & B)) +              local_50[6] + C + 0xa8304613;
   C = (C * 0x20000 | C >> 0xf) + D;
-  B = ((C & D) | (~C & uVar5)) + local_34 + B + 0xfd469501;
+  B = ((C & D) | (~C & uVar5)) +              local_50[7] + B + 0xfd469501;
   B = (B * 0x400000 | B >> 10) + C;
-  uVar5 = ((B & C) | (~B & D)) + local_30 + uVar5 + 0x698098d8;
+  uVar5 = ((B & C) | (~B & D)) +              local_50[8] + uVar5 + 0x698098d8;
   uVar5 = (uVar5 * 0x80 | uVar5 >> 0x19) + B;
-  D = ((uVar5 & B) | (~uVar5 & C)) + local_2c + D + 0x8b44f7af;
+  D = ((uVar5 & B) | (~uVar5 & C)) +          local_50[9] + D + 0x8b44f7af;
   D = (D * 0x1000 | D >> 0x14) + uVar5;
-  C = (((D & uVar5) | (~D & B)) + local_28 + C) - 0xa44f;
+  C = (((D & uVar5) | (~D & B)) +             local_50[10] + C) - 0xa44f;
   C = (C * 0x20000 | C >> 0xf) + D;
-  B = ((C & D) | (~C & uVar5)) + local_24 + B + 0x895cd7be;
+  B = ((C & D) | (~C & uVar5)) +              local_50[11] + B + 0x895cd7be;
   B = (B * 0x400000 | B >> 10) + C;
-  uVar5 = ((B & C) | (~B & D)) + local_20 + uVar5 + 0x6b901122;
+  uVar5 = ((B & C) | (~B & D)) +              local_50[12] + uVar5 + 0x6b901122;
   uVar5 = (uVar5 * 0x80 | uVar5 >> 0x19) + B;
-  D = ((uVar5 & B) | (~uVar5 & C)) + local_1c + D + 0xfd987193;
+  D = ((uVar5 & B) | (~uVar5 & C)) +          local_50[13] + D + 0xfd987193;
   D = (D * 0x1000 | D >> 0x14) + uVar5;
-  C = ((D & uVar5) | (~D & B)) + local_18 + C + 0xa679438e;
+  C = ((D & uVar5) | (~D & B)) +              local_50[14] + C + 0xa679438e;
   C = (C * 0x20000 | C >> 0xf) + D;
-  B = ((C & D) | (~C & uVar5)) + local_14 + B + 0x49b40821;
+  B = ((C & D) | (~C & uVar5)) +              local_50[15] + B + 0x49b40821;
   B = (B * 0x400000 | B >> 10) + C;
-  uVar5 = ((B & D) | (~D & C)) + local_4c + uVar5 + 0xf61e2562;
+  uVar5 = ((B & D) | (~D & C)) +              local_50[1] + uVar5 + 0xf61e2562;
   uVar5 = (uVar5 * 0x20 | uVar5 >> 0x1b) + B;
-  D = ((uVar5 & C) | (~C & B)) + local_38 + D + 0xc040b340;
+  D = ((uVar5 & C) | (~C & B)) +              local_50[6] + D + 0xc040b340;
   D = (D * 0x200 | D >> 0x17) + uVar5;
-  C = ((D & B) | (~B & uVar5)) + local_24 + C + 0x265e5a51;
+  C = ((D & B) | (~B & uVar5)) +              local_50[11] + C + 0x265e5a51;
   C = (C * 0x4000 | C >> 0x12) + D;
-  B = ((C & uVar5) | (~uVar5 & D)) + *local_50 + B + 0xe9b6c7aa;
+  B = ((C & uVar5) | (~uVar5 & D)) +          local_50[0] + B + 0xe9b6c7aa;
   B = (B * 0x100000 | B >> 0xc) + C;
-  uVar5 = ((B & D) | (~D & C)) + local_3c + uVar5 + 0xd62f105d;
+  uVar5 = ((B & D) | (~D & C)) +              local_50[5] + uVar5 + 0xd62f105d;
   uVar5 = (uVar5 * 0x20 | uVar5 >> 0x1b) + B;
-  D = ((uVar5 & C) | (~C & B)) + local_28 + D + 0x2441453;
+  D = ((uVar5 & C) | (~C & B)) +              local_50[10] + D + 0x2441453;
   D = (D * 0x200 | D >> 0x17) + uVar5;
-  C = ((D & B) | (~B & uVar5)) + local_14 + C + 0xd8a1e681;
+  C = ((D & B) | (~B & uVar5)) +              local_50[15] + C + 0xd8a1e681;
   C = (C * 0x4000 | C >> 0x12) + D;
-  B = ((C & uVar5) | (~uVar5 & D)) + local_40 + B + 0xe7d3fbc8;
+  B = ((C & uVar5) | (~uVar5 & D)) +          local_50[4] + B + 0xe7d3fbc8;
   B = (B * 0x100000 | B >> 0xc) + C;
-  uVar5 = ((B & D) | (~D & C)) + local_2c + uVar5 + 0x21e1cde6;
+  uVar5 = ((B & D) | (~D & C)) +              local_50[9] + uVar5 + 0x21e1cde6;
   uVar5 = (uVar5 * 0x20 | uVar5 >> 0x1b) + B;
-  D = ((uVar5 & C) | (~C & B)) + local_18 + D + 0xc33707d6;
+  D = ((uVar5 & C) | (~C & B)) +              local_50[14] + D + 0xc33707d6;
   D = (D * 0x200 | D >> 0x17) + uVar5;
-  C = ((D & B) | (~B & uVar5)) + local_44 + C + 0xf4d50d87;
+  C = ((D & B) | (~B & uVar5)) +              local_50[3] + C + 0xf4d50d87;
   C = (C * 0x4000 | C >> 0x12) + D;
-  B = ((C & uVar5) | (~uVar5 & D)) + local_30 + B + 0x455a14ed;
+  B = ((C & uVar5) | (~uVar5 & D)) +          local_50[8] + B + 0x455a14ed;
   B = (B * 0x100000 | B >> 0xc) + C;
-  uVar5 = ((B & D) | (~D & C)) + local_1c + uVar5 + 0xa9e3e905;
+  uVar5 = ((B & D) | (~D & C)) +              local_50[13] + uVar5 + 0xa9e3e905;
   uVar5 = (uVar5 * 0x20 | uVar5 >> 0x1b) + B;
-  D = ((uVar5 & C) | (~C & B)) + local_48 + D + 0xfcefa3f8;
+  D = ((uVar5 & C) | (~C & B)) +              local_50[2] + D + 0xfcefa3f8;
   D = (D * 0x200 | D >> 0x17) + uVar5;
-  C = ((D & B) | (~B & uVar5)) + local_34 + C + 0x676f02d9;
+  C = ((D & B) | (~B & uVar5)) +              local_50[7] + C + 0x676f02d9;
   C = (C * 0x4000 | C >> 0x12) + D;
-  B = ((C & uVar5) | (~uVar5 & D)) + local_20 + B + 0x8d2a4c8a;
+  B = ((C & uVar5) | (~uVar5 & D)) +          local_50[12] + B + 0x8d2a4c8a;
   B = (B * 0x100000 | B >> 0xc) + C;
-  uVar5 = ((B ^ C ^ D) + local_3c + uVar5) - 0x5c6be;
+  uVar5 = ((B ^ C ^ D) +                      local_50[5] + uVar5) - 0x5c6be;
   uVar5 = (uVar5 * 0x10 | uVar5 >> 0x1c) + B;
-  D = (uVar5 ^ B ^ C) + local_30 + D + 0x8771f681;
+  D = (uVar5 ^ B ^ C) +                       local_50[8] + D + 0x8771f681;
   D = (D * 0x800 | D >> 0x15) + uVar5;
-  C = (D ^ uVar5 ^ B) + local_24 + C + 0x6d9d6122;
+  C = (D ^ uVar5 ^ B) +                       local_50[11] + C + 0x6d9d6122;
   C = (C * 0x10000 | C >> 0x10) + D;
-  B = (C ^ D ^ uVar5) + local_18 + B + 0xfde5380c;
+  B = (C ^ D ^ uVar5) +                       local_50[14] + B + 0xfde5380c;
   B = (B * 0x800000 | B >> 9) + C;
-  uVar5 = (B ^ C ^ D) + local_4c + uVar5 + 0xa4beea44;
+  uVar5 = (B ^ C ^ D) +                       local_50[1] + uVar5 + 0xa4beea44;
   uVar5 = (uVar5 * 0x10 | uVar5 >> 0x1c) + B;
-  D = (uVar5 ^ B ^ C) + local_40 + D + 0x4bdecfa9;
+  D = (uVar5 ^ B ^ C) +                       local_50[4] + D + 0x4bdecfa9;
   D = (D * 0x800 | D >> 0x15) + uVar5;
-  C = (D ^ uVar5 ^ B) + local_34 + C + 0xf6bb4b60;
+  C = (D ^ uVar5 ^ B) +                       local_50[7] + C + 0xf6bb4b60;
   C = (C * 0x10000 | C >> 0x10) + D;
-  B = (C ^ D ^ uVar5) + local_28 + B + 0xbebfbc70;
+  B = (C ^ D ^ uVar5) +                       local_50[10] + B + 0xbebfbc70;
   B = (B * 0x800000 | B >> 9) + C;
-  uVar5 = (B ^ C ^ D) + local_1c + uVar5 + 0x289b7ec6;
+  uVar5 = (B ^ C ^ D) +                       local_50[13] + uVar5 + 0x289b7ec6;
   uVar5 = (uVar5 * 0x10 | uVar5 >> 0x1c) + B;
-  D = (uVar5 ^ B ^ C) + *local_50 + D + 0xeaa127fa;
+  D = (uVar5 ^ B ^ C) +                       local_50[0] + D + 0xeaa127fa;
   D = (D * 0x800 | D >> 0x15) + uVar5;
-  C = (D ^ uVar5 ^ B) + local_44 + C + 0xd4ef3085;
+  C = (D ^ uVar5 ^ B) +                       local_50[3] + C + 0xd4ef3085;
   C = (C * 0x10000 | C >> 0x10) + D;
-  B = (C ^ D ^ uVar5) + local_38 + B + 0x4881d05;
+  B = (C ^ D ^ uVar5) +                       local_50[6] + B + 0x4881d05;
   B = (B * 0x800000 | B >> 9) + C;
-  uVar5 = (B ^ C ^ D) + local_2c + uVar5 + 0xd9d4d039;
+  uVar5 = (B ^ C ^ D) +                       local_50[9] + uVar5 + 0xd9d4d039;
   uVar5 = (uVar5 * 0x10 | uVar5 >> 0x1c) + B;
-  D = (uVar5 ^ B ^ C) + local_20 + D + 0xe6db99e5;
+  D = (uVar5 ^ B ^ C) +                       local_50[12] + D + 0xe6db99e5;
   D = (D * 0x800 | D >> 0x15) + uVar5;
-  C = (D ^ uVar5 ^ B) + local_14 + C + 0x1fa27cf8;
+  C = (D ^ uVar5 ^ B) +                       local_50[15] + C + 0x1fa27cf8;
   C = (C * 0x10000 | C >> 0x10) + D;
-  B = (C ^ D ^ uVar5) + local_48 + B + 0xc4ac5665;
+  B = (C ^ D ^ uVar5) +                       local_50[2] + B + 0xc4ac5665;
   B = (B * 0x800000 | B >> 9) + C;
-  uVar5 = ((~D | B) ^ C) + *local_50 + uVar5 + 0xf4292244;
+  uVar5 = ((~D | B) ^ C) +                    local_50[0] + uVar5 + 0xf4292244;
   uVar5 = (uVar5 * 0x40 | uVar5 >> 0x1a) + B;
-  D = ((~C | uVar5) ^ B) + local_34 + D + 0x432aff97;
-  D = (D * 0x400 | D >> 0x16) + uVar5;
-  C = ((~B | D) ^ uVar5) + local_18 + C + 0xab9423a7;
+  D = ((~C | uVar5) ^ B) +                    local_50[7] + D + 0x432aff97;
+  D = (D * 0x400 | D >> 0x16) + uVar5; 
+  C = ((~B | D) ^ uVar5) +                    local_50[14] + C + 0xab9423a7;
   C = (C * 0x8000 | C >> 0x11) + D;
-  B = ((~uVar5 | C) ^ D) + local_3c + B + 0xfc93a039;
+  B = ((~uVar5 | C) ^ D) +                    local_50[5] + B + 0xfc93a039;
   B = (B * 0x200000 | B >> 0xb) + C;
-  uVar5 = ((~D | B) ^ C) + local_20 + uVar5 + 0x655b59c3;
+  uVar5 = ((~D | B) ^ C) +                    local_50[12] + uVar5 + 0x655b59c3;
   uVar5 = (uVar5 * 0x40 | uVar5 >> 0x1a) + B;
-  D = ((~C | uVar5) ^ B) + local_44 + D + 0x8f0ccc92;
+  D = ((~C | uVar5) ^ B) +                    local_50[3] + D + 0x8f0ccc92;
   D = (D * 0x400 | D >> 0x16) + uVar5;
-  C = (((~B | D) ^ uVar5) + local_28 + C) - 0x100b83;
+  C = (((~B | D) ^ uVar5) +                   local_50[10] + C) - 0x100b83;
   C = (C * 0x8000 | C >> 0x11) + D;
-  B = ((~uVar5 | C) ^ D) + local_4c + B + 0x85845dd1;
+  B = ((~uVar5 | C) ^ D) +                    local_50[1] + B + 0x85845dd1;
   B = (B * 0x200000 | B >> 0xb) + C;
-  uVar5 = ((~D | B) ^ C) + local_30 + uVar5 + 0x6fa87e4f;
+  uVar5 = ((~D | B) ^ C) +                    local_50[8] + uVar5 + 0x6fa87e4f;
   uVar5 = (uVar5 * 0x40 | uVar5 >> 0x1a) + B;
-  D = ((~C | uVar5) ^ B) + local_14 + D + 0xfe2ce6e0;
+  D = ((~C | uVar5) ^ B) +                    local_50[15] + D + 0xfe2ce6e0;
   D = (D * 0x400 | D >> 0x16) + uVar5;
-  C = ((~B | D) ^ uVar5) + local_38 + C + 0xa3014314;
+  C = ((~B | D) ^ uVar5) +                    local_50[6] + C + 0xa3014314;
   C = (C * 0x8000 | C >> 0x11) + D;
-  B = ((~uVar5 | C) ^ D) + local_1c + B + 0x4e0811a1;
+  B = ((~uVar5 | C) ^ D) +                    local_50[13] + B + 0x4e0811a1;
   B = (B * 0x200000 | B >> 0xb) + C;
-  uVar5 = ((~D | B) ^ C) + local_40 + uVar5 + 0xf7537e82;
+  uVar5 = ((~D | B) ^ C) +                    local_50[4] + uVar5 + 0xf7537e82;
   uVar5 = (uVar5 * 0x40 | uVar5 >> 0x1a) + B;
-  D = ((~C | uVar5) ^ B) + local_24 + D + 0xbd3af235;
+  D = ((~C | uVar5) ^ B) +                    local_50[11] + D + 0xbd3af235;
   D = (D * 0x400 | D >> 0x16) + uVar5;
-  C = ((~B | D) ^ uVar5) + local_48 + C + 0x2ad7d2bb;
+  C = ((~B | D) ^ uVar5) +                    local_50[2] + C + 0x2ad7d2bb;
   C = (C * 0x8000 | C >> 0x11) + D;
-  B = ((~uVar5 | C) ^ D) + local_2c + B + 0xeb86d391;
+  B = ((~uVar5 | C) ^ D) +                    local_50[9] + B + 0xeb86d391;
 
   ABCD[0] = ABCD[0] + uVar5;
   ABCD[1] = ABCD[1] + (B * 0x200000 | B >> 0xb) + C;
   ABCD[2] = ABCD[2] + C;
   ABCD[3] = ABCD[3] + D;
 
-  //printf("just before kind of memset\n");
-  kind_of_memset((unsigned int*)local_50,0,0x40); // moet dit niet 0x10 ipv 0x40, zie ook bij calloc
-  //printf("just after kind of memset\n");
+  // kind_of_memset should not me needeed if above calloc anf fee below, is local_50 static?
+  kind_of_memset((unsigned int*)local_50,0,0x10*sizeof(int)); // kind_of_memset writes bytes so 0x10 x sizeof(int)
 
-  free(local_50); 
+  free(local_50);
   return;
 }
 
@@ -2679,7 +2734,12 @@ int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
   auStack_98=calloc(0x10,sizeof(char));
   unsigned int *auStack_88;
   auStack_88=calloc(0x200,sizeof(unsigned int)); //was unsigned char auStack_88 [116];
-  
+
+  /* MD5 testing */
+  md5_context my_ctx;
+  u_int8_t *results;
+  results=calloc(0x10,sizeof(char));
+
   printf(RED);
   printf("open_mtd_for_input_internal, FUN_10002160.\n");
   printf(DEFAULT);
@@ -2687,6 +2747,18 @@ int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
   char *full_path;
   full_path=calloc(0x80,sizeof(char));
 
+
+
+  printf("address of param_3: 0x%llX\n",(unsigned long long int*)param_3);
+  printf("Param_3: ");
+  for(i=0; i<MD5_DIGEST_LENGTH; i++){
+    printf("%2.2X",*(unsigned char*)((unsigned long long int*)param_3+i));
+  }
+  printf("\n");
+
+
+
+  
 #if DEVEL
   dev = "dev";  
 #else
@@ -2714,6 +2786,10 @@ int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
   else {
     printf("opening mtd partition: %s for input\n",full_path);
     MD5_initialize_variables(auStack_88);
+    
+    /* MD5 testing */
+    //md5_init(&my_ctx);
+
     do {
       len = param_2;
       if (0x10000 < (int)param_2) {
@@ -2722,35 +2798,74 @@ int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
       sVar3 = read(iVar2,data,len);
       if (0 < sVar3) {
 	MD5_encryption(auStack_88,(unsigned int*)data,sVar3>>2);
-        param_2 = param_2 - sVar3;
+
+	/*MD5 testing */
+	//md5_digest(&my_ctx, data, sVar3);
+
+	param_2 = param_2 - sVar3;
       }
     } while ((int)(
 	      ((-1 - sVar3) + ((uint)(sVar3 == 0))) &
 	      ((-1 - param_2) + ((uint)(param_2 == 0)))
 	      ) < 0);
+
     FUN_10006944(auStack_98,(unsigned int*)auStack_88);
+
+    MD5_printf(auStack_98);
+
+    /*
+    md5_output(&my_ctx, results);
+    
+    printf("input_internal local MD5: ");
+    for(i=0; i<MD5_DIGEST_LENGTH; i++)
+      printf("%02x", results[i]);
+    putchar('\n');
+    */
+
+
+
+    
+    
     close(iVar2);
-    free(full_path);
+    //free(full_path);
     if (sVar3 != -1) {
+
+#if 1
       printf(BLUE);
       printf("Comparing result of FUN_10006944 with param_3\n");
       printf(DEFAULT);
       
-      printf("address of auStack_98: 0x%16.16X, values: ",*(long long unsigned int*)&auStack_98);
-      for(i=0;i<0x10;i++){
-	printf("%2.2X ",*(unsigned char*)((unsigned char*)auStack_98+i));
-      }
-      printf("\n");
-      
-      printf("address of Param_3:    0x%16.16X, values: ",*(long long unsigned int*)&param_3);
-      for(i=0;i<0x10;i++){
-	printf("%2.2X ",*(unsigned char*)((unsigned char*)param_3+i));
+      printf("auStack_88: ");
+      for(i=0; i<MD5_DIGEST_LENGTH; i++){
+	printf("%2.2X",*(unsigned char*)((unsigned char*)auStack_88+i));
       }
       printf("\n");
 
-    iVar2 = memcmp(&param_3,auStack_98,0x10);
-      
-      
+
+      printf("auStack_98: ");
+      for(i=0; i<MD5_DIGEST_LENGTH; i++){
+	printf("%2.2X",*(unsigned char*)((unsigned char*)auStack_98+i));
+      }
+      printf("\n");
+
+      printf("param_3:    ");
+
+      for(i=0; i<MD5_DIGEST_LENGTH; i++){
+	printf("%2.2X",*(unsigned char*)((unsigned char*)param_3+i));
+      }
+      printf("\n");
+
+
+#endif
+
+
+      iVar2 = memcmp((unsigned char*)param_3,auStack_98,0x10);
+
+    /**************************************************************************************/
+    /*                md5 stuff goes wrong, dunnp why, so try iVar2=0                     */
+    /**************************************************************************************/
+    
+    //iVar2=0;
       return iVar2;
     }
     piVar4 = __errno_location();
@@ -2852,7 +2967,8 @@ LAB_10001f7c:
             uVar9 = FUN_1000ebfc((int)((unsigned long long int)uVar9 >> 0x20),(int)uVar9,0x41f00000,0);
           }
           uVar8 = FUN_1000f0f0((int)((unsigned long long int)uVar8 >> 0x20),(int)uVar8,(int)((unsigned long long int)uVar9 >> 0x20),(int)uVar9);
-          FUN_1000ecf4((int)((unsigned long long int)uVar8 >> 0x20),(int)uVar8,0x40590000,0);
+          uVar8 = FUN_1000ecf4((int)((unsigned long long int)uVar8 >> 0x20),(int)uVar8,0x40590000,0);
+	  uVar4 = FUN_1000f7dc((uint)((unsigned long long)uVar8 >> 0x20),(int)uVar8);
 
 	  /*problem with function below */
           //uVar4 = FUN_1000a9e4();
@@ -3127,7 +3243,7 @@ int open_mtd_for_input_440(char *partition_name,int  param_2,void *param_3) {
 
       if (0 < (int)uVar3) {
 	//printf("uVar3: 0x%X\n",uVar3);
-	MD5_encryption((unsigned int*)aiStack_88,(unsigned int*)data,uVar3>>2);
+	MD5_encryption((unsigned int*)aiStack_88,(unsigned int*)data,uVar3);
 	param_2 =(int) param_2 - (int)uVar3;
       
       }
@@ -3494,7 +3610,7 @@ int open_mtd_for_input_130(char *partition_name,int Param_2,void *param_3){
       }
       sVar2 = read(fd ,data,len);
       if (0 < sVar2) {
-	MD5_encryption((unsigned int*)auStack_88,(unsigned int*)data,sVar2>>2);
+	MD5_encryption((unsigned int*)auStack_88,(unsigned int*)data,sVar2);
         //FUN_100067b4(auStack_88,data,sVar2); should  sVar2 >>3 or not
         param_2 = param_2 - sVar2;
       }
