@@ -859,20 +859,38 @@ int main(int argc,char **argv){
     ///printf("(unsigned int)(read_buffer+1)[1]: 0x%X\n",(unsigned int)(read_buffer+1)[1] );
 
     printf("\n\n");
-    printf("iVar5: 0x%X, (read_buffer+i+iVar5+1): ",iVar5);
+    printf("(read_buffer+i+iVar5+1): ");
     for(i=0; i<MD5_DIGEST_LENGTH+5; i++){
       printf("%.2X",*(unsigned char*)((unsigned char*)read_buffer+1+iVar5+i));
     }
     printf("\n");
+    printf("iVar5: 0x%X\n",iVar5);
+    printf("bVar1: %i\n",bVar1);
+    printf("local_5c[0]: %i\n",local_5c[0]);
+    printf("(*(read_buffer+1+iVar5): 0x%X\n",*(read_buffer+1+iVar5) );
 
-    if ((bVar1 || (local_5c[0] != 0) ) || (((&read_buffer+1))[iVar5] == '\0')) break;
+    printf("( bVar1 || (local_5c[0] != 0) ): %i\n", ( bVar1 || (local_5c[0] != 0) ) );
+    
+    /*
+     * ( local_5c[0]             should be 0   or
+     *   bVar1                   shoudl be 1 ) or
+     * &read_buffer+1))[iVar5] should be 0
+     */
+    if (
+	( bVar1 || (local_5c[0] != 0) )
+	|| ( *(read_buffer+1+iVar5) == '\0')
+	) break;
+
+    printf("after if....\n");
+
+
 
     // local_247 + 0 +iVar5 == local_248 + 1 + 0 +iVar5 //should give partition_nr
-    partition_nr = (unsigned int)(read_buffer+1)[iVar5];  
+    partition_nr = (unsigned int) *(read_buffer+1+iVar5);  
     partition_name = partition_selector(partition_nr);  //was FUN_10001edc
 
 
-    ret_offset = *(__off_t*)(read_buffer+1 + iVar5 +1);
+    ret_offset = *(__off_t*)(read_buffer+1+iVar5+1);
     if(!is_bigendian()) ret_offset = htobe32(ret_offset);
     jump_size=ret_offset; //need to find the right name for this variable
 
@@ -880,9 +898,10 @@ int main(int argc,char **argv){
 
     iVar8 = iVar5 + 0x15;
 
+
     printf("output_internal returned: %i\n",local_5c[0]);
     if (local_5c[0] == 0) {
-      partition_nr = (unsigned int)(read_buffer+1)[iVar5];
+      partition_nr = *(unsigned char*)(read_buffer+1+iVar5);
       partition_name = partition_selector(partition_nr);  // FUN_10002498
 
       printf("partition_nr: %i\n",partition_nr);
@@ -893,14 +912,15 @@ int main(int argc,char **argv){
       if(!is_bigendian()) ret_offset = htobe32(ret_offset);
       jump_size=ret_offset; //need to find the right name for this variable
 
-      printf("address of param_3: 0x%llX\n",(unsigned long long int*)(&read_buffer + 1 + iVar5 + 5));
+      printf("address of param_3: 0x%llX\n",(unsigned long long int*)(read_buffer + 1 + iVar5 + 5));
       printf("iVar5: 0x%X, param_3: ",iVar5);
       for(i=0; i<MD5_DIGEST_LENGTH; i++){
 	printf("%.2X",*(unsigned char*)((unsigned char*)read_buffer+1+iVar5+5+i));
       }
       printf("\n");
       
-      local_5c[0] = open_mtd_for_input_internal(partition_name,jump_size,(&read_buffer + 1 + iVar5 + 5));
+      local_5c[0] = open_mtd_for_input_internal(partition_name,jump_size,(read_buffer + 1 + iVar5 + 5));
+      //local_5c[0]=0;
       printf("input_internal returned: %i\n",local_5c[0]);
     }
   }
