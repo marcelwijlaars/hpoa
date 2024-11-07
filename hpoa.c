@@ -8,6 +8,8 @@
 #define VERSION_999 999
 #define VERSION VERSION_999
 
+#define USE_EXTERNAL_MD5 1
+
 /* glocal variables */
 unsigned char *DAT_1002275c=0;
 unsigned char *DAT_10022860=0;
@@ -162,7 +164,7 @@ int main(int argc,char **argv){
   *(tmp_int_11+3)=0x13141516;
 
   part_of_MD5_calculations(tmp_int_10,tmp_int_11,4);
-  MD5_printf(tmp_int_10);
+  MD5_printf(tmp_int_10,"tmp_int_10");
   exit(-1);
   
 #endif
@@ -205,15 +207,15 @@ int main(int argc,char **argv){
 
   
   u_int8_t *results;
-  results = calloc(SHA256_DIGEST_LENGTH,sizeof(u_int8_t));
+
 
   char *buf;
-  int n;
-
   buf=calloc(0x200,1);
+  int n;
+#if 0
+  results = calloc(SHA256_DIGEST_LENGTH,sizeof(u_int8_t));  
   strcpy(buf,"Marcel is gek! Wie is er nog meer gek?");
   printf("sha256 of '%s'\n",buf);
-
   n = strlen(buf);
   
   SHA256_Init(&ctx);
@@ -229,60 +231,71 @@ int main(int argc,char **argv){
   printf("https:\/\/emn178.github.io\/online-tools\/sha256.html says: \n");
   printf("8879886cd88241725cfb3af4b25fd2110c553c9e58d193b8b622a9479c761ff8\n");
 
-  results = calloc(SHA256_DIGEST_LENGTH,sizeof(u_int8_t));
+#endif
+
+#if 0 
+  results = calloc(MD5_DIGEST_LENGTH,sizeof(u_int8_t));
   strcpy(buf,"Marcel is gek! Wie is er nog meer gek?");
   printf("MD5 of '%s'\n",buf);
   n = strlen(buf);
 
   MD5_Init(&md5ctx);
-
   MD5_Update(&md5ctx, buf, n);
   MD5_Final(results, &md5ctx);
 
   for(n=0; n<MD5_DIGEST_LENGTH; n++)
     printf("%02x", results[n]);
   putchar('\n');
+#endif
+  
 
-  printf("https://emn178.github.io/online-tools/md5.html says: \n");
-  printf("e231be8c834629454d571a27dee17253\n");
 
-
-  results = calloc(SHA256_DIGEST_LENGTH,sizeof(u_int8_t));
+  printf("\n\n");
+  results = calloc(MD5_DIGEST_LENGTH,sizeof(u_int8_t));
+  memset(buf,0x00,0x200);
   strcpy(buf,"Marcel is gek! Wie is er nog meer gek?");
   printf("MD5 of '%s'\n",buf);
   n = strlen(buf);
 
   unsigned int MD5_variables[0x24];
   MD5_initialize_variables(MD5_variables);
-  MD5_printf(MD5_variables);
-  
+  //MD5_printf(MD5_variables,"MD5_variables");
+  //MD5_follow_precomputed_table(MD5_variables,buf);
   MD5_encryption(MD5_variables,(unsigned int*)buf,n);
-  MD5_printf(MD5_variables);
+  MD5_printf(MD5_variables,"MD5_variables");
+   
+  //FUN_10006944((unsigned int*)results,MD5_variables);
+  //MD5_printf(MD5_variables,"MD5_variables");
 
-  FUN_10006944((unsigned int*)results,MD5_variables);
-  MD5_printf(MD5_variables);
-
-
-  //exit(-1);
-  
-  printf("local MD5 of '%s'\n",buf);
-  for(n=0; n<MD5_DIGEST_LENGTH; n++)
-    printf("%02x", results[n]);
-  putchar('\n');
   for(n=0; n<MD5_DIGEST_LENGTH; n++)
     printf("%02x", *(unsigned char*)((unsigned char*)MD5_variables+n) );
   putchar('\n');
 
 
-
-  results = calloc(SHA256_DIGEST_LENGTH,sizeof(u_int8_t));
+  printf("\n\n");
+  printf("https://emn178.github.io/online-tools/md5.html says: \n");
+  printf("e231be8c834629454d571a27dee17253\n");
+  results = calloc(MD5_DIGEST_LENGTH,sizeof(u_int8_t));
+  memset(buf,0x00,0x200);
   strcpy(buf,"Marcel is gek! Wie is er nog meer gek?");
   printf("MD5 of '%s'\n",buf);
   n = strlen(buf);
 
 
   md5_init(&my_ctx);
+  for(i=0; i<64; i++)
+    printf("%X ", buf[i] );
+  printf("\n");
+
+  //md5_block(&my_ctx, buf);
   md5_digest(&my_ctx, buf, n);
+
+  MD5_variables[0]=my_ctx.a;
+  MD5_variables[1]=my_ctx.b;
+  MD5_variables[2]=my_ctx.c;
+  MD5_variables[3]=my_ctx.d;
+  MD5_printf(MD5_variables,"MD5_variables");
+
   md5_output(&my_ctx, results);
 
   printf("new local MD5 of '%s'\n",buf);
@@ -298,7 +311,7 @@ int main(int argc,char **argv){
   printf(DEFAULT);
 
 
-  //exit(-1);
+  exit(-1);
 #endif
 
   printf("Endianness: ");
@@ -848,6 +861,7 @@ int main(int argc,char **argv){
   
   while( true ) {
     current_location = lseek(fd,0,SEEK_CUR);
+
     printf("current location: 0x%X\n",current_location);
     
     iVar5 = iVar8;
@@ -858,18 +872,20 @@ int main(int argc,char **argv){
     //printf("*(unsigned int*)(read_buffer+1): 0x%X\n",*(unsigned int*)(read_buffer + 1) );
     ///printf("(unsigned int)(read_buffer+1)[1]: 0x%X\n",(unsigned int)(read_buffer+1)[1] );
 
-    printf("\n\n");
-    printf("(read_buffer+i+iVar5+1): ");
-    for(i=0; i<MD5_DIGEST_LENGTH+5; i++){
-      printf("%.2X",*(unsigned char*)((unsigned char*)read_buffer+1+iVar5+i));
-    }
-    printf("\n");
+
+    //printf("(read_buffer+i+iVar5+1): ");
+    //for(i=0; i<MD5_DIGEST_LENGTH+5; i++){
+    //  printf("%.2X",*(unsigned char*)((unsigned char*)read_buffer+1+iVar5+i));
+    //}
+    //printf("\n");
+    /*
     printf("iVar5: 0x%X\n",iVar5);
     printf("bVar1: %i\n",bVar1);
     printf("local_5c[0]: %i\n",local_5c[0]);
     printf("(*(read_buffer+1+iVar5): 0x%X\n",*(read_buffer+1+iVar5) );
-
     printf("( bVar1 || (local_5c[0] != 0) ): %i\n", ( bVar1 || (local_5c[0] != 0) ) );
+    */
+
     
     /*
      * ( local_5c[0]             should be 0   or
@@ -881,13 +897,11 @@ int main(int argc,char **argv){
 	|| ( *(read_buffer+1+iVar5) == '\0')
 	) break;
 
-    printf("after if....\n");
-
-
 
     // local_247 + 0 +iVar5 == local_248 + 1 + 0 +iVar5 //should give partition_nr
     partition_nr = (unsigned int) *(read_buffer+1+iVar5);  
     partition_name = partition_selector(partition_nr);  //was FUN_10001edc
+
 
 
     ret_offset = *(__off_t*)(read_buffer+1+iVar5+1);
@@ -899,12 +913,12 @@ int main(int argc,char **argv){
     iVar8 = iVar5 + 0x15;
 
 
-    printf("output_internal returned: %i\n",local_5c[0]);
+    //printf("output_internal returned: %i\n",local_5c[0]);
     if (local_5c[0] == 0) {
       partition_nr = *(unsigned char*)(read_buffer+1+iVar5);
       partition_name = partition_selector(partition_nr);  // FUN_10002498
 
-      printf("partition_nr: %i\n",partition_nr);
+      //printf("partition_nr: %i\n",partition_nr);
       //param_2 is the size of the patition that needs to be read
       //param_3 is the address of the memory that need to be compared
       
@@ -912,17 +926,17 @@ int main(int argc,char **argv){
       if(!is_bigendian()) ret_offset = htobe32(ret_offset);
       jump_size=ret_offset; //need to find the right name for this variable
 
-      printf("address of param_3: 0x%llX\n",(unsigned long long int*)(read_buffer + 1 + iVar5 + 5));
-      printf("iVar5: 0x%X, param_3: ",iVar5);
-      for(i=0; i<MD5_DIGEST_LENGTH; i++){
-	printf("%.2X",*(unsigned char*)((unsigned char*)read_buffer+1+iVar5+5+i));
-      }
-      printf("\n");
+      //printf("address of param_3: 0x%llX\n",(unsigned long long int*)(read_buffer + 1 + iVar5 + 5));
+      //printf("iVar5: 0x%X, param_3: ",iVar5);
+      //for(i=0; i<MD5_DIGEST_LENGTH; i++){
+      //printf("%.2X",*(unsigned char*)((unsigned char*)read_buffer+1+iVar5+5+i));
+      //}
+      //printf("\n");
       
       local_5c[0] = open_mtd_for_input_internal(partition_name,jump_size,(read_buffer + 1 + iVar5 + 5));
-      //local_5c[0]=0;
-      printf("input_internal returned: %i\n",local_5c[0]);
+
     }
+    printf("\n");
   }
 
 #endif // INTERNAL
@@ -1244,7 +1258,7 @@ unsigned char check_something(int p1,int p2){
     o[i+2] = ((x) >> 16) & 0xFF;		\
     o[i+3] = ((x) >> 24) & 0xFF; }while(0)
 
-void MD5_printf(unsigned int* ABCD){
+void MD5_printf(unsigned int* ABCD,char* name){
   int i;
   uint8_t out[0x18];
   for(i=0;i<0x18;i++) out[i]=0;
@@ -1255,7 +1269,7 @@ void MD5_printf(unsigned int* ABCD){
   to_U8(ABCD[4], out, 16);
   to_U8(ABCD[5], out, 20);
 
-  printf("ABCD: ");
+  printf("%s: ",name);
   for(i=0;i<0x18;i++){
     printf("%2.2X",out[i]);
   }
@@ -1357,7 +1371,10 @@ void FUN_10006944(unsigned int *param_1,unsigned int *ABCD){
   printf(DEFAULT);
   int i;
 
-  part_of_MD5_calculations((int*)unsigned_int_array,(int*)(ABCD + 4),8);
+  MD5_printf(ABCD,"ABCD");    
+
+  part_of_MD5_calculations((int*)unsigned_int_array,&ABCD[4],8);
+  MD5_printf(ABCD,"ABCD");    
   
   local_28 = ((uint)ABCD[4] >> 3) & 0x3f;
   if (local_28 < 0x38) {
@@ -1369,28 +1386,26 @@ void FUN_10006944(unsigned int *param_1,unsigned int *ABCD){
 
   local_24 = local_20;
 
+
   MD5_encryption(ABCD,(unsigned int*)DAT_10022a68,local_20);
+  MD5_printf(ABCD,"ABCD");    
+
   MD5_encryption(ABCD,(unsigned int*)unsigned_int_array,8);
-  part_of_MD5_calculations((int*)param_1,(int*)ABCD,0x10);
+  MD5_printf(ABCD,"ABCD");    
+
+  part_of_MD5_calculations((int*)param_1,&ABCD[0],0x10);
+  MD5_printf(ABCD,"ABCD");    
+  MD5_printf(param_1,"param_1");    
 
   kind_of_memset(ABCD,0,0x58);
+
   return;
 }
 
 
 #if 0
-void MD5_printf(unsigned int* ABCD){
-  int i;
-  uint8_t out[0x18];
-  for(i=0;i<0x18;i++) out[i]=0;
-  to_U8(ABCD[0], out, 0);
-
-
-
   
 void new_part_of_MD5_calculations(int *param_1,int *param_2,uint param_3){
-
-
   
   to_U8(param_2[0], (unsigned char*)param_1, 0);
   to_U8(param_2[1], (unsigned char*)param_1, 4);
@@ -1452,6 +1467,7 @@ void part_of_MD5_calculations(int *param_1,int *param_2,uint len){
 
 
 /* FUN_100067b4 */
+/* is this md5_digest???? */
 void MD5_encryption(unsigned int *variables,unsigned int *image_data,unsigned int len){
   uint uVar1;
   uint local_1c;
@@ -1461,9 +1477,9 @@ void MD5_encryption(unsigned int *variables,unsigned int *image_data,unsigned in
   // image data in processed in ints, so 
   // after getting len from read, len shoud be devided by 4 and parsed to MD5_encryption
   
-  //printf(RED);
-  //printf("MD5 encryption, FUN_100067b4.\n");
-  //printf(DEFAULT);
+  printf(RED);
+  printf("MD5 encryption, FUN_100067b4.\n");
+  printf(DEFAULT);
 
   local_18 = ((uint)variables[4] >> 3) & 0x3f;
   uVar1 = variables[4] + len * 8;
@@ -1705,9 +1721,26 @@ uint64_t fw_with_fingerprint (void){
 }
 
 
+#if 0
+static void new_MD5_follow_precomputed_table(unsigned int *ABCD,unsigned char *param_2){
+  md5_context *ctx;
+  ctx=calloc(1,sizeof(md5_context));
+  ctx->a = ABCD[0];
+  ctx->b = ABCD[1];
+  ctx->c = ABCD[2];
+  ctx->d = ABCD[3];
+  md5_block(ctx, param_2);
+  ABCD[0]=ctx->a;
+  ABCD[1]=ctx->b;
+  ABCD[2]=ctx->c;
+  ABCD[3]=ctx->d;
+  
+ }
+#endif
 
+ 
 /* FUN_10006a20 */
-void MD5_follow_precomputed_table(unsigned int *ABCD,unsigned int *param_2){
+static void MD5_follow_precomputed_table(unsigned int *ABCD,unsigned int *param_2){
   //printf(RED);
   //printf("MD5_follow_precomputed_table, FUN_10006a20.\n");
   //printf(DEFAULT);
@@ -1730,7 +1763,15 @@ void MD5_follow_precomputed_table(unsigned int *ABCD,unsigned int *param_2){
   FUN_CONCAT(local_50,param_2,0x40);
 
   uVar5 = ((B & C) | (~B & D)) +              local_50[0] + A + 0xd76aa478;
+  printf("A: 0x%X\n",A);
+  printf("B: 0x%X\n",B);
+  printf("C: 0x%X\n",C);
+  printf("D: 0x%X\n",D);
   uVar5 = (uVar5 * 0x80 | uVar5 >> 0x19) + B;
+  printf("A: 0x%X\n",A);
+  printf("B: 0x%X\n",B);
+  printf("C: 0x%X\n",C);
+  printf("D: 0x%X\n",D);
   D = ((uVar5 & B) | (~uVar5 & C)) +          local_50[1] + D + 0xe8c7b756;
   D = (D * 0x1000 | D >> 0x14) + uVar5;
   C = ((D & uVar5) | (~D & B)) +              local_50[2] + C + 0x242070db;
@@ -1760,7 +1801,18 @@ void MD5_follow_precomputed_table(unsigned int *ABCD,unsigned int *param_2){
   C = ((D & uVar5) | (~D & B)) +              local_50[14] + C + 0xa679438e;
   C = (C * 0x20000 | C >> 0xf) + D;
   B = ((C & D) | (~C & uVar5)) +              local_50[15] + B + 0x49b40821;
+  printf("A: 0x%X\n",A);
+  printf("B: 0x%X\n",B);
+  printf("C: 0x%X\n",C);
+  printf("D: 0x%X\n",D);
+
   B = (B * 0x400000 | B >> 10) + C;
+  printf("A: 0x%X\n",A);
+  printf("B: 0x%X\n",B);
+  printf("C: 0x%X\n",C);
+  printf("D: 0x%X\n",D);
+
+  
   uVar5 = ((B & D) | (~D & C)) +              local_50[1] + uVar5 + 0xf61e2562;
   uVar5 = (uVar5 * 0x20 | uVar5 >> 0x1b) + B;
   D = ((uVar5 & C) | (~C & B)) +              local_50[6] + D + 0xc040b340;
@@ -2737,28 +2789,34 @@ uint64_t FUN_1000f6bc(uint param_1){
 
 /* FUN_10002160 */
 int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
+
   int i;
   size_t len;
   int iVar2;
   ssize_t sVar3;
   int *piVar4;
-  char *__format;
+
+  char *input_buffer = malloc(1024);
+  size_t input_size = 0;
+  uint8_t result[16];
+  MD5Context ctx;
+
+  int n;
+
+  unsigned char out[0x40];
+  char buf[512];
+  ssize_t bytes;
+
 
   char *dev; /* undefined4 uStack_10058; */
   char *mtd; /* undefined4 uStack_10054; */
   char *dash;
+  char *cmd;
+  cmd=calloc(0x100,sizeof(unsigned char));
 
-  char *data;
-  data=calloc(0x10000,sizeof(unsigned char));
-  unsigned int *auStack_98;
-  auStack_98=calloc(0x10,sizeof(char));
-  unsigned int *auStack_88;
-  auStack_88=calloc(0x200,sizeof(unsigned int)); //was unsigned char auStack_88 [116];
+  unsigned char *auStack_98;
+  auStack_98=calloc(0x200,sizeof(char));
 
-  /* MD5 testing */
-  md5_context my_ctx;
-  u_int8_t *results;
-  results=calloc(0x10,sizeof(char));
 
   printf(RED);
   printf("open_mtd_for_input_internal, FUN_10002160.\n");
@@ -2767,14 +2825,12 @@ int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
   char *full_path;
   full_path=calloc(0x80,sizeof(char));
 
-
-
-  printf("address of param_3: 0x%llX\n",(unsigned long long int*)param_3);
-  printf("Param_3: ");
-  for(i=0; i<MD5_DIGEST_LENGTH; i++){
-    printf("%2.2X",*(unsigned char*)((unsigned long long int*)param_3+i));
-  }
-  printf("\n");
+  //printf("address of param_3: 0x%llX\n",(unsigned long long int*)param_3);
+  //printf("Param_3: ");
+  //for(i=0; i<MD5_DIGEST_LENGTH; i++){
+  //  printf("%2.2X",*(unsigned char*)((unsigned long long int*)param_3+i));
+  //}
+  //printf("\n");
 
 
 
@@ -2795,102 +2851,55 @@ int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
   len = strlen(partition_name);
   strncat(full_path,partition_name,len);
 
-  
-  iVar2 = open((char *)full_path,0);
-  if (iVar2 == -1) {
-    __format = "error opening %s for intput\n";
-    printf("%s",__format);
-    close(iVar2);
+  FILE *file;
+  file=fopen(full_path,"r");
+
+  if (file == NULL) {
+    printf("file == NULL\n");
+    fclose(file);
     free(full_path);
   }
   else {
-    printf("opening mtd partition: %s for input\n",full_path);
-    MD5_initialize_variables(auStack_88);
-    
-    /* MD5 testing */
-    //md5_init(&my_ctx);
+    printf("Open partition: %s for MD5 input\n",full_path);
 
-    do {
-      len = param_2;
-      if (0x10000 < (int)param_2) {
-        len = 0x10000;
-      }
-      sVar3 = read(iVar2,data,len);
-      if (0 < sVar3) {
-	MD5_encryption(auStack_88,(unsigned int*)data,sVar3>>2);
+    md5Init(&ctx);
+    while((input_size = fread(input_buffer, 1, 1024, file)) > 0){
+        md5Update(&ctx, (uint8_t *)input_buffer, input_size);
+    }
+    md5Finalize(&ctx);
 
-	/*MD5 testing */
-	//md5_digest(&my_ctx, data, sVar3);
+    free(input_buffer);
 
-	param_2 = param_2 - sVar3;
-      }
-    } while ((int)(
-	      ((-1 - sVar3) + ((uint)(sVar3 == 0))) &
-	      ((-1 - param_2) + ((uint)(param_2 == 0)))
-	      ) < 0);
-
-    FUN_10006944(auStack_98,(unsigned int*)auStack_88);
-
-    MD5_printf(auStack_98);
-
-    /*
-    md5_output(&my_ctx, results);
-    
-    printf("input_internal local MD5: ");
-    for(i=0; i<MD5_DIGEST_LENGTH; i++)
-      printf("%02x", results[i]);
-    putchar('\n');
-    */
+    memcpy(auStack_98, ctx.digest, 16);
 
 
-
-    
-    
-    close(iVar2);
-    //free(full_path);
-    if (sVar3 != -1) {
+    fclose(file);
 
 #if 1
-      printf(BLUE);
-      printf("Comparing result of FUN_10006944 with param_3\n");
-      printf(DEFAULT);
-      
-      printf("auStack_88: ");
-      for(i=0; i<MD5_DIGEST_LENGTH; i++){
-	printf("%2.2X",*(unsigned char*)((unsigned char*)auStack_88+i));
-      }
-      printf("\n");
+    printf(BLUE);
+    printf("Comparing result of FUN_10006944 with param_3\n");
+    printf(DEFAULT);
 
+    printf("param_3:    ");
 
-      printf("auStack_98: ");
-      for(i=0; i<MD5_DIGEST_LENGTH; i++){
-	printf("%2.2X",*(unsigned char*)((unsigned char*)auStack_98+i));
-      }
-      printf("\n");
+    for(i=0; i<MD5_DIGEST_LENGTH; i++){
+      printf("%2.2X",*(unsigned char*)((unsigned char*)param_3+i));
+    }
+    printf("\n");
 
-      printf("param_3:    ");
-
-      for(i=0; i<MD5_DIGEST_LENGTH; i++){
-	printf("%2.2X",*(unsigned char*)((unsigned char*)param_3+i));
-      }
-      printf("\n");
-
+    printf("auStack_98: ");
+    for(i=0;i<16;i++){
+      printf("%2.2X",auStack_98[i]);
+    }
+    printf("\n");
 
 #endif
 
 
-      iVar2 = memcmp((unsigned char*)param_3,auStack_98,0x10);
+    iVar2 = memcmp((unsigned char*)param_3,auStack_98,0x10);
 
-    /**************************************************************************************/
-    /*                md5 stuff goes wrong, dunnp why, so try iVar2=0                     */
-    /**************************************************************************************/
-    
-    //iVar2=0;
-      return iVar2;
-    }
-    piVar4 = __errno_location();
-    __format = "read failed errno = %d\n";
-    printf("%i, %s",*piVar4,__format);
+    return iVar2;
+
   }
   return -1;
 }
@@ -2949,6 +2958,7 @@ unsigned int open_mtd_for_output_internal(int fd,char *partition_name,int param_
     printf("error opening %s for output\n",full_path);
   }
   else {
+    printf("Open partition: %s for output\n",full_path);
     iVar7 = 0;
     iVar6 = 0;
     if (0 < param_3) {
@@ -3281,7 +3291,7 @@ int open_mtd_for_input_440(char *partition_name,int  param_2,void *param_3) {
     for(i=0;i<0x10;i++){
       printf("auStack_98[%i]: 0x%X\n",i,*(unsigned int*)((unsigned long long int*)auStack_98+i));
     }
-    FUN_10006944((unsigned long long int*)&auStack_98,(unsigned int*)aiStack_88); 
+    FUN_10006944(auStack_98,(unsigned int*)aiStack_88); 
 
     
     close(fd);

@@ -1,2 +1,9 @@
-all: md5.h md5.c md5_test.c
-	gcc -O3 -Wall -o md5_test md5.c md5_test.c
+CC = gcc
+
+CFLAGS = -Wall -Wextra -O3
+
+md5: md5.c main.c
+	@$(CC) $(CFLAGS) -o md5 md5.c main.c
+
+clean:
+	@$(RM) md5

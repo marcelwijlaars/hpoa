@@ -81,7 +81,7 @@ uint FUN_1000610c(int, __off_t *, unsigned char *, int, int);
 uint FUN_10005cdc(int, uint, SHA256_CTX *);
 
 void MD5_encryption(unsigned int*,unsigned int *,unsigned int);
-void MD5_follow_precomputed_table(unsigned int *,unsigned int*);
+static void MD5_follow_precomputed_table(unsigned int *,unsigned int*);
 void part_of_MD5_calculations(int*, int*, uint);
 void FUN_CONCAT(unsigned int*,unsigned int*,unsigned int); /* FUN_1000810 */
 void MD5_initialize_variables(unsigned int *);
@@ -104,7 +104,7 @@ void FUN_1000af94(uint *, uint, uint);
 void FUN_1000b104(int*, int*, uint);
 uint FUN_1000aa18(uint);
 uint FUN_1000a738(int, int, uint, int, uint);
-void MD5_printf(unsigned int*);
+void MD5_printf(unsigned int*,char*);
 
 
 
