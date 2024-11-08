@@ -9,7 +9,6 @@
 #include <errno.h>
 //#include "sha2/sha2.h"
 #include <openssl/sha.h>
-#include <openssl/md5.h>
 #include "md5/md5.h"
 
 
@@ -74,15 +73,18 @@ uint32_t FUN_10005de8(int, unsigned char *, unsigned char *);
 uint32_t FUN_100089b8(int, uint *, int, int, int *);
 uint32_t FUN_1000a4c0(int,int,int);
 
-uint MD5_processing(char *,void *,size_t);
+
 uint FUN_10009824(int, int, uint, uint);
 uint FUN_10009924(int, int, uint, int);
 uint FUN_1000610c(int, __off_t *, unsigned char *, int, int);
 uint FUN_10005cdc(int, uint, SHA256_CTX *);
-
+#if 0
+uint MD5_processing(char *,void *,size_t);
 void MD5_encryption(unsigned int*,unsigned int *,unsigned int);
 static void MD5_follow_precomputed_table(unsigned int *,unsigned int*);
 void part_of_MD5_calculations(int*, int*, uint);
+#endif
+
 void FUN_CONCAT(unsigned int*,unsigned int*,unsigned int); /* FUN_1000810 */
 void MD5_initialize_variables(unsigned int *);
 void kind_of_memset(unsigned int*,unsigned char,unsigned int); /* FUN_10008264 */

@@ -6,6 +6,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define MD5_DIGEST_LENGTH   16
+
 typedef struct{
     uint64_t size;        // Size of input in bytes
     uint32_t buffer[4];   // Current accumulation of hash

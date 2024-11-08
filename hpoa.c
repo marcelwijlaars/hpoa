@@ -705,7 +705,7 @@ int main(int argc,char **argv){
   printf("Can we find the signature file??????????\n");
   
   
-  // for VERSION_130 FUN_100040d8 does something with a sha gisganture
+  // for VERSION_130 FUN_100040d8 does something with a sha signature
   // for VERSION_130 FUN_10002a68 does the sha or md5 initialization,
   // this time with 9 values in the variables list
   
@@ -1252,6 +1252,9 @@ unsigned char check_something(int p1,int p2){
   return 1;
 }
 
+
+#if 0
+
 #define to_U8(x,o,i) do{			\
     o[i+0] = ((x) >>  0) & 0xFF;		\
     o[i+1] = ((x) >>  8) & 0xFF;		\
@@ -1402,6 +1405,8 @@ void FUN_10006944(unsigned int *param_1,unsigned int *ABCD){
   return;
 }
 
+#endif
+
 
 #if 0
   
@@ -1414,34 +1419,6 @@ void new_part_of_MD5_calculations(int *param_1,int *param_2,uint param_3){
     to_U8(param_2[3], (unsigned char*)param_1, 12);
   }
 }
-#endif
-
-/* FUN_10007FF0 */
-/* is dit zoiets als md5_Final????? */
-void old_part_of_MD5_calculations(int *param_1,int *param_2,uint param_3){
-  int local_1c;
-  uint local_18;
-
-  printf(RED);
-  printf("Part of MD5 calculations, FUN_10007FF0.\n");
-  printf(DEFAULT);
-
-  
-  local_1c = 0;
-  for (local_18 = 0; local_18 < param_3; local_18 = local_18 + 4) {
-    //printf("i:%i, *param_2: %X\n",local_18,*param_2);
-
-    *(unsigned char *)(param_1 + local_18) = *(unsigned char *)(local_1c * 4 + param_2 + 3);
-    *(char *)(param_1 + local_18 + 1) = (char)((uint)*(unsigned int *)(local_1c * 4 + param_2) >> 8);
-    *(char *)(param_1 + local_18 + 2) = (char)((uint)*(unsigned int *)(local_1c * 4 + param_2) >> 0x10);
-    *(char *)(param_1 + local_18 + 3) = (char)((uint)*(unsigned int *)(local_1c * 4 + param_2) >> 0x18);
-    local_1c = local_1c + 1;
-    //printf("i:%i, *param_1: %X\n",local_18,*(unsigned int*)(param_1 + local_18));
-
-  }
-  return;
-}
-
 
 
  
@@ -1507,7 +1484,7 @@ void MD5_encryption(unsigned int *variables,unsigned int *image_data,unsigned in
   return;
 }
 
-
+#endif
 
 /* FUN_10008100 */
 void FUN_CONCAT(unsigned int *param_1,unsigned int *param_2,uint param_3){
@@ -1530,43 +1507,7 @@ void FUN_CONCAT(unsigned int *param_1,unsigned int *param_2,uint param_3){
   return;
 }
 
-
-/* FUN_10008100 */
-/* chatGPT vragen deze dunctie te controleren */
-void wrong_FUN_CONCAT(unsigned int *p1,unsigned int *p2,uint len){
-  unsigned char i=0;
-  unsigned char j;
-  
-  //printf(RED);
-  //printf("FUN_CONCAT.\n");
-  //printf(DEFAULT);
-  
-  //for (i=0; i < 4; i=i+1) 
-  //  printf("p2[%i]: %.8X\n",i , p2[i] );
-
-  int tmp=0;
-  
-  for (j=0; j < len; j=j+1) {
-    for (i=0; i < 4; i=i+1) {
-      printf("i: %i\n",i);
-      //if(is_bigendian()){
-
-      *(unsigned char*)((unsigned char*)p1 + i + (j*4) ) = (p2[j] >>(8*i));
-	//printf("test[%i]: %X\n", i + (j*4), *(unsigned char*)((unsigned char*)p1 + i + (j*4) ) );
-	//} else {
-	//*(unsigned char*)((unsigned char*)p1 + (3-i) +(j*4)) = (p2[j] >>(8*i));
-	//}
-    }
-  }
-  /*
-  for (i=0; i < 16; i=i+1) 
-    printf("p1[%i]: %.2X\n",(unsigned char*)((unsigned char*)p1+i) , *(unsigned char*)((unsigned char*)p1+i) );
-
-  for (i=0; i < 4; i=i+1) 
-    printf("p1[%i]: %.8X\n",(unsigned int*)((unsigned int*)p1+i), *(unsigned int*)((unsigned int*)p1+i) );
-  */
-  return;
-}
+#if 0
 
 /* FUN_10008264 */
 void kind_of_memset(unsigned int *p1,unsigned char value,uint len){
@@ -1596,7 +1537,7 @@ void kind_of_memcpy(unsigned int *p1,unsigned int *p2,uint len){
   return;
 }
 
-
+#endif
 
 /* FUN_1000c6f4 */
 int kind_of_calloc(size_t len,void **param_2){
@@ -1617,6 +1558,8 @@ int kind_of_calloc(size_t len,void **param_2){
   }
   return local_1c;
 }
+
+
 
 
 
@@ -1738,6 +1681,7 @@ static void new_MD5_follow_precomputed_table(unsigned int *ABCD,unsigned char *p
  }
 #endif
 
+#if 0
  
 /* FUN_10006a20 */
 static void MD5_follow_precomputed_table(unsigned int *ABCD,unsigned int *param_2){
@@ -1922,6 +1866,7 @@ static void MD5_follow_precomputed_table(unsigned int *ABCD,unsigned int *param_
 }
 
 
+#endif
 
 /* FUN_100033a8 */
 char * partition_selector(unsigned char p){
@@ -2199,35 +2144,42 @@ uint64_t FUN_1000ecf4(uint param_1,int param_2,uint param_3,int param_4){
   uint uVar5;
   uint uVar6;
   uint uVar7;
-  unsigned char in_xer_so;
+  unsigned char in_xer_so=0 ;
   bool bVar8;
-  unsigned char in_cr1;
-  unsigned char unaff_cr2;
-  unsigned char unaff_cr3;
-  unsigned char unaff_cr4;
-  unsigned char in_cr5;
-  unsigned char in_cr6;
-  unsigned char in_cr7;
+  unsigned char in_cr1=0;
+  unsigned char unaff_cr2=0;
+  unsigned char unaff_cr3=0;
+  unsigned char unaff_cr4=0;
+  unsigned char in_cr5=0;
+  unsigned char in_cr6=0;
+  unsigned char in_cr7=0;
   uint64_t uVar9;
-  uint local_b8;
-  uint local_b4;
-  int local_b0;
-  uint local_a8;
-  uint local_a4;
-  uint local_98;
-  uint local_94;
-  int local_90;
-  uint local_88;
-  uint local_84;
-  uint local_78;
-  uint local_74;
-  int local_70;
-  uint local_68;
-  uint local_64;
-  uint local_58;
-  int  local_54;
-  uint local_50;
-  int  local_4c;
+  
+  uint local_b8[6]; //0
+  //uint local_b4;  //1
+  //int local_b0;   //2
+  //uint local_a8;  //3
+  //uint local_a4;  //4
+  
+  uint local_98[6]; //0
+  //uint local_94;  //1
+  //int local_90;   //2 
+  //uint local_88;  //3 
+  //uint local_84;  //4
+
+  uint local_78[6]; //0
+  //uint local_74;  //1
+  //int local_70;   //2
+  //uint local_68;  //3
+  //uint local_64;  //4
+
+  
+  uint local_58[2];
+  //int  local_54;
+
+  uint local_50[2];
+  //int  local_4c;
+
   uint local_48;
   uint local_44;
   uint local_40;
@@ -2236,19 +2188,19 @@ uint64_t FUN_1000ecf4(uint param_1,int param_2,uint param_3,int param_4){
   printf("FUN_1000ecf4.\n");
   printf(DEFAULT);
   */
-  puVar2 = &local_b8;
-  local_58 = param_1;
-  local_54 = param_2; // not used, combined array[2] ????
-  local_50 = param_3;
-  local_4c = param_4; // not used, combined array[2] ????
+  puVar2 = &local_b8[0];
+  local_58[0] = param_1;
+  local_58[1] = param_2; // not used, combined array[2] ????
+  local_50[0] = param_3;
+  local_50[1] = param_4; // not used, combined array[2] ????
   
-  FUN_1000e730(&local_58,&local_b8);
-  FUN_1000e730(&local_50,&local_98);
+  FUN_1000e730(&local_58[0],&local_b8[0]);
+  FUN_1000e730(&local_50[0],&local_98[0]);
   local_48 = (uint)(unsigned char)
     ((
-     (local_b8 == 0) << 3 |
-     (1 < local_b8) << 2 |
-     (local_b8 == 1) << 1 |
+     (local_b8[0] == 0) << 3 |
+     (1 < local_b8[0]) << 2 |
+     (local_b8[0] == 1) << 1 |
      (in_xer_so & 1)
       ) << 0x1c) |
     ((uint)(in_cr1 & 0xf) << 0x18) |
@@ -2258,12 +2210,12 @@ uint64_t FUN_1000ecf4(uint param_1,int param_2,uint param_3,int param_4){
     ((uint)(in_cr5 & 0xf)  << 8) |
     ((uint)(in_cr6 & 0xf) << 4) |
     (uint)(in_cr7 & 0xf);
-  if (1 < local_b8) {
+  if (1 < local_b8[0]) {
     local_44 = (uint)(unsigned char)
       (
-       (local_98 == 0) << 3 |
-       (1 < local_98)  << 2 |
-       (local_98 == 1) << 1 |
+       (local_98[0] == 0) << 3 |
+       (1 < local_98[0])  << 2 |
+       (local_98[0] == 1) << 1 |
        (in_xer_so & 1)
        )                      << 0x1c |
       (uint)(in_cr1    & 0xf) << 0x18 |
@@ -2275,28 +2227,28 @@ uint64_t FUN_1000ecf4(uint param_1,int param_2,uint param_3,int param_4){
       (uint)(in_cr7    & 0xf) << 0x00;
 
     
-    if (1 < local_98) {
-      if (local_b8 == 4) {
-        if (local_98 == 2) {
+    if (1 < local_98[0]) {
+      if (local_b8[0] == 4) {
+        if (local_98[0] == 2) {
 LAB_1000f0d8:
           puVar2 = (uint *)&DAT_10012738;
           goto LAB_1000efd0;
         }
         goto LAB_1000f0b0;
       }
-      if (local_98 == 4) {
-        if (local_b8 == 2) goto LAB_1000f0d8;
+      if (local_98[0] == 4) {
+        if (local_b8[0] == 2) goto LAB_1000f0d8;
       }
       else {
-        if (local_b8 == 2) goto LAB_1000f0b0;
-        if (local_98 != 2) {
+        if (local_b8[0] == 2) goto LAB_1000f0b0;
+        if (local_98[0] != 2) {
           iVar1 = 0;
-          uVar4 = (uint)((unsigned long long int)local_88 * (unsigned long long int)local_a4 >> 0x20);
-          uVar5 = local_88 * local_a4;
-          uVar7 = uVar5 + local_84 * local_a8;
-          uVar6 = uVar4 + (int)((unsigned long long int)local_84 * (unsigned long long int)local_a8 >> 0x20) + (uint)CARRY4(uVar5,local_84 * local_a8);
-          uVar3 = (uint)((unsigned long long int)local_84 * (unsigned long long int)local_a4 >> 0x20);
-          local_84 = local_84 * local_a4;
+          uVar4 = (uint)((unsigned long long int)local_98[3] * (unsigned long long int)local_b8[4] >> 0x20);
+          uVar5 = local_98[3] * local_b8[4];
+          uVar7 = uVar5 + local_98[4] * local_b8[3];
+          uVar6 = uVar4 + (int)((unsigned long long int)local_98[4] * (unsigned long long int)local_b8[3] >> 0x20) + (uint)CARRY4(uVar5,local_98[4] * local_b8[4]);
+          uVar3 = (uint)((unsigned long long int)local_98[4] * (unsigned long long int)local_b8[4] >> 0x20);
+          local_98[4] = local_98[4] * local_b8[4];
           if ((uVar6 < uVar4) || ((uVar4 == uVar6 && (uVar7 < uVar5)))) {
             iVar1 = 1;
           }
@@ -2305,54 +2257,54 @@ LAB_1000f0d8:
           if ((uVar7 < uVar3) || ((uVar3 == uVar7 && (false)))) {
             uVar4 = 1;
           }
-          uVar3 = uVar6 + local_88 * local_a8;
-          local_64 = uVar4 + uVar3;
+          uVar3 = uVar6 + local_98[3] * local_b8[3];
+          local_78[4] = uVar4 + uVar3;
 
-	  local_68 = iVar1 + (int)((unsigned long long int)local_88 * (unsigned long long int)local_a8 >> 0x20) +
-	    (uint)CARRY4(uVar6,local_88 * local_a8) +
+	  local_78[3] = iVar1 + (int)((unsigned long long int)local_98[3] * (unsigned long long int)local_b8[3] >> 0x20) +
+	    (uint)CARRY4(uVar6,local_98[3] * local_b8[3]) +
 	    (uint)CARRY4(uVar4,uVar3);
 
 	  
-          local_74 = (uint)(local_b4 != local_94);
-          local_70 = local_b0 + local_90 + 4;
-          if ((0x1fffffff < local_68) || ((local_68 == 0x1fffffff && (false)))) {
+          local_78[1] = (uint)(local_b8[1] != local_98[1]);
+          local_78[2] = local_b8[2] + local_98[1] + 4;
+          if ((0x1fffffff < local_78[3]) || ((local_78[3] == 0x1fffffff && (false)))) {
             do {
-              uVar4 = local_64 & 1;
-              local_64 = local_68 << 0x1f | local_64 >> 1;
-              local_68 = local_68 >> 1;
+              uVar4 = local_78[4] & 1;
+              local_78[4] = local_78[3] << 0x1f | local_78[4] >> 1;
+              local_78[3] = local_78[3] >> 1;
               in_cr6 =
 		(uVar4 != 0)    << 2 |
 		(uVar4 == 0)    << 1 |
 		(in_xer_so & 1) << 0;
               uVar3 = uVar7 << 0x1f;
-              local_70 = local_70 + 1;
+              local_78[2] = local_78[2] + 1;
               in_cr1 =
-		(local_68 < 0x1fffffff)  << 3 |
-		(0x1fffffff < local_68)  << 2 |
-		(local_68 == 0x1fffffff) << 1 |
+		(local_78[3] < 0x1fffffff)  << 3 |
+		(0x1fffffff < local_78[3])  << 2 |
+		(local_78[3] == 0x1fffffff) << 1 |
 		(in_xer_so & 1)          << 0;
               if (uVar4 != 0) {
                 uVar7 = uVar7 >> 1 | 0x80000000;
-                local_84 = uVar3 | local_84 >> 1;
+                local_98[4] = uVar3 | local_98[4] >> 1;
               }
-            } while ((0x1fffffff < local_68) || ((local_68 == 0x1fffffff && (false))));
+            } while ((0x1fffffff < local_78[3]) || ((local_78[3] == 0x1fffffff && (false))));
           }
-          if ((local_68 < 0x10000000) && ((local_68 != 0xfffffff || (true)))) {
+          if ((local_78[3] < 0x10000000) && ((local_78[3] != 0xfffffff || (true)))) {
             do {
               bVar8 = (int)uVar7 < 0;
-              local_68 = local_64 >> 0x1f | local_68 << 1;
-              local_64 = local_64 << 1;
-              local_70 = local_70 + -1;
-              uVar7 = local_84 >> 0x1f | uVar7 << 1;
-              local_84 = local_84 << 1;
+              local_78[3] = local_78[4] >> 0x1f | local_78[3] << 1;
+              local_78[4] = local_78[4] << 1;
+              local_78[2] = local_78[2] + -1;
+              uVar7 = local_98[4] >> 0x1f | uVar7 << 1;
+              local_98[4] = local_98[4] << 1;
               if (bVar8) {
-                local_64 = local_64 | 1;
+                local_78[4] = local_78[4] | 1;
               }
               local_40 = (uint)(unsigned char)
 		(
-		 (local_68 < 0xfffffff)  << 3 |
-		 (0xfffffff < local_68)  << 2 |
-		 (local_68 == 0xfffffff) << 1 |
+		 (local_78[3] < 0xfffffff)  << 3 |
+		 (0xfffffff < local_78[3])  << 2 |
+		 (local_78[3] == 0xfffffff) << 1 |
 		 (in_xer_so & 1)         << 0
 		 ) << 0x1c |
 		(uint)(in_cr1 & 0xf)    << 0x18 |
@@ -2363,34 +2315,34 @@ LAB_1000f0d8:
 		(uint)(in_cr6 & 0xf)    << 0x04 |
 		(uint)(unsigned char)
 		(
-		 (local_64 != 0xffffffff) << 3 |
-		 (local_64 == 0xffffffff) << 1 |
+		 (local_78[4] != 0xffffffff) << 3 |
+		 (local_78[4] == 0xffffffff) << 1 |
 		 (in_xer_so & 1)          << 0 
 		 );
               in_cr6 =
-		((int)local_68 < 0xfffffff) << 3 |
-		(0xfffffff < (int)local_68) << 2 |
-		(local_68 == 0xfffffff)     << 1 |
+		((int)local_78[3] < 0xfffffff) << 3 |
+		(0xfffffff < (int)local_78[3]) << 2 |
+		(local_78[3] == 0xfffffff)     << 1 |
 		(in_xer_so & 1)             << 0;
-            } while ((0xfffffff >= local_68) && ((local_68 != 0xfffffff || (true))));
+            } while ((0xfffffff >= local_78[3]) && ((local_78[3] != 0xfffffff || (true))));
           }
-          if ((true) && (((local_64 & 0xff) == 0x80 && (((local_64 & 0x100) != 0 || ((uVar7 | local_84) != 0)))))) {
-            bVar8 = 0xffffff7f < local_64;
-            local_64 = local_64 + 0x80;
-            local_68 = local_68 + bVar8;
+          if ((true) && (((local_78[4] & 0xff) == 0x80 && (((local_78[4] & 0x100) != 0 || ((uVar7 | local_98[4]) != 0)))))) {
+            bVar8 = 0xffffff7f < local_78[4];
+            local_78[4] = local_78[4] + 0x80;
+            local_78[3] = local_78[3] + bVar8;
           }
-          local_78 = 3;
-          puVar2 = &local_78;
+          local_78[0] = 3;
+          puVar2 = &local_78[0];
           goto LAB_1000efd0;
         }
       }
     }
-    local_94 = (uint)(local_b4 != local_94);
-    puVar2 = &local_98;
+    local_98[1] = (uint)(local_b8[1] != local_98[1]);
+    puVar2 = &local_98[0];
   }
   else {
 LAB_1000f0b0:
-    local_b4 = (uint)(local_b4 != local_94);
+    local_b8[1] = (uint)(local_b8[1] != local_98[1]);
   }
 LAB_1000efd0:
   uVar9 = FUN_1000fa10(puVar2);
@@ -2400,7 +2352,7 @@ LAB_1000efd0:
 
 
 /*
- * chagt says:
+ * chatGPT says:
  * The function is likely designed for manipulating or comparing multi-word values,
  * possibly in the context of multi-precision arithmetic or complex data processing.
  * It involves comparing and manipulating the data pointed to by these parameters and
@@ -2697,12 +2649,12 @@ uint64_t FUN_1000f6bc(uint param_1){
 //    register int var __asm__("regname");
   //register int reg asm("smsw %0" : "=r"(cr0));
   //register int reg asm("ebx"); 
-  unsigned char in_xer_so; //powerpc overflow check?
-  unsigned char    in_cr1;
-  unsigned char unaff_cr2;
-  unsigned char unaff_cr3;
-  unsigned char unaff_cr4;
-  unsigned char    in_cr5;
+  unsigned char in_xer_so=0; //powerpc overflow check?
+  unsigned char    in_cr1=0;
+  unsigned char unaff_cr2=0;
+  unsigned char unaff_cr3=0;
+  unsigned char unaff_cr4=0;
+  unsigned char    in_cr5=0;
   
   unsigned char bVar3;
   uint64_t uVar4;
@@ -3661,6 +3613,9 @@ int open_mtd_for_input_130(char *partition_name,int Param_2,void *param_3){
 
 #endif // VERSION_130
 
+
+#if 0
+
 uint FUN_1000610c(int param_1,__off_t *param_2,unsigned char *param_3,int param_4,int param_5){
   uint uVar1;
   __off_t _Var2;
@@ -4040,6 +3995,9 @@ uint32_t FUN_100089b8(int param_1,uint *param_2,int param_3,int param_4,int *par
 }
 
 
+
+
+
 void FUN_100090a4(int param_1,uint param_2,int param_3,int param_4)
 
 {
@@ -4251,6 +4209,7 @@ void FUN_100096ac(int param_1,int param_2,int param_3,int param_4){
   FUN_10008f90(aiStack_138,0,0x108);
   return;
 }
+
 
 
 void FUN_10009db8(int param_1,int param_2,uint param_3,int param_4,uint param_5){
@@ -4600,3 +4559,4 @@ int FUN_1000a8a4(int param_1,int param_2,uint param_3,int param_4,uint param_5){
 }
 
 
+#endif
