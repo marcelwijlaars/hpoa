@@ -7,4 +7,5 @@
 .gitignore~
 gpio_states~
 dev
+old_code
 Makefile~
