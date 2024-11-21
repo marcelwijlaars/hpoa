@@ -18,13 +18,13 @@
 #define OA_BOARD_TYPE C7000
 
 
-#define __bswap_constant_32(x)						\
+#define ___bswap_constant_32(x)						\
      ((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >>  8) |                      \
       (((x) & 0x0000ff00) <<  8) | (((x) & 0x000000ff) << 24))
 
 # define __bswap_32(x) \
      (__extension__                                                              \
-      ({ register unsigned int __x = (x); __bswap_constant_32 (__x); }))
+      ({ register unsigned int __x = (x); ___bswap_constant_32 (__x); }))
 
 
 #define htobe32(x) __bswap_32 (x)

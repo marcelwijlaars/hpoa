@@ -51,6 +51,7 @@ int main(int argc,char **argv){
   int iVar8 = 0;
   int iVar9 = 0;
   bool bVar1;
+  char cmd[0x100];
 
   
   /* taken from address 10022a68 in ghidra */
@@ -58,6 +59,31 @@ int main(int argc,char **argv){
   *(DAT_10022a68+0) = 0x80;
 
 
+  int opt=0;
+  int modify=0;
+
+  if(argc <= 1){
+    printf("No firmware file. Usage: %s [option] <filename>\n",argv[0]);
+    return -1;
+  }else{
+  
+    while ( opt = getopt(argc,argv,"abm"), opt != -1) {
+      if (true) {
+	switch(opt) {
+	case 'm':
+	  modify=1;
+	  printf("Choosen option: %c, will modify rc.sysinit\n",opt);
+	  break;
+	case 'a':
+	case 'b':
+	  printf("Choosen option: %c\n",opt);
+	  break;
+	}
+      }
+    }
+  }
+
+    
 #if DEVEL
   do_housekeeping();
 #endif
@@ -70,10 +96,6 @@ int main(int argc,char **argv){
   printf("Endianness: ");
   if(is_bigendian()) printf("big.\n"); else printf("little.\n");
   
-  if(argc <= 1){
-    printf("No firmware file. Usage: %s <filename>\n",argv[0]);
-    return -1;
-  }
 
 
   
@@ -122,23 +144,54 @@ int main(int argc,char **argv){
     partition_nr = (unsigned int) *(read_buffer+1+iVar5);  
     partition_name = partition_selector(partition_nr);  //was FUN_10001edc
 
+
     ret_offset = *(__off_t*)(read_buffer+1+iVar5+1);
     if(!is_bigendian()) ret_offset = htobe32(ret_offset);
     jump_size=ret_offset; //need to find the right name for this variable
 
+    /* write mtd partition */
     local_5c[0] = open_mtd_for_output_internal(fd,   partition_name,jump_size);
 
     iVar8 = iVar5 + 0x15;
 
-    if (local_5c[0] == 0) {
-      partition_nr = *(unsigned char*)(read_buffer+1+iVar5);
-      partition_name = partition_selector(partition_nr);  // FUN_10002498
+    if(modify && strcmp(partition_name,"initrd")==0) {
+      printf("Start modify of rc.sysint in initrd partition\n");
+
+      strcpy(cmd,"mkdir dev/mnt-");
+      strcat(cmd,partition_name);
+      printf("%s\n",cmd);
+      system(cmd);
+
+      strcpy(cmd,"tail -c+65 dev/mtd-");
+      strcat(cmd,partition_name);
+      strcat(cmd," | gunzip >& dev/");
+      strcat(cmd,partition_name);
+      printf("%s\n",cmd);
+      system(cmd);
+
+      strcpy(cmd,"sudo mount dev/");
+      strcat(cmd,partition_name);
+      strcat(cmd," dev/mnt-");
+      strcat(cmd,partition_name);
+      printf("%s\n",cmd);
+      system(cmd);
+
+      strcpy(cmd,"echo \"root:pD.WvCQWQJ4Kc:0:0:0,,:/:/bin/sh\" >> dev/mnt-");
+      strcat(cmd,partition_name);
+      strcat(cmd,"/etc/passwd");
+      printf("%s\n",cmd);
+      system(cmd);
       
+      exit(-1);
+    }
+    
+    
+    if (local_5c[0] == 0) {
+
+
       ret_offset = *(__off_t*)(read_buffer+1 + iVar5 +1);
 
-      if(!is_bigendian()) ret_offset = htobe32(ret_offset);
-      jump_size=ret_offset; //need to find the right name for this variable
-
+      /* verify the writen mtd partition */
       local_5c[0] = open_mtd_for_input_internal(partition_name,jump_size,(read_buffer + 1 + iVar5 + 5));
 
     }
