@@ -1,23 +1,12 @@
 #include "hpoa.h"
-#include "data_0x10010100.h"
 
 #define DEVEL 1
 
 /* glocal variables */
-unsigned char *DAT_1002275c=0;
-unsigned char *DAT_10022860=0;
-unsigned char *DAT_10022964=0;
-unsigned char *DAT_10022c18=0;
-unsigned char *DAT_10022c1c=0;
-unsigned char *DAT_10022c28=0;
 unsigned char *DAT_10022a68;
-unsigned char *DAT_1000ff30=0;
 unsigned char *DAT_10012738=0;
 unsigned int   DAT_000cbb58=-1;
-
-char *DAT_1000ff88 = "/dev";
 char *DAT_10022c2c; // waarschijnlijk naam van flash image 
-
 unsigned int DAT_10022c20=0;
 unsigned int DAT_10022c24=0;
 
@@ -27,6 +16,7 @@ int main(int argc,char **argv){
   int fd;
   off_t offset;                                                 /* __offset */
   off_t ret_offset;                                             /* _Var12 */
+
   char file_name[128];
   unsigned int file_size=0;
   ssize_t ret;                                                  /* uVar10 */
@@ -51,13 +41,6 @@ int main(int argc,char **argv){
   int iVar8 = 0;
   int iVar9 = 0;
   bool bVar1;
-  char cmd[0x100];
-
-  
-  /* taken from address 10022a68 in ghidra */
-  DAT_10022a68 = calloc(0x80,sizeof(unsigned char));
-  *(DAT_10022a68+0) = 0x80;
-
 
   int opt=0;
   int modify=0;
@@ -96,18 +79,10 @@ int main(int argc,char **argv){
   printf("Endianness: ");
   if(is_bigendian()) printf("big.\n"); else printf("little.\n");
   
-
-
   
   strcpy(file_name,argv[optind]);
 
   fd=open(file_name,O_RDONLY); /*file_name = local_c48 */
-
-  //file_size=lseek(fd,0,SEEK_END);
-  //printf("file size: 0x%X\n",file_size);
-  //offset=lseek(fd,0,SEEK_SET);
-  //printf("current file offset: 0x%lX\n",offset);
- 
   ret=read(fd,read_buffer,HEADER_SIZE); /* read_buffer = local_d28 */
 
   /* check value at address (read_buffer+0) */
@@ -128,7 +103,6 @@ int main(int argc,char **argv){
   
   while( true ) {
     current_location = lseek(fd,0,SEEK_CUR);
-
     printf("current location: 0x%X\n",current_location);
     
     iVar5 = iVar8;
@@ -140,56 +114,29 @@ int main(int argc,char **argv){
 	|| ( *(read_buffer+1+iVar5) == '\0')
 	) break;
 
-
     partition_nr = (unsigned int) *(read_buffer+1+iVar5);  
     partition_name = partition_selector(partition_nr);  //was FUN_10001edc
 
-
     ret_offset = *(__off_t*)(read_buffer+1+iVar5+1);
+    
     if(!is_bigendian()) ret_offset = htobe32(ret_offset);
     jump_size=ret_offset; //need to find the right name for this variable
-
+    
     /* write mtd partition */
     local_5c[0] = open_mtd_for_output_internal(fd,   partition_name,jump_size);
 
     iVar8 = iVar5 + 0x15;
 
     if(modify && strcmp(partition_name,"initrd")==0) {
+
       printf("Start modify of rc.sysint in initrd partition\n");
-
-      strcpy(cmd,"mkdir dev/mnt-");
-      strcat(cmd,partition_name);
-      printf("%s\n",cmd);
-      system(cmd);
-
-      strcpy(cmd,"tail -c+65 dev/mtd-");
-      strcat(cmd,partition_name);
-      strcat(cmd," | gunzip >& dev/");
-      strcat(cmd,partition_name);
-      printf("%s\n",cmd);
-      system(cmd);
-
-      strcpy(cmd,"sudo mount dev/");
-      strcat(cmd,partition_name);
-      strcat(cmd," dev/mnt-");
-      strcat(cmd,partition_name);
-      printf("%s\n",cmd);
-      system(cmd);
-
-      strcpy(cmd,"echo \"root:pD.WvCQWQJ4Kc:0:0:0,,:/:/bin/sh\" >> dev/mnt-");
-      strcat(cmd,partition_name);
-      strcat(cmd,"/etc/passwd");
-      printf("%s\n",cmd);
-      system(cmd);
-      
-      exit(-1);
+      modify_initrd(partition_name);
+      printf("finished modify of rc.sysint in initrd partition\n");
     }
     
     
     if (local_5c[0] == 0) {
-
-
-      ret_offset = *(__off_t*)(read_buffer+1 + iVar5 +1);
+      ret_offset = *(__off_t*)(read_buffer+1+iVar5+1);
 
       /* verify the writen mtd partition */
       local_5c[0] = open_mtd_for_input_internal(partition_name,jump_size,(read_buffer + 1 + iVar5 + 5));
@@ -1207,7 +1154,8 @@ int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
 
     free(input_buffer);
 
-    memcpy(auStack_98, ctx.digest, 16);
+    memcpy(auStack_98, ctx.digest, 0x10);
+
 
 
     fclose(file);
@@ -1225,13 +1173,12 @@ int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
     printf("\n");
 
     printf("auStack_98: ");
-    for(i=0;i<16;i++){
+    for(i=0; i<MD5_DIGEST_LENGTH; i++){
       printf("%2.2X",auStack_98[i]);
     }
     printf("\n");
 
 #endif
-
 
     iVar2 = memcmp((unsigned char*)param_3,auStack_98,0x10);
 
@@ -1487,7 +1434,7 @@ int get_em_type(void){  // not used right now
 void do_housekeeping(void){
   /* Start with houskeeping */
 
-  system("rm -rf dev");
+  system("sudo rm -rf dev");
   system("mkdir dev");
   system("touch dev/mtd-kernel");
   system("touch dev/mtd-initrd");
@@ -1542,4 +1489,118 @@ void do_sha256_tests(void){
   printf("/*********************************/\n");
   printf(DEFAULT);
 
+}
+
+int modify_initrd(char *partition_name){
+
+  char cmd[0x100];
+
+  strcpy(cmd,"mkdir dev/mnt-");
+  strcat(cmd,partition_name);
+  //printf("%s\n",cmd);
+  system(cmd);
+
+  strcpy(cmd,"tail -c+65 dev/mtd-");
+  strcat(cmd,partition_name);
+  strcat(cmd," | gunzip >& dev/");
+  strcat(cmd,partition_name);
+  system(cmd);
+
+  strcpy(cmd,"loopdev=`sudo losetup -f`");
+  strcat(cmd, " ; ");
+
+  strcat(cmd,"echo $loopdev");
+  strcat(cmd, " ; ");
+
+  
+  strcat(cmd ,"sudo losetup $loopdev dev/");
+  strcat(cmd,partition_name);
+  strcat(cmd, " ; ");  
+
+  strcat(cmd,"sudo mount -o loop $loopdev dev/mnt-");
+  strcat(cmd,partition_name);
+  strcat(cmd, " ; ");  
+
+#if 0
+  echo "udog:pD.WvCQWQJ4Kc:0:0:0,,:/:/bin/sh" > /etc/passwd.new
+    grep -v -e '^udog:' /etc/passwd >> /etc/passwd.new
+    mv /etc/passwd.new /etc/passwd
+    chmod 666 /etc/passwd
+    chown 1:1 /etc/passwd
+    exit 1
+
+#endif
+    
+  strcat(cmd,"echo \"root:pD.WvCQWQJ4Kc:0:0:0,,:/:/bin/sh\" >> dev/mnt-");
+  strcat(cmd,partition_name);
+  strcat(cmd,"/etc/passwd");
+  strcat(cmd, " ; ");
+
+  strcat(cmd,"sync");
+  strcat(cmd, " ; ");
+
+  //strcat(cmd,"cat dev/mnt-");
+  //strcat(cmd,partition_name);
+  //strcat(cmd,"/etc/passwd");
+  //strcat(cmd, " ; ");
+  
+  //strcat(cmd,"echo $loopdev");
+  ///strcat(cmd, " ; ");
+
+  
+  strcat(cmd,"sudo dd if=$loopdev status=none | gzip -9 > ");
+  strcat(cmd,partition_name);
+  strcat(cmd,".gz");
+  //printf("%s\n",cmd);
+  strcat(cmd, " ; ");
+
+  strcat(cmd,"sudo losetup -d ");
+  strcat(cmd,"$loopdev");
+  printf("%s\n",cmd);
+  system(cmd);
+
+  strcpy(cmd,"sudo umount dev/mnt-");
+  strcat(cmd,partition_name);
+  //printf("%s\n",cmd);
+  //system(cmd);
+  strcat(cmd, " ; ");
+
+  strcat(cmd,"sudo rm -rf dev/mnt-");
+  strcat(cmd,partition_name);
+  //printf("%s\n",cmd);
+  system(cmd);
+  //strcat(cmd, " ; ");
+
+  //strcat(cmd,"sudo rm dev/");
+  //strcat(cmd,partition_name);
+  //printf("%s\n",cmd);
+  //system(cmd);
+
+  
+  strcpy(cmd, "mkimage -d ");
+  strcat(cmd, partition_name);
+  strcat(cmd, ".gz -n \'\"");
+  strcat(cmd, partition_name);
+  strcat(cmd, " 141208-0921 build\"\' -T ramdisk dev/mtd-");
+  strcat(cmd, partition_name);
+  strcat(cmd," >& /dev/null");
+  printf("%s\n",cmd);
+  system(cmd);
+
+  
+  /* must do md5 of gzipped partition before mkimage adds header */
+  strcpy(cmd,"md5sum  ");
+  strcat(cmd,partition_name);
+  strcat(cmd,".gz");
+  //printf("%s\n",cmd);
+  system(cmd);
+
+  
+  strcpy(cmd,"sudo rm ");
+  strcat(cmd,partition_name);
+  strcat(cmd,".gz >& /dev/null");
+  //printf("%s\n",cmd);
+  system(cmd);
+
+  return 0;
 }

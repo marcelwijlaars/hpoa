@@ -10,6 +10,7 @@
 #include "sha2/sha2.h"
 //#include <openssl/sha.h>
 #include "md5/md5.h"
+//#include "data_0x10010100.h"
 
 #define HEADER_SIZE 0xD5
 #define MAX_FILE_SIZE 0xFFFFFF
@@ -59,6 +60,8 @@ int FUN_1000f7dc(unsigned int, unsigned int);
 char *partition_selector(unsigned char); /* FUN_100033a8 */
 void do_housekeeping(void);
 void do_sha256_tests(void);
+int modify_initrd(char*);
+
 
 
 
