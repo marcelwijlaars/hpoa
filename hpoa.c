@@ -1520,39 +1520,46 @@ int modify_initrd(char *partition_name){
   strcat(cmd,"sudo mount -o loop $loopdev dev/mnt-");
   strcat(cmd,partition_name);
   strcat(cmd, " ; ");  
+ 
 
-#if 0
-  echo "udog:pD.WvCQWQJ4Kc:0:0:0,,:/:/bin/sh" > /etc/passwd.new
-    grep -v -e '^udog:' /etc/passwd >> /etc/passwd.new
-    mv /etc/passwd.new /etc/passwd
-    chmod 666 /etc/passwd
-    chown 1:1 /etc/passwd
-    exit 1
+  strcat(cmd, "echo \"udog:pD.WvCQWQJ4Kc:0:0:0,,:/:/bin/sh\" > passwd.new ");
+  strcat(cmd, " ; ");  
 
-#endif
-    
-  strcat(cmd,"echo \"root:pD.WvCQWQJ4Kc:0:0:0,,:/:/bin/sh\" >> dev/mnt-");
-  strcat(cmd,partition_name);
-  strcat(cmd,"/etc/passwd");
+  strcat(cmd, "grep -v -e '^udog:' ");
+  strcat(cmd, "dev/mnt-");
+  strcat(cmd, partition_name);
+  strcat(cmd, "/etc/passwd >> passwd.new");
+  strcat(cmd, " ; ");  
+
+  strcat(cmd, "sudo mv passwd.new ");
+  strcat(cmd, "dev/mnt-");
+  strcat(cmd, partition_name);
+  strcat(cmd, "/etc/passwd");
+  strcat(cmd, " ; ");  
+
+  strcat(cmd,"sudo chmod 666 ");
+  strcat(cmd, "dev/mnt-");
+  strcat(cmd, partition_name);
+  strcat(cmd, "/etc/passwd");
+  strcat(cmd, " ; ");  
+
+  strcat(cmd,"sudo chown 1:1 ");
+  strcat(cmd, "dev/mnt-");
+  strcat(cmd, partition_name);
+  strcat(cmd, "/etc/passwd");
   strcat(cmd, " ; ");
+  //printf("%s\n",cmd);
+  //system(cmd);
 
   strcat(cmd,"sync");
   strcat(cmd, " ; ");
 
-  //strcat(cmd,"cat dev/mnt-");
-  //strcat(cmd,partition_name);
-  //strcat(cmd,"/etc/passwd");
-  //strcat(cmd, " ; ");
-  
-  //strcat(cmd,"echo $loopdev");
-  ///strcat(cmd, " ; ");
-
-  
   strcat(cmd,"sudo dd if=$loopdev status=none | gzip -9 > ");
   strcat(cmd,partition_name);
   strcat(cmd,".gz");
   //printf("%s\n",cmd);
   strcat(cmd, " ; ");
+
 
   strcat(cmd,"sudo losetup -d ");
   strcat(cmd,"$loopdev");
@@ -1564,17 +1571,14 @@ int modify_initrd(char *partition_name){
   //printf("%s\n",cmd);
   //system(cmd);
   strcat(cmd, " ; ");
+  strcat(cmd,"sync");  
+  strcat(cmd, " ; ");
 
   strcat(cmd,"sudo rm -rf dev/mnt-");
   strcat(cmd,partition_name);
   //printf("%s\n",cmd);
   system(cmd);
   //strcat(cmd, " ; ");
-
-  //strcat(cmd,"sudo rm dev/");
-  //strcat(cmd,partition_name);
-  //printf("%s\n",cmd);
-  //system(cmd);
 
   
   strcpy(cmd, "mkimage -d ");
@@ -1584,17 +1588,25 @@ int modify_initrd(char *partition_name){
   strcat(cmd, " 141208-0921 build\"\' -T ramdisk dev/mtd-");
   strcat(cmd, partition_name);
   strcat(cmd," >& /dev/null");
+  strcat(cmd, " ; ");
+  strcat(cmd,"sync");  
   printf("%s\n",cmd);
   system(cmd);
+
+
+
 
   
   /* must do md5 of gzipped partition before mkimage adds header */
   strcpy(cmd,"md5sum  ");
   strcat(cmd,partition_name);
   strcat(cmd,".gz");
+  strcat(cmd, " ; ");
+  strcat(cmd,"sync");
   //printf("%s\n",cmd);
   system(cmd);
 
+  
   
   strcpy(cmd,"sudo rm ");
   strcat(cmd,partition_name);
