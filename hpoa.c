@@ -44,22 +44,23 @@ int main(int argc,char **argv){
 
   int opt=0;
   int modify=0;
+  int rw_test=0;
 
   if(argc <= 1){
     printf("No firmware file. Usage: %s [option] <filename>\n",argv[0]);
     return -1;
   }else{
   
-    while ( opt = getopt(argc,argv,"abm"), opt != -1) {
+    while ( opt = getopt(argc,argv,"mt"), opt != -1) {
       if (true) {
 	switch(opt) {
 	case 'm':
 	  modify=1;
 	  printf("Choosen option: %c, will modify rc.sysinit\n",opt);
 	  break;
-	case 'a':
-	case 'b':
-	  printf("Choosen option: %c\n",opt);
+	case 't':
+	  rw_test=1;
+	  printf("Choosen option: %c, will test write data to /dev/mtd7:0x4000\n",opt);
 	  break;
 	}
       }
@@ -76,6 +77,33 @@ int main(int argc,char **argv){
   do_sha256_tests();
 #endif
 
+
+if (rw_test==1){
+
+  char data[0x100];
+  char ret[0x100];
+  memset(data,0,0x100);
+  fd=open("/dev/mtd7", O_RDWR);
+  if(fd<0){
+    printf("could not open /dev/mtd7\n");
+    return(-1);
+  }
+    
+  lseek(fd,0x00004000,SEEK_SET);
+  read(fd,ret,0x10);
+  if(memcmp(data,ret,0x10)==0){
+    lseek(fd,0x00004000,SEEK_SET);
+    strcat(data,"Hello world!");
+    write(fd,data,12);
+  }
+  close(fd);
+
+  printf("only tested writing to /dev/mtd7\n");
+  return(0);
+
+}
+
+  
   printf("Endianness: ");
   if(is_bigendian()) printf("big.\n"); else printf("little.\n");
   
