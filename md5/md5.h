@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define MD5_DIGEST_LENGTH   16
+#define MD5_DIGEST_LENGTH   0x10
 
 typedef struct{
     uint64_t size;        // Size of input in bytes

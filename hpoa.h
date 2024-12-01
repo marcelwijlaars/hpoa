@@ -3,6 +3,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <sys/ioctl.h>
+
+#include <linux/loop.h>
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
@@ -60,7 +63,9 @@ int FUN_1000f7dc(unsigned int, unsigned int);
 char *partition_selector(unsigned char); /* FUN_100033a8 */
 void do_housekeeping(void);
 void do_sha256_tests(void);
-int modify_initrd(char*);
+int modify_initrd(char*,uint32_t*,char*);
+int em_type(void);
+int do_rw_test(void);
 
 
 
@@ -103,5 +108,5 @@ int FUN_1000a8a4(int, int, uint, int, uint);
 int FUN_10009580(int, int, int, uint);
 int FUN_10008474(void *, size_t *, int, uint, int *);
 int FUN_1000a6bc(int,int);
-int get_em_type(void);
+
 #endif

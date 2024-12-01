@@ -14,17 +14,20 @@ unsigned int DAT_10022c24=0;
 int main(int argc,char **argv){
   
   int fd;
+  FILE *fp;
   off_t offset;                                                 /* __offset */
-  off_t ret_offset;                                             /* _Var12 */
 
   char file_name[128];
-  unsigned int file_size=0;
   ssize_t ret;                                                  /* uVar10 */
   unsigned char *read_buffer;                                   /* local_d28 */
   read_buffer=calloc(MAX_FILE_SIZE,sizeof(unsigned char));
 
   int i;                                                        /* iVar16 */
   int j;                                                        /* iVar27 */
+
+  uint32_t partition_size=0;
+  char *mtd_name;
+  mtd_name=calloc(0x80,sizeof(unsigned char));
 
   char *partition_name;
   partition_name=calloc(0x80,sizeof(unsigned char));
@@ -34,7 +37,7 @@ int main(int argc,char **argv){
 
   unsigned int  partition_nr;  //was unsigned char, was uVar9
 
-  unsigned int jump_size=0;
+  unsigned int jump_size=0;                                     /* _Var12*/
   unsigned int current_location=0;
 
   int iVar5 = 0;
@@ -45,73 +48,68 @@ int main(int argc,char **argv){
   int opt=0;
   int modify=0;
   int rw_test=0;
+  int burn=0;
 
+  char *md5_sum;
+
+
+  if (geteuid() != 0) {
+    fprintf(stderr, "%s needs root privileges!\n",argv[0]);
+    exit(1);
+  }
+  
   if(argc <= 1){
     printf("No firmware file. Usage: %s [option] <filename>\n",argv[0]);
     return -1;
   }else{
   
-    while ( opt = getopt(argc,argv,"mt"), opt != -1) {
+    while ( opt = getopt(argc,argv,"imt"), opt != -1) {
       if (true) {
 	switch(opt) {
 	case 'm':
 	  modify=1;
-	  printf("Choosen option: %c, will modify rc.sysinit\n",opt);
+	  //printf("Choosen option: %c, will modify rc.sysinit\n",opt);
 	  break;
 	case 't':
 	  rw_test=1;
-	  printf("Choosen option: %c, will test write data to /dev/mtd7:0x4000\n",opt);
+	  //printf("Choosen option: %c, will test write data to /dev/mtd7:0x4000\n",opt);
 	  break;
+	case 'i':
+	  burn=1;
+	  //printf("Choosen option: %c, will burn new initrd to /dev/mtd-initrd\n",opt);
+	  break;
+
+	  
 	}
       }
     }
   }
 
-    
-#if DEVEL
-  do_housekeeping();
-#endif
 
-    
 #if 0 //SHA stuff works
   do_sha256_tests();
 #endif
 
 
-if (rw_test==1){
-
-  char data[0x100];
-  char ret[0x100];
-  memset(data,0,0x100);
-  fd=open("/dev/mtd7", O_RDWR);
-  if(fd<0){
-    printf("could not open /dev/mtd7\n");
-    return(-1);
-  }
     
-  lseek(fd,0x00004000,SEEK_SET);
-  read(fd,ret,0x10);
-  if(memcmp(data,ret,0x10)==0){
-    lseek(fd,0x00004000,SEEK_SET);
-    strcat(data,"Hello world!");
-    write(fd,data,12);
+  if(DEVEL && (!burn || !rw_test) ){
+    do_housekeeping();
   }
-  close(fd);
 
-  printf("only tested writing to /dev/mtd7\n");
-  return(0);
 
-}
-
-  
   printf("Endianness: ");
   if(is_bigendian()) printf("big.\n"); else printf("little.\n");
+
   
+  if ( rw_test && !modify ) {
+    if( do_rw_test() < 0) return -1;
+  }
+
   
   strcpy(file_name,argv[optind]);
 
-  fd=open(file_name,O_RDONLY); /*file_name = local_c48 */
-  ret=read(fd,read_buffer,HEADER_SIZE); /* read_buffer = local_d28 */
+  fd=open(file_name,O_RDONLY);                 /*file_name = local_c48 */
+  ret=read(fd,read_buffer,HEADER_SIZE);     /* read_buffer = local_d28 */
 
   /* check value at address (read_buffer+0) */
   if ((ret < HEADER_SIZE) || (0x01 < (*(read_buffer+0) -1)) ) { 
@@ -127,7 +125,11 @@ if (rw_test==1){
     j = j + 1;
     i = i + 0x15;
   } while (j < 4);
-  
+
+
+  /****************************************************************************************/
+  /*                              main while loop                                         */
+  /****************************************************************************************/
   
   while( true ) {
     current_location = lseek(fd,0,SEEK_CUR);
@@ -137,52 +139,57 @@ if (rw_test==1){
     bVar1 = (3 < iVar9);
     iVar9 = iVar9 + 1;
 
-    if (
-	( bVar1 || (local_5c[0] != 0) )
-	|| ( *(read_buffer+1+iVar5) == '\0')
-	) break;
+    if ( ( bVar1 || (local_5c[0] != 0) ) || ( *(read_buffer+1+iVar5) == '\0') ) break;
 
     partition_nr = (unsigned int) *(read_buffer+1+iVar5);  
-    partition_name = partition_selector(partition_nr);  //was FUN_10001edc
+    partition_name = partition_selector(partition_nr);      
 
-    ret_offset = *(__off_t*)(read_buffer+1+iVar5+1);
-    
-    if(!is_bigendian()) ret_offset = htobe32(ret_offset);
-    jump_size=ret_offset; //need to find the right name for this variable
-    
+    jump_size= *(__off_t*)(read_buffer+1+iVar5+1);
+        if(!is_bigendian()) jump_size = htobe32(jump_size);
+
     /* write mtd partition */
-    local_5c[0] = open_mtd_for_output_internal(fd,   partition_name,jump_size);
+    local_5c[0] = open_mtd_for_output_internal(fd, partition_name,jump_size);
 
     iVar8 = iVar5 + 0x15;
 
     if(modify && strcmp(partition_name,"initrd")==0) {
 
-      printf("Start modify of rc.sysint in initrd partition\n");
-      modify_initrd(partition_name);
-      printf("finished modify of rc.sysint in initrd partition\n");
+      md5_sum  = calloc( 0x10,sizeof(char));
+      modify_initrd(partition_name,&partition_size,md5_sum);
+      /* update md5sum int read_buffer, should also be updated in firmware file */ 
+      for(i=0;i<MD5_DIGEST_LENGTH;i++){
+	*(uint8_t*)(read_buffer + 1 + iVar5 + 5 + i)= *(uint8_t*)(md5_sum+i);
+	}
+
+      sprintf(mtd_name,"dev/mtd-%s",partition_name);
+
+      fp=fopen(mtd_name,"r");
+      partition_size=fseek(fp,0, SEEK_END);
+      partition_size = ftell(fp);
+      //printf("%s size: %i\n",mtd_name,partition_size);
+      fclose(fp);
+
+      
+      //modify=0;
+      //goto write_modified_initrd;
     }
-    
-    
+
     if (local_5c[0] == 0) {
-      ret_offset = *(__off_t*)(read_buffer+1+iVar5+1);
+      //jump_size = *(__off_t*)(read_buffer+1+iVar5+1);
+      //if(!is_bigendian()) jump_size = htobe32(jump_size);
 
       /* verify the writen mtd partition */
+      /* (read_nuffer + 1 + iVar5 +5) is where the MD5sum of the partition is stored */
       local_5c[0] = open_mtd_for_input_internal(partition_name,jump_size,(read_buffer + 1 + iVar5 + 5));
-
     }
     printf("\n");
   }
-
-
   close(fd);
-
   return 0;
 }
 
 /******************************************************************************************/
-/*                                                                                        */
 /*                                  End of main                                           */
-/*                                                                                        */
 /******************************************************************************************/
 
 
@@ -1112,11 +1119,13 @@ uint64_t FUN_1000f6bc(uint param_1){
 /* FUN_10002160 */
 int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
 
+
+  
   int i;
   size_t len;
   int iVar2;
 
-  char *input_buffer = malloc(1024);
+  char *input_buffer = calloc(1024,sizeof(char));
   size_t input_size = 0;
   MD5Context ctx;
 
@@ -1126,8 +1135,8 @@ int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
   char *cmd;
   cmd=calloc(0x100,sizeof(unsigned char));
 
-  unsigned char *auStack_98;
-  auStack_98=calloc(0x200,sizeof(char));
+  unsigned char *md5sum;
+  md5sum=calloc(0x20,sizeof(char));
 
 
   printf(RED);
@@ -1137,16 +1146,6 @@ int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
   char *full_path;
   full_path=calloc(0x80,sizeof(char));
 
-  //printf("address of param_3: 0x%llX\n",(unsigned long long int*)param_3);
-  //printf("Param_3: ");
-  //for(i=0; i<MD5_DIGEST_LENGTH; i++){
-  //  printf("%2.2X",*(unsigned char*)((unsigned long long int*)param_3+i));
-  //}
-  //printf("\n");
-
-
-
-  
 #if DEVEL
   dev = "dev";  
 #else
@@ -1181,10 +1180,7 @@ int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
     md5Finalize(&ctx);
 
     free(input_buffer);
-
-    memcpy(auStack_98, ctx.digest, 0x10);
-
-
+    memcpy(md5sum, ctx.digest, MD5_DIGEST_LENGTH);
 
     fclose(file);
 
@@ -1193,23 +1189,26 @@ int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
     printf("Comparing result of FUN_10006944 with param_3\n");
     printf(DEFAULT);
 
-    printf("param_3:    ");
-
+    printf("param_3: ");
     for(i=0; i<MD5_DIGEST_LENGTH; i++){
       printf("%2.2X",*(unsigned char*)((unsigned char*)param_3+i));
     }
     printf("\n");
 
-    printf("auStack_98: ");
+    printf("md5sum:  ");
     for(i=0; i<MD5_DIGEST_LENGTH; i++){
-      printf("%2.2X",auStack_98[i]);
+      printf("%2.2X",md5sum[i]);
     }
     printf("\n");
 
 #endif
 
-    iVar2 = memcmp((unsigned char*)param_3,auStack_98,0x10);
+    iVar2 = memcmp((unsigned char*)param_3,md5sum,0x10);
 
+
+    free(cmd);
+    free(md5sum);
+    free(full_path);
     return iVar2;
 
   }
@@ -1265,7 +1264,7 @@ unsigned int open_mtd_for_output_internal(int fd,char *partition_name,int param_
 
   uVar5 = 0xfffffff6;
 
-    __fd = open((char *)full_path,1);
+    __fd = open((char *)full_path,O_SYNC|O_RDWR);
   if (__fd == -1) {
     printf("error opening %s for output\n",full_path);
   }
@@ -1448,12 +1447,12 @@ int find_tag_in_file(char *param_1, char *param_2, char *param_3, size_t param_4
 }
 
 
-int get_em_type(void){  // not used right now
+int em_type(void){  // not used right now
   char local_28 [32];
   if (DAT_000cbb58 == -1) {
     local_28[0] = '\0';
-    //find_tag_in_file("/etc/gpio_states","OABOARDTYPE",local_28,0x10,0);
-    find_tag_in_file("gpio_states","OABOARDTYPE",&local_28[0],0x10,'=');
+    find_tag_in_file("/etc/gpio_states","OABOARDTYPE",local_28,0x10,0);
+    //find_tag_in_file("gpio_states","OABOARDTYPE",&local_28[0],0x10,'=');
     DAT_000cbb58 = atoi(local_28);
   }
   return DAT_000cbb58;
@@ -1519,96 +1518,163 @@ void do_sha256_tests(void){
 
 }
 
-int modify_initrd(char *partition_name){
 
-  char cmd[0x100];
+void my_md5sum(char *file_name, char *md5_sum){
+  int i;
+  int input_size;
+  MD5Context ctx;
+  char *input_buffer = malloc(1024);
 
+  FILE *file;
+  file=fopen(file_name,"r");
+
+  if (file == NULL) {
+    printf("file == NULL\n");
+    fclose(file);
+  } else {
+    md5Init(&ctx);
+    while((input_size = fread(input_buffer, 1, 1024, file)) > 0){
+        md5Update(&ctx, (uint8_t *)input_buffer, input_size);
+    }
+    md5Finalize(&ctx);
+
+    free(input_buffer);
+    memcpy(md5_sum, ctx.digest, MD5_DIGEST_LENGTH);
+
+    fclose(file);
+  }
+}
+
+
+int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
+  int i;
+  char *cmd;
+
+  int loopctlfd, loopfd, backingfile;
+  long devnr;
+  char loopname[0x100];
+
+  printf(RED);
+  printf("modify_initrd.\n");
+  printf(DEFAULT);
+
+
+
+  loopctlfd = open("/dev/loop-control", O_RDWR);
+  if (loopctlfd == -1) printf("\nopen: /dev/loop-control\n\n");
+  devnr = ioctl(loopctlfd, LOOP_CTL_GET_FREE);
+  if (devnr == -1) printf("ioctl-LOOP_CTL_GET_FREE\n\n");
+  sprintf(loopname, "/dev/loop%ld", devnr);
+  printf("loopname = %s\n", loopname);
+
+  cmd=calloc(0x100,sizeof(char));
   strcpy(cmd,"mkdir dev/mnt-");
   strcat(cmd,partition_name);
   //printf("%s\n",cmd);
   system(cmd);
 
+  cmd=calloc(0x100,sizeof(char));
   strcpy(cmd,"tail -c+65 dev/mtd-");
   strcat(cmd,partition_name);
   strcat(cmd," | gunzip >& dev/");
   strcat(cmd,partition_name);
   system(cmd);
 
-  strcpy(cmd,"loopdev=`sudo losetup -f`");
-  strcat(cmd, " ; ");
-
-  strcat(cmd,"echo $loopdev");
-  strcat(cmd, " ; ");
-
+  cmd=calloc(0x100,sizeof(char));
   
-  strcat(cmd ,"sudo losetup $loopdev dev/");
+  strcpy(cmd ,"sudo losetup ");
+  strcat(cmd, loopname);
+  strcat(cmd," dev/");
   strcat(cmd,partition_name);
-  strcat(cmd, " ; ");  
+  system(cmd);
 
-  strcat(cmd,"sudo mount -o loop $loopdev dev/mnt-");
+  cmd=calloc(0x100,sizeof(char));
+  strcpy(cmd, "sudo mount -o loop ");
+  strcat(cmd, loopname);
+  strcat(cmd, " dev/mnt-");
   strcat(cmd,partition_name);
-  strcat(cmd, " ; ");  
- 
+  strcat(cmd, " ; ");
+  strcat(cmd,"sync");  
+  system(cmd);
 
-  strcat(cmd, "echo \"udog:pD.WvCQWQJ4Kc:0:0:0,,:/:/bin/sh\" > passwd.new ");
+  cmd=calloc(0x100,sizeof(char));
+  strcpy(cmd, "echo \"udog:pD.WvCQWQJ4Kc:0:0:0,,:/:/bin/sh\" > passwd.new ");
   strcat(cmd, " ; ");  
-
-  strcat(cmd, "grep -v -e '^udog:' ");
+  strcat(cmd,"sync");  
+  //printf("%s\n",cmd);
+  system(cmd);
+  
+  cmd=calloc(0x100,sizeof(char));
+  strcpy(cmd, "grep -v -e '^udog:' ");
   strcat(cmd, "dev/mnt-");
   strcat(cmd, partition_name);
   strcat(cmd, "/etc/passwd >> passwd.new");
   strcat(cmd, " ; ");  
+  strcat(cmd,"sync");  
+  system(cmd);
 
-  strcat(cmd, "sudo mv passwd.new ");
+  cmd=calloc(0x100,sizeof(char));
+  strcpy(cmd, "sudo mv passwd.new ");
   strcat(cmd, "dev/mnt-");
   strcat(cmd, partition_name);
   strcat(cmd, "/etc/passwd");
   strcat(cmd, " ; ");  
-
-  strcat(cmd,"sudo chmod 666 ");
-  strcat(cmd, "dev/mnt-");
-  strcat(cmd, partition_name);
-  strcat(cmd, "/etc/passwd");
-  strcat(cmd, " ; ");  
-
-  strcat(cmd,"sudo chown 1:1 ");
-  strcat(cmd, "dev/mnt-");
-  strcat(cmd, partition_name);
-  strcat(cmd, "/etc/passwd");
-  strcat(cmd, " ; ");
+  strcat(cmd,"sync");  
   //printf("%s\n",cmd);
-  //system(cmd);
-
-  strcat(cmd,"sync");
+  system(cmd);
+  
+  cmd=calloc(0x100,sizeof(char));
+  strcpy(cmd,"sudo chmod 666 ");
+  strcat(cmd, "dev/mnt-");
+  strcat(cmd, partition_name);
+  strcat(cmd, "/etc/passwd");
   strcat(cmd, " ; ");
+  strcat(cmd,"sync");  
+  //printf("%s\n",cmd);
+  system(cmd);
+  
+  cmd=calloc(0x100,sizeof(char));
+  strcpy(cmd,"sudo chown 1:1 ");
+  strcat(cmd, "dev/mnt-");
+  strcat(cmd, partition_name);
+  strcat(cmd, "/etc/passwd");
+  strcat(cmd, " ; ");
+  strcat(cmd,"sync");
+  //printf("%s\n",cmd);
+  system(cmd);
 
-  strcat(cmd,"sudo dd if=$loopdev status=none | gzip -9 > ");
+  cmd=calloc(0x100,sizeof(char));
+  strcpy(cmd,"sudo dd if=");
+  strcat(cmd, loopname);
+  strcat(cmd, " status=none | gzip -9 > ");
   strcat(cmd,partition_name);
   strcat(cmd,".gz");
   //printf("%s\n",cmd);
-  strcat(cmd, " ; ");
-
-
-  strcat(cmd,"sudo losetup -d ");
-  strcat(cmd,"$loopdev");
-  printf("%s\n",cmd);
   system(cmd);
 
+  cmd=calloc(0x100,sizeof(char));
+  strcpy(cmd,"sudo losetup -d ");
+  strcat(cmd, loopname);
+  strcat(cmd, " ; ");
+  strcat(cmd,"sync");
+  //printf("%s\n",cmd);
+  system(cmd);
+
+  cmd=calloc(0x100,sizeof(char));
   strcpy(cmd,"sudo umount dev/mnt-");
   strcat(cmd,partition_name);
+  strcat(cmd, " ; ");
+  strcat(cmd,"sync");
   //printf("%s\n",cmd);
-  //system(cmd);
-  strcat(cmd, " ; ");
-  strcat(cmd,"sync");  
-  strcat(cmd, " ; ");
+  system(cmd);
 
-  strcat(cmd,"sudo rm -rf dev/mnt-");
+  cmd=calloc(0x100,sizeof(char));
+  strcpy(cmd,"sudo rm -rf dev/mnt-");
   strcat(cmd,partition_name);
   //printf("%s\n",cmd);
   system(cmd);
-  //strcat(cmd, " ; ");
-
   
+  cmd=calloc(0x100,sizeof(char));
   strcpy(cmd, "mkimage -d ");
   strcat(cmd, partition_name);
   strcat(cmd, ".gz -n \'\"");
@@ -1618,29 +1684,85 @@ int modify_initrd(char *partition_name){
   strcat(cmd," >& /dev/null");
   strcat(cmd, " ; ");
   strcat(cmd,"sync");  
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
-
-
-
-
   
   /* must do md5 of gzipped partition before mkimage adds header */
+  cmd=calloc(0x100,sizeof(char));
   strcpy(cmd,"md5sum  ");
   strcat(cmd,partition_name);
-  strcat(cmd,".gz");
+  strcat(cmd,".gz >/dev/null");
   strcat(cmd, " ; ");
   strcat(cmd,"sync");
   //printf("%s\n",cmd);
   system(cmd);
 
-  
-  
-  strcpy(cmd,"sudo rm ");
-  strcat(cmd,partition_name);
-  strcat(cmd,".gz >& /dev/null");
+  /* must do md5 of gzipped partition before mkimage adds header */
+  cmd=calloc(0x100,sizeof(char));
+  strcpy(cmd, "md5sum dev/mtd-");
+  strcat(cmd, partition_name);
+  strcat(cmd, " >/dev/null");
+  strcat(cmd, " ; ");
+  strcat(cmd, "sync");
   //printf("%s\n",cmd);
   system(cmd);
 
+  
+  char *filename = calloc(0x100,sizeof(char));
+  strcpy(filename,"dev/mtd-");
+  strcat(filename,partition_name);
+  my_md5sum(filename,md5_sum);
+
+  free(filename);
+  
+  cmd=calloc(0x100,sizeof(char));
+  strcpy(cmd,"sudo rm ");
+  strcat(cmd,partition_name);
+  strcat(cmd,".gz >& /dev/null");
+  strcat(cmd, " ; ");
+  strcat(cmd,"sync");  
+  //printf("%s\n",cmd);
+  system(cmd);
+
+  
   return 0;
+}
+
+
+
+
+int  do_rw_test(void){
+
+  if( (em_type()==C3000) || (em_type()==C7000) ){
+    
+    int fd;
+    char data[0x100];
+    char ret[0x100];
+    memset(data,0,0x100);
+
+
+    fd=open("/dev/mtd7", O_SYNC|O_RDWR);
+    if(fd<0){
+      printf("could not open /dev/mtd7\n");
+      return(-1);
+    }
+    
+    lseek(fd,0x00008000,SEEK_SET);
+    read(fd,ret,0x10);
+    if(memcmp(data,ret,0x10)==0){
+      lseek(fd,0x00008000,SEEK_SET);
+      strcat(data,"Hello world!");
+      write(fd,data,12);
+    }else{
+      printf("Data range is not all zeros!\n");
+    }
+    close(fd);
+
+    printf("only tested writing to /dev/mtd7\n");
+    return(0);
+
+  }else{
+    printf("No physical enclosure, can't do rw_test\n");
+    return -1;
+  }
 }
