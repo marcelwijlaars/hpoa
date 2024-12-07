@@ -13,7 +13,7 @@ unsigned int DAT_10022c24=0;
 
 int main(int argc,char **argv){
   
-  int fd;
+  int fd,fw;
   FILE *fp;
   off_t offset;                                                 /* __offset */
 
@@ -39,6 +39,9 @@ int main(int argc,char **argv){
 
   unsigned int jump_size=0;                                     /* _Var12*/
   unsigned int current_location=0;
+  unsigned int fw_location=0;
+  unsigned int fw_location_array[0x10];
+  unsigned int current_location_array[0x10];
 
   int iVar5 = 0;
   int iVar8 = 0;
@@ -49,6 +52,7 @@ int main(int argc,char **argv){
   int modify=0;
   int rw_test=0;
   int burn=0;
+  int firmware=0;
 
   char *md5_sum;
 
@@ -63,7 +67,7 @@ int main(int argc,char **argv){
     return -1;
   }else{
   
-    while ( opt = getopt(argc,argv,"imt"), opt != -1) {
+    while ( opt = getopt(argc,argv,"fimt"), opt != -1) {
       if (true) {
 	switch(opt) {
 	case 'm':
@@ -78,8 +82,10 @@ int main(int argc,char **argv){
 	  burn=1;
 	  //printf("Choosen option: %c, will burn new initrd to /dev/mtd-initrd\n",opt);
 	  break;
-
-	  
+	case 'f':
+	  firmware=1;
+	  //printf("Choosen option: %c, will compose new firmware image\n",opt);
+	  break;
 	}
       }
     }
@@ -130,9 +136,13 @@ int main(int argc,char **argv){
   /****************************************************************************************/
   /*                              main while loop                                         */
   /****************************************************************************************/
-  
+
+  int index=0;
   while( true ) {
     current_location = lseek(fd,0,SEEK_CUR);
+    current_location_array[index]=current_location;
+    index++;
+
     printf("current location: 0x%X\n",current_location);
     
     iVar5 = iVar8;
@@ -156,12 +166,14 @@ int main(int argc,char **argv){
 
       md5_sum  = calloc( 0x10,sizeof(char));
       modify_initrd(partition_name,&partition_size,md5_sum);
-      /* update md5sum int read_buffer, should also be updated in firmware file */ 
+      /* update md5sum int read_buffer, should also be updated in firmware file */
+
       for(i=0;i<MD5_DIGEST_LENGTH;i++){
 	*(uint8_t*)(read_buffer + 1 + iVar5 + 5 + i)= *(uint8_t*)(md5_sum+i);
 	}
 
       sprintf(mtd_name,"dev/mtd-%s",partition_name);
+
 
       fp=fopen(mtd_name,"r");
       partition_size=fseek(fp,0, SEEK_END);
@@ -180,11 +192,58 @@ int main(int argc,char **argv){
 
       /* verify the writen mtd partition */
       /* (read_nuffer + 1 + iVar5 +5) is where the MD5sum of the partition is stored */
+      printf("read_buffer localtion: 0x%X\n", 1+iVar5+5);
       local_5c[0] = open_mtd_for_input_internal(partition_name,jump_size,(read_buffer + 1 + iVar5 + 5));
     }
     printf("\n");
   }
   close(fd);
+
+  
+
+  if(firmware){
+    ssize_t s=0;
+    char *data;
+    char cmd[0x100];
+    data=calloc(0x1000,sizeof(char));
+
+    strcpy(cmd, "cp ");
+    strcat(cmd, file_name);
+    strcat(cmd, " hpoa999.bin");
+    printf("%s\n",cmd);
+    system(cmd);
+    fw=open("hpoa999.bin",O_RDWR);
+    s=write(fw,read_buffer,HEADER_SIZE);
+    fw_location+=s;
+    fw_location_array[0]=fw_location;
+    
+    fd=open("dev/mtd-kernel",O_RDONLY);
+    while(s=read(fd,data,0x1000),s>0){
+      fw_location+=write(fw,data,s);
+    }
+    close(fd);
+    fw_location_array[1]=fw_location;
+
+    fd=open("dev/mtd-initrd",O_RDONLY);
+    while(s=read(fd,data,0x1000),s>0){
+      fw_location+=write(fw,data,s);
+    }
+    close(fd);
+    fw_location_array[2]=fw_location;
+
+    fd=open("dev/mtd-squashfs",O_RDONLY);
+    while(s=read(fd,data,0x1000),s>0){
+      fw_location+=write(fw,data,s);
+    }
+    close(fd);
+    fw_location_array[3]=fw_location;
+    close(fw);
+
+
+    for(i=0;i<4;i++){
+      printf("current: 0x%X, fw: 0x%X\n",current_location_array[i],fw_location_array[i]);
+    }
+  }
   return 0;
 }
 
