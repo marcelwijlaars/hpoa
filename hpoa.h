@@ -66,8 +66,9 @@ void do_sha256_tests(void);
 int modify_initrd(char*,uint32_t*,char*);
 int em_type(void);
 int do_rw_test(void);
-
-
+uint64_t fw_with_fingerprint(char*);                       /* FUN_1000cb68 ish */ 
+uint verify_signature(int, __off_t *, unsigned char *, int);
+int  write_initrd(void);
 
 
 
@@ -75,7 +76,6 @@ int do_rw_test(void);
 unsigned char check_something(int,int);
 unsigned char FUN_10005f64(unsigned char *, uint, unsigned char*, size_t, int, int);
 size_t FUN_10005d64(int, void *, size_t, SHA256_CTX *);
-uint64_t  fw_with_fingerprint(void);                       /* FUN_1000cb68 */ 
 uint32_t FUN_10005de8(int, unsigned char *, unsigned char *);
 uint32_t FUN_100089b8(int, uint *, int, int, int *);
 uint32_t FUN_1000a4c0(int,int,int);

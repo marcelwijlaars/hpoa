@@ -3,12 +3,13 @@
 #define DEVEL 1
 
 /* glocal variables */
-unsigned char *DAT_10022a68;
+//unsigned char *DAT_10022a68;
 unsigned char *DAT_10012738=0;
 unsigned int   DAT_000cbb58=-1;
 char *DAT_10022c2c; // waarschijnlijk naam van flash image 
 unsigned int DAT_10022c20=0;
 unsigned int DAT_10022c24=0;
+unsigned char *DAT_10022c28;
 
 
 int main(int argc,char **argv){
@@ -25,12 +26,17 @@ int main(int argc,char **argv){
   int i;                                                        /* iVar16 */
   int j;                                                        /* iVar27 */
 
+
   uint32_t partition_size=0;
   char *mtd_name;
   mtd_name=calloc(0x80,sizeof(unsigned char));
 
   char *partition_name;
   partition_name=calloc(0x80,sizeof(unsigned char));
+
+  unsigned char *DAT_10022c28;
+  DAT_10022c28=calloc(0x80,sizeof(unsigned char));
+
   
   unsigned int *local_5c;
   local_5c=calloc(6,sizeof(uint));
@@ -53,6 +59,7 @@ int main(int argc,char **argv){
   int rw_test=0;
   int burn=0;
   int firmware=0;
+  int have_fingerprint=0;
 
   char *md5_sum;
 
@@ -67,7 +74,7 @@ int main(int argc,char **argv){
     return -1;
   }else{
   
-    while ( opt = getopt(argc,argv,"fimt"), opt != -1) {
+    while ( opt = getopt(argc,argv,"fbmt"), opt != -1) {
       if (true) {
 	switch(opt) {
 	case 'm':
@@ -78,7 +85,7 @@ int main(int argc,char **argv){
 	  rw_test=1;
 	  //printf("Choosen option: %c, will test write data to /dev/mtd7:0x4000\n",opt);
 	  break;
-	case 'i':
+	case 'b':
 	  burn=1;
 	  //printf("Choosen option: %c, will burn new initrd to /dev/mtd-initrd\n",opt);
 	  break;
@@ -113,6 +120,8 @@ int main(int argc,char **argv){
 
   
   strcpy(file_name,argv[optind]);
+  
+
 
   fd=open(file_name,O_RDONLY);                 /*file_name = local_c48 */
   ret=read(fd,read_buffer,HEADER_SIZE);     /* read_buffer = local_d28 */
@@ -133,6 +142,12 @@ int main(int argc,char **argv){
   } while (j < 4);
 
 
+  have_fingerprint = verify_signature(fd,(__off_t *)&DAT_10022c28,read_buffer,0);
+  exit(-1);
+
+
+
+  
   /****************************************************************************************/
   /*                              main while loop                                         */
   /****************************************************************************************/
@@ -198,6 +213,12 @@ int main(int argc,char **argv){
     printf("\n");
   }
   close(fd);
+
+
+  if(burn && ((em_type()==C3000) || (em_type()==C7000)) ){
+    printf("start writing initrd\n");
+    write_initrd();
+  }
 
   
 
@@ -276,7 +297,7 @@ void FUN_CONCAT(unsigned int *param_1,unsigned int *param_2,uint param_3){
 
 /* this function returns 1 if the firmware file has a fingerprint section, otherwise 0 */
 /* FUN_1000cb68 */
-uint64_t fw_with_fingerprint (void){
+uint64_t fw_with_fingerprint (char *filename){
   uint64_t uVar1=0;
   char *pcVar2;
   //int ret;
@@ -296,8 +317,7 @@ uint64_t fw_with_fingerprint (void){
   //local_20 = FUN_1000b510;
   //pcVar2 = (char *)FUN_1000b510(); //returns filename
   
-  printf("DAT_10022c2c: %s\n",DAT_10022c2c);
-  file= fopen((char*)DAT_10022c2c,"rb");
+  file= fopen(filename,"rb");
   if (file == (FILE *)0x0) {
     printf("could not open the signed file for parsing\n");
     uVar1 = 0;
@@ -1790,6 +1810,84 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
 
 
 
+int  verify_initrd(void){
+
+  if( (em_type()==C3000) || (em_type()==C7000) ){
+    
+    int fd;
+    char *data;
+    char *burned;
+    data=calloc(0x100,sizeof(char));
+    burned=calloc(0x100,sizeof(char));
+    
+    int fd_burned;
+    int len;
+    
+    fd=open("initrd", O_RDONLY);
+    if(fd<0){
+      printf("could not open initrd\n");
+      return(-1);
+    }
+
+    
+    fd_burned=open("/dev/mtd-initrd", O_SYNC|O_RDWR);
+    if(fd_burned<0){
+      printf("could not open /dev/mtd-initrd\n");
+      return(-1);
+    }
+    
+    while(len=read(fd, data,0x100),len>0){
+      read(fd_burned, burned,len);
+      if(memcmp(data,burned,len)!=0){
+	printf("Burned data does not match initrd\n");
+	close(fd);
+	close(fd_burned);
+      }
+    }
+    close(fd);
+    close(fd_burned);
+        
+  }
+  return(0);
+}
+
+ 
+int  write_initrd(void){
+
+  if( (em_type()==C3000) || (em_type()==C7000) ){
+    
+    int fd;
+    char *data;
+    data=calloc(0x1000,sizeof(char));
+    
+    int fd_initrd;
+    int len;
+    
+    fd_initrd=open("initrd", O_RDONLY);
+    if(fd_initrd<0){
+      printf("could not open initrd\n");
+      return(-1);
+    }
+
+    
+    fd=open("/dev/mtd-initrd", O_SYNC|O_RDWR);
+    if(fd<0){
+      printf("could not open /dev/mtd-initrd\n");
+      return(-1);
+    }
+    
+    while(len=read(fd_initrd,data,0x1000),len>0){
+      write(fd,data,len);
+    }
+    close(fd);
+    close(fd_initrd);
+        
+  }
+  return(0);
+}
+
+
+
 int  do_rw_test(void){
 
   if( (em_type()==C3000) || (em_type()==C7000) ){
@@ -1825,3 +1923,182 @@ int  do_rw_test(void){
     return -1;
   }
 }
+
+
+
+size_t FUN_10005d64(int fd,void *param_2,size_t param_3,sha256_ctx *ctx){
+  size_t sVar1;
+
+  printf(RED);
+  printf("FUN_10005d64\n");
+  printf(DEFAULT);
+
+  
+  sVar1 = 0xffffffff;
+  if (0 < (int)param_3) {
+    do {
+      sVar1 = read(fd,param_2,param_3);
+      if ((int)sVar1 < 1) {
+        return param_3;
+      }
+      sha256_update(ctx,param_2,sVar1);
+      param_3 = param_3 - sVar1;
+      param_2 = (void *)((int*)param_2 + sVar1);
+    } while (0 < (int)param_3);
+    sVar1 = 0;
+  }
+  return sVar1;
+}
+
+
+
+uint FUN_10005cdc(int fd,uint param_2,sha256_ctx *ctx){
+  uint uVar1;
+  size_t sVar2;
+  unsigned char auStack_2018 [0x2008];
+
+  printf(RED);
+  printf("FUN_10005cdc\n");
+  printf(DEFAULT);
+  
+  uVar1 = 0xffffffff;
+  if (0 < (int)param_2) {
+    do {
+      sVar2 = 0x2000;
+      if (param_2 < 0x2000) {
+        sVar2 = param_2;
+      }
+      sVar2 = read(fd,auStack_2018,sVar2);
+      if ((int)sVar2 < 1) {
+        return param_2;
+      }
+      sha256_update(ctx,auStack_2018,sVar2);
+      param_2 = param_2 - sVar2;
+    } while (0 < (int)param_2);
+    uVar1 = 0;
+  }
+  return uVar1;
+}
+
+
+uint32_t FUN_10005de8(int param_1,unsigned char *param_2,unsigned char *param_3){
+  int n;
+  bool bVar1;
+  uint32_t uVar2;
+  int iVar3;
+  size_t sVar4;
+  int *piVar5;
+  unsigned char *pbVar6;
+  uint uVar7;
+  int iVar8;
+  sha256_ctx ctx;
+  uint8_t results[SHA256_DIGEST_SIZE];
+  unsigned char uStack_58[0x10]; // ustack_58[0], only need 0x0e bytes
+  //  unsigned char  local_57;   // uStack_58[1]
+  unsigned char uStack_48[20];   // uStack_48[0], only need 0x15 bytes
+  //int local_47;                // uStack_48[1] 
+
+  printf(RED);
+  printf("FUN_10005de8\n");
+  printf(DEFAULT);
+
+  
+  pbVar6 = (unsigned  char *)0x0;
+  uVar2 = 0xffffffff;
+  if (((-1 < param_1) && (param_2 != (unsigned char *)0x0)) && (*param_2 - 1 < 2)) {
+    iVar8 = 0;
+    sha256_init(&ctx);
+    bVar1 = false;
+    do {
+      iVar8 = iVar8 + 1;
+      if ((bVar1) && (param_2[0x40] == 0)) {
+        pbVar6 = param_2 + 0x45;
+        break;
+      }
+      bVar1 = iVar8 == 3;
+    } while (iVar8 < 4);
+    piVar5 = (int *)(param_2 + 2);
+    iVar8 = 4;
+    uVar7 = 0;
+    do {
+      iVar3 = *piVar5;
+      piVar5 = (int *)((int*)piVar5 + 0x15);
+      uVar7 = uVar7 + iVar3;
+      iVar8 = iVar8 + -1;
+    } while (iVar8 != 0);
+    uVar7 = FUN_10005cdc(param_1,uVar7,&ctx);
+    uVar2 = 0xffffffff;
+    if (uVar7 == 0) {
+      if ((pbVar6 != (unsigned char *)0x0) && (*(int *)(pbVar6 + 8) != 0)) {
+	/* read 0xe bytes and store them at uStack_58 */
+        sVar4 = FUN_10005d64(param_1,&uStack_58[0],0xe,&ctx);
+        if (sVar4 != 0) {
+          return 0xffffffff;
+        }
+        uVar7 = 0;
+        iVar8 = 0;
+        if (uStack_58[1] != 0) {
+          do {
+            iVar8 = iVar8 + 1;
+            sVar4 = FUN_10005d64(param_1,&uStack_48[0],0x15,&ctx);
+            if (sVar4 != 0) {
+              return 0xffffffff;
+            }
+            uVar7 = uVar7 + uStack_48[1];
+          } while (iVar8 < (int)(uint)uStack_58[1]);
+        }
+        uVar7 = FUN_10005cdc(param_1,uVar7,&ctx);
+        if (uVar7 != 0) {
+          return 0xffffffff;
+        }
+      }
+      sha256_final(&ctx,param_3); //was sha256_Final(param_3,&SStack_c8);
+
+      /* Print the digest as one long hex value */
+      for (n = 0; n < SHA256_DIGEST_SIZE; n++)
+	printf("%02x", param_3[n]);
+      putchar('\n');
+
+      
+      uVar2 = 0;
+    }
+  }
+  return uVar2;
+}
+
+
+
+uint verify_signature(int fd ,__off_t *param_2,unsigned char *param_3,int param_4){
+  uint uVar1;
+  __off_t _Var2;
+  int iVar3;
+  __off_t _Var4;
+  unsigned char bVar5;
+  unsigned char abStack_48 [48];
+
+  printf(RED);
+  printf("verify_signature, FUN_1000610c\n");
+  printf(DEFAULT);
+
+  _Var2 = lseek(fd,0,1);
+  uVar1 = 0xffffffff;
+  if (-1 < _Var2) {
+    iVar3 = FUN_10005de8(fd,param_3,abStack_48);
+    uVar1 = 0xffffffff;
+    if (-1 < iVar3) {
+      if (param_2 != (__off_t *)0x0) {
+        _Var4 = lseek(fd,0,1);
+        *param_2 = _Var4;
+      }
+      _Var2 = lseek(fd,_Var2,0);
+      uVar1 = 0xffffffff;
+      if (-1 < _Var2) {
+	printf("Should add developer key to key ring.\n");
+        //bVar5 = FUN_10005f64(param_3 + 0x55,0x80,abStack_48,0x20,param_4,param_5);
+        //uVar1 = (uint)bVar5;
+      }
+    }
+  }
+  return uVar1;
+}
+
