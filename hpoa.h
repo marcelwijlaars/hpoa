@@ -69,7 +69,7 @@ int do_rw_test(void);
 uint64_t fw_with_fingerprint(char*);                       /* FUN_1000cb68 ish */ 
 uint verify_signature(int, __off_t *, unsigned char *, int);
 int  write_initrd(void);
-
+int get_free_loop(void);
 
 
 #if 0

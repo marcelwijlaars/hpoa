@@ -142,10 +142,7 @@ int main(int argc,char **argv){
   } while (j < 4);
 
 
-  have_fingerprint = verify_signature(fd,(__off_t *)&DAT_10022c28,read_buffer,0);
-  exit(-1);
-
-
+  //have_fingerprint = verify_signature(fd,(__off_t *)&DAT_10022c28,read_buffer,0);
 
   
   /****************************************************************************************/
@@ -1639,11 +1636,7 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
 
 
 
-  loopctlfd = open("/dev/loop-control", O_RDWR);
-  if (loopctlfd == -1) printf("\nopen: /dev/loop-control\n\n");
-  devnr = ioctl(loopctlfd, LOOP_CTL_GET_FREE);
-  if (devnr == -1) printf("ioctl-LOOP_CTL_GET_FREE\n\n");
-  sprintf(loopname, "/dev/loop%ld", devnr);
+  sprintf(loopname, "/dev/loop%i", get_free_loop());
   printf("loopname = %s\n", loopname);
 
   cmd=calloc(0x100,sizeof(char));
@@ -2101,4 +2094,28 @@ uint verify_signature(int fd ,__off_t *param_2,unsigned char *param_3,int param_
   }
   return uVar1;
 }
+
+
+int get_free_loop(void){
+  int i;
+  int loopdev[2]={0};
+  FILE *fp;
+  size_t size=0x100;
+  char *line=calloc(0x100,sizeof(char));
+  fp=fopen("/proc/partitions","r");
+  while(getline(&line,&size,fp)>0){
+    if(strlen(line)>=4){
+      for(i=strlen(line)-8;i<strlen(line)-4;i++){
+	if(strncmp((line+i),"loop",4)==0){
+	  loopdev[1]=atoi((line+i+4));
+	  if(loopdev[1]>=loopdev[0]) loopdev[0]=loopdev[1];
+	}
+      }
+    }
+  }
+  fclose(fp);
+  return loopdev[0] +1;
+  
+}
+
 

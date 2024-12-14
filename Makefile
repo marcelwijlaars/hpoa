@@ -1,4 +1,3 @@
-#lscpu | grep 'Byte Order:'
 
 all:
 #	gcc -Wl,-emain -Wall -Wno-unused-variable -Wno-unused-but-set-variable -o hpoa md5/md5.c sha2/sha2.c hpoa.c
