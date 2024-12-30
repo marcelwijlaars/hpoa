@@ -1,15 +1,13 @@
 #include "hpoa.h"
 
-#define DEVEL 1
-
 /* glocal variables */
 //unsigned char *DAT_10022a68;
-unsigned char *DAT_10012738=0;
+unsigned char *DAT_10012738=0;  //doesn't change anywhere
 unsigned int   DAT_000cbb58=-1;
-char *DAT_10022c2c; // waarschijnlijk naam van flash image 
+//char *DAT_10022c2c; // waarschijnlijk naam van flash image 
 unsigned int DAT_10022c20=0;
 unsigned int DAT_10022c24=0;
-unsigned char *DAT_10022c28;
+//unsigned char *DAT_10022c28;
 
 
 int main(int argc,char **argv){
@@ -23,9 +21,8 @@ int main(int argc,char **argv){
   unsigned char *read_buffer;                                   /* local_d28 */
   read_buffer=calloc(MAX_FILE_SIZE,sizeof(unsigned char));
 
-  int i;                                                        /* iVar16 */
-  int j;                                                        /* iVar27 */
-
+  int i,j;                                                      /* iVar16 and iVar27 */
+  int index=0;
 
   uint32_t partition_size=0;
   char *mtd_name;
@@ -34,8 +31,8 @@ int main(int argc,char **argv){
   char *partition_name;
   partition_name=calloc(0x80,sizeof(unsigned char));
 
-  unsigned char *DAT_10022c28;
-  DAT_10022c28=calloc(0x80,sizeof(unsigned char));
+  //unsigned char *DAT_10022c28;
+  //DAT_10022c28=calloc(0x80,sizeof(unsigned char));
 
   
   unsigned int *local_5c;
@@ -59,6 +56,7 @@ int main(int argc,char **argv){
   int rw_test=0;
   int burn=0;
   int firmware=0;
+  int verify=0;
   int have_fingerprint=0;
 
   char *md5_sum;
@@ -74,7 +72,7 @@ int main(int argc,char **argv){
     return -1;
   }else{
   
-    while ( opt = getopt(argc,argv,"fbmt"), opt != -1) {
+    while ( opt = getopt(argc,argv,"fbmtv"), opt != -1) {
       if (true) {
 	switch(opt) {
 	case 'm':
@@ -87,11 +85,27 @@ int main(int argc,char **argv){
 	  break;
 	case 'b':
 	  burn=1;
+	  if((modify==0)&&(firmware==0)){
+	    printf("Going to burn_only.\n");
+	    goto burn_only;
+	    printf("Burn firmare ok.\n");
+	    return(1);
+	  }
 	  //printf("Choosen option: %c, will burn new initrd to /dev/mtd-initrd\n",opt);
 	  break;
 	case 'f':
 	  firmware=1;
 	  //printf("Choosen option: %c, will compose new firmware image\n",opt);
+	  break;
+	case 'v':
+	  verify=1;
+	  if((modify==0)&&(burn==0)&&(firmware==0)){
+	    printf("Going to verify_only.\n");
+	    goto verify_only;
+	    printf("Firmare verification ok.\n");
+	    return(1);
+	  }
+	  //printf("Choosen option: %c, will verify new firmware image\n",opt);
 	  break;
 	}
       }
@@ -104,14 +118,13 @@ int main(int argc,char **argv){
 #endif
 
 
-    
-  if(DEVEL && (!burn || !rw_test) ){
-    do_housekeeping();
-  }
-
-
   printf("Endianness: ");
   if(is_bigendian()) printf("big.\n"); else printf("little.\n");
+
+    
+  if(!burn || !rw_test) {
+    do_housekeeping();
+  }
 
   
   if ( rw_test && !modify ) {
@@ -121,8 +134,6 @@ int main(int argc,char **argv){
   
   strcpy(file_name,argv[optind]);
   
-
-
   fd=open(file_name,O_RDONLY);                 /*file_name = local_c48 */
   ret=read(fd,read_buffer,HEADER_SIZE);     /* read_buffer = local_d28 */
 
@@ -149,7 +160,7 @@ int main(int argc,char **argv){
   /*                              main while loop                                         */
   /****************************************************************************************/
 
-  int index=0;
+
   while( true ) {
     current_location = lseek(fd,0,SEEK_CUR);
     current_location_array[index]=current_location;
@@ -167,7 +178,7 @@ int main(int argc,char **argv){
     partition_name = partition_selector(partition_nr);      
 
     jump_size= *(__off_t*)(read_buffer+1+iVar5+1);
-        if(!is_bigendian()) jump_size = htobe32(jump_size);
+        if(!is_bigendian()) jump_size = __htobe32(jump_size);
 
     /* write mtd partition */
     local_5c[0] = open_mtd_for_output_internal(fd, partition_name,jump_size);
@@ -200,7 +211,7 @@ int main(int argc,char **argv){
 
     if (local_5c[0] == 0) {
       //jump_size = *(__off_t*)(read_buffer+1+iVar5+1);
-      //if(!is_bigendian()) jump_size = htobe32(jump_size);
+      //if(!is_bigendian()) jump_size = __htobe32(jump_size);
 
       /* verify the writen mtd partition */
       /* (read_nuffer + 1 + iVar5 +5) is where the MD5sum of the partition is stored */
@@ -262,6 +273,22 @@ int main(int argc,char **argv){
       printf("current: 0x%X, fw: 0x%X\n",current_location_array[i],fw_location_array[i]);
     }
   }
+
+  verify_only:
+  if(verify){
+    printf("start verifying initrd\n");
+    verify_initrd();
+    return(1);
+  }
+
+  burn_only:
+  printf("em_type: %i\n",em_type());
+  if(burn){
+    printf("start writing initrd\n");
+    write_initrd();
+    return(1);
+  }
+
   return 0;
 }
 
@@ -1222,11 +1249,7 @@ int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
   char *full_path;
   full_path=calloc(0x80,sizeof(char));
 
-#if DEVEL
   dev = "dev";  
-#else
-  dev = "/dev";
-#endif
   mtd = "/mtd";
   dash = "-\0\0\0";
   len = strlen(dev);
@@ -1321,11 +1344,7 @@ unsigned int open_mtd_for_output_internal(int fd,char *partition_name,int param_
   char *full_path;
   full_path=calloc(0x80,sizeof(char));
 
-#if DEVEL
   dev = "dev";  
-#else
-  dev = "/dev";
-#endif
   mtd = "/mtd";
   dash = "-\0\0\0";
   len = strlen(dev);
@@ -1527,8 +1546,11 @@ int em_type(void){  // not used right now
   char local_28 [32];
   if (DAT_000cbb58 == -1) {
     local_28[0] = '\0';
-    find_tag_in_file("/etc/gpio_states","OABOARDTYPE",local_28,0x10,0);
-    //find_tag_in_file("gpio_states","OABOARDTYPE",&local_28[0],0x10,'=');
+    //find_tag_in_file("/etc/gpio_states","OABOARDTYPE",local_28,0x10,0);
+    printf("before find_tag_in_file\n");
+    find_tag_in_file("gpio_states","OABOARDTYPE",&local_28[0],0x10,'=');
+    printf("after find_tag_in_file\n");
+    printf("em_type: %i\n",atoi(local_28));
     DAT_000cbb58 = atoi(local_28);
   }
   return DAT_000cbb58;
@@ -1537,7 +1559,7 @@ int em_type(void){  // not used right now
 void do_housekeeping(void){
   /* Start with houskeeping */
 
-  system("sudo rm -rf dev");
+  system("rm -rf dev");
   system("mkdir dev");
   system("touch dev/mtd-kernel");
   system("touch dev/mtd-initrd");
@@ -1625,6 +1647,7 @@ void my_md5sum(char *file_name, char *md5_sum){
 int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   int i;
   char *cmd;
+  cmd=calloc(0x100,sizeof(char));
 
   int loopctlfd, loopfd, backingfile;
   long devnr;
@@ -1634,89 +1657,110 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   printf("modify_initrd.\n");
   printf(DEFAULT);
 
-
-
   sprintf(loopname, "/dev/loop%i", get_free_loop());
   printf("loopname = %s\n", loopname);
 
-  cmd=calloc(0x100,sizeof(char));
+  memset(cmd,'\0',0x100);
   strcpy(cmd,"mkdir dev/mnt-");
   strcat(cmd,partition_name);
-  //printf("%s\n",cmd);
+  printf("%s\n",cmd);
   system(cmd);
 
-  cmd=calloc(0x100,sizeof(char));
+  memset(cmd,'\0',0x100);
+  strcpy(cmd,"sync");  
+  printf("%s\n",cmd);
+  system(cmd);
+
+  memset(cmd,'\0',0x100);
   strcpy(cmd,"tail -c+65 dev/mtd-");
   strcat(cmd,partition_name);
   strcat(cmd," | gunzip >& dev/");
   strcat(cmd,partition_name);
+  strcat(cmd, " ; ");
+  strcat(cmd,"sync");  
+  printf("%s\n",cmd);
   system(cmd);
 
-  cmd=calloc(0x100,sizeof(char));
-  
-  strcpy(cmd ,"sudo losetup ");
+  memset(cmd,'\0',0x100);
+  strcpy(cmd ,"losetup ");
   strcat(cmd, loopname);
   strcat(cmd," dev/");
   strcat(cmd,partition_name);
+  printf("%s\n",cmd);
   system(cmd);
 
-  cmd=calloc(0x100,sizeof(char));
-  strcpy(cmd, "sudo mount -o loop ");
+  memset(cmd,'\0',0x100);
+  strcpy(cmd, "mount -o loop ");
   strcat(cmd, loopname);
   strcat(cmd, " dev/mnt-");
   strcat(cmd,partition_name);
   strcat(cmd, " ; ");
   strcat(cmd,"sync");  
+  printf("%s\n",cmd);
   system(cmd);
 
-  cmd=calloc(0x100,sizeof(char));
+  memset(cmd,'\0',0x100);
   strcpy(cmd, "echo \"udog:pD.WvCQWQJ4Kc:0:0:0,,:/:/bin/sh\" > passwd.new ");
   strcat(cmd, " ; ");  
   strcat(cmd,"sync");  
-  //printf("%s\n",cmd);
+  printf("%s\n",cmd);
   system(cmd);
   
-  cmd=calloc(0x100,sizeof(char));
+  memset(cmd,'\0',0x100);
   strcpy(cmd, "grep -v -e '^udog:' ");
   strcat(cmd, "dev/mnt-");
   strcat(cmd, partition_name);
   strcat(cmd, "/etc/passwd >> passwd.new");
   strcat(cmd, " ; ");  
   strcat(cmd,"sync");  
+  printf("%s\n",cmd);
   system(cmd);
 
-  cmd=calloc(0x100,sizeof(char));
-  strcpy(cmd, "sudo mv passwd.new ");
+  memset(cmd,'\0',0x100);
+  strcpy(cmd, "mv passwd.new ");
   strcat(cmd, "dev/mnt-");
   strcat(cmd, partition_name);
   strcat(cmd, "/etc/passwd");
   strcat(cmd, " ; ");  
   strcat(cmd,"sync");  
-  //printf("%s\n",cmd);
+  printf("%s\n",cmd);
   system(cmd);
   
-  cmd=calloc(0x100,sizeof(char));
-  strcpy(cmd,"sudo chmod 666 ");
+  memset(cmd,'\0',0x100);
+  strcpy(cmd,"chmod 666 ");
   strcat(cmd, "dev/mnt-");
   strcat(cmd, partition_name);
   strcat(cmd, "/etc/passwd");
   strcat(cmd, " ; ");
   strcat(cmd,"sync");  
-  //printf("%s\n",cmd);
+  printf("%s\n",cmd);
   system(cmd);
   
-  cmd=calloc(0x100,sizeof(char));
-  strcpy(cmd,"sudo chown 1:1 ");
+  memset(cmd,'\0',0x100);
+  strcpy(cmd,"chown 1:1 ");
   strcat(cmd, "dev/mnt-");
   strcat(cmd, partition_name);
   strcat(cmd, "/etc/passwd");
   strcat(cmd, " ; ");
   strcat(cmd,"sync");
-  //printf("%s\n",cmd);
+  printf("%s\n",cmd);
   system(cmd);
 
-  cmd=calloc(0x100,sizeof(char));
-  strcpy(cmd,"sudo dd if=");
+
+  memset(cmd,'\0',0x100);
+  strcpy(cmd,"cp rc.sysinit ");
+  strcat(cmd, "dev/mnt-");
+  strcat(cmd, partition_name);
+  strcat(cmd, "/etc/rc.sysinit");
+  strcat(cmd, " ; ");
+  strcat(cmd,"sync");
+  printf("%s\n",cmd);
+  system(cmd);
+
+  
+  
+  memset(cmd,'\0',0x100);
+  strcpy(cmd,"dd if=");
   strcat(cmd, loopname);
   strcat(cmd, " status=none | gzip -9 > ");
   strcat(cmd,partition_name);
@@ -1724,29 +1768,29 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   //printf("%s\n",cmd);
   system(cmd);
 
-  cmd=calloc(0x100,sizeof(char));
-  strcpy(cmd,"sudo losetup -d ");
+  memset(cmd,'\0',0x100);
+  strcpy(cmd,"losetup -d ");
   strcat(cmd, loopname);
   strcat(cmd, " ; ");
   strcat(cmd,"sync");
-  //printf("%s\n",cmd);
+  printf("%s\n",cmd);
   system(cmd);
 
-  cmd=calloc(0x100,sizeof(char));
-  strcpy(cmd,"sudo umount dev/mnt-");
+  memset(cmd,'\0',0x100);
+  strcpy(cmd,"umount dev/mnt-");
   strcat(cmd,partition_name);
   strcat(cmd, " ; ");
   strcat(cmd,"sync");
-  //printf("%s\n",cmd);
+  printf("%s\n",cmd);
   system(cmd);
 
-  cmd=calloc(0x100,sizeof(char));
-  strcpy(cmd,"sudo rm -rf dev/mnt-");
+  memset(cmd,'\0',0x100);
+  strcpy(cmd,"rm -rf dev/mnt-");
   strcat(cmd,partition_name);
-  //printf("%s\n",cmd);
+  printf("%s\n",cmd);
   system(cmd);
   
-  cmd=calloc(0x100,sizeof(char));
+  memset(cmd,'\0',0x100);
   strcpy(cmd, "mkimage -d ");
   strcat(cmd, partition_name);
   strcat(cmd, ".gz -n \'\"");
@@ -1756,27 +1800,27 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd," >& /dev/null");
   strcat(cmd, " ; ");
   strcat(cmd,"sync");  
-  //printf("%s\n",cmd);
+  printf("%s\n",cmd);
   system(cmd);
   
   /* must do md5 of gzipped partition before mkimage adds header */
-  cmd=calloc(0x100,sizeof(char));
+  memset(cmd,'\0',0x100);
   strcpy(cmd,"md5sum  ");
   strcat(cmd,partition_name);
   strcat(cmd,".gz >/dev/null");
   strcat(cmd, " ; ");
   strcat(cmd,"sync");
-  //printf("%s\n",cmd);
+  printf("%s\n",cmd);
   system(cmd);
 
   /* must do md5 of gzipped partition before mkimage adds header */
-  cmd=calloc(0x100,sizeof(char));
+  memset(cmd,'\0',0x100);
   strcpy(cmd, "md5sum dev/mtd-");
   strcat(cmd, partition_name);
   strcat(cmd, " >/dev/null");
   strcat(cmd, " ; ");
   strcat(cmd, "sync");
-  //printf("%s\n",cmd);
+  printf("%s\n",cmd);
   system(cmd);
 
   
@@ -1787,13 +1831,13 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
 
   free(filename);
   
-  cmd=calloc(0x100,sizeof(char));
-  strcpy(cmd,"sudo rm ");
+  memset(cmd,'\0',0x100);
+  strcpy(cmd,"rm ");
   strcat(cmd,partition_name);
   strcat(cmd,".gz >& /dev/null");
   strcat(cmd, " ; ");
   strcat(cmd,"sync");  
-  //printf("%s\n",cmd);
+  printf("%s\n",cmd);
   system(cmd);
 
   
@@ -1801,84 +1845,75 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
 }
 
 
-
-
 int  verify_initrd(void){
 
-  if( (em_type()==C3000) || (em_type()==C7000) ){
+  int fd;
+  char *data;
+  char *burned;
+  data=calloc(0x100,sizeof(char));
+  burned=calloc(0x100,sizeof(char));
     
-    int fd;
-    char *data;
-    char *burned;
-    data=calloc(0x100,sizeof(char));
-    burned=calloc(0x100,sizeof(char));
+  int fd_burned;
+  int len;
     
-    int fd_burned;
-    int len;
-    
-    fd=open("initrd", O_RDONLY);
-    if(fd<0){
-      printf("could not open initrd\n");
-      return(-1);
-    }
+  fd=open("mtd-initrd", O_RDONLY);
+  if(fd<0){
+    printf("could not open mtd-initrd\n");
+    return(-1);
+  }
 
     
-    fd_burned=open("/dev/mtd-initrd", O_SYNC|O_RDWR);
-    if(fd_burned<0){
-      printf("could not open /dev/mtd-initrd\n");
-      return(-1);
-    }
-    
-    while(len=read(fd, data,0x100),len>0){
-      read(fd_burned, burned,len);
-      if(memcmp(data,burned,len)!=0){
-	printf("Burned data does not match initrd\n");
-	close(fd);
-	close(fd_burned);
-      }
-    }
-    close(fd);
-    close(fd_burned);
-        
+  fd_burned=open("/dev/mtd-initrd", O_SYNC|O_RDWR);
+  if(fd_burned<0){
+    printf("could not open /dev/mtd-initrd\n");
+    return(-1);
   }
+    
+  while(len=read(fd, data,0x100),len>0){
+    read(fd_burned, burned,len);
+    if(memcmp(data,burned,len)!=0){
+      printf("Burned data does not match initrd\n");
+      close(fd);
+      close(fd_burned);
+    }
+  }
+  close(fd);
+  close(fd_burned);
+        
   return(0);
 }
 
  
 int  write_initrd(void){
 
-  if( (em_type()==C3000) || (em_type()==C7000) ){
-    
-    int fd;
-    char *data;
-    data=calloc(0x1000,sizeof(char));
-    
-    int fd_initrd;
-    int len;
-    
-    fd_initrd=open("initrd", O_RDONLY);
-    if(fd_initrd<0){
-      printf("could not open initrd\n");
-      return(-1);
-    }
-
-    
-    fd=open("/dev/mtd-initrd", O_SYNC|O_RDWR);
-    if(fd<0){
-      printf("could not open /dev/mtd-initrd\n");
-      return(-1);
-    }
-    
-    while(len=read(fd_initrd,data,0x1000),len>0){
-      write(fd,data,len);
-    }
-    close(fd);
-    close(fd_initrd);
-        
+  int fd;
+  char *data;
+  data=calloc(0x1000,sizeof(char));
+  
+  int fd_initrd;
+  int len;
+  
+  fd_initrd=open("mtd-initrd", O_RDONLY);
+  if(fd_initrd<0){
+    printf("could not open initrd\n");
+    return(-1);
   }
+
+  
+  fd=open("/dev/mtd-initrd", O_SYNC|O_RDWR);
+  if(fd<0){
+    printf("could not open /dev/mtd-initrd\n");
+    return(-1);
+  }
+  
+  while(len=read(fd_initrd,data,0x1000),len>0){
+    write(fd,data,len);
+  }
+  close(fd);
+  close(fd_initrd);
+  
   return(0);
 }
-
 
 
 int  do_rw_test(void){
@@ -2114,7 +2149,7 @@ int get_free_loop(void){
     }
   }
   fclose(fp);
-  return loopdev[0] +1;
+  return loopdev[0];
   
 }
 

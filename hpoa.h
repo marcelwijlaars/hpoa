@@ -31,7 +31,7 @@
       ({ register unsigned int __x = (x); ___bswap_constant_32 (__x); }))
 
 
-#define htobe32(x) __bswap_32 (x)
+#define __htobe32(x) __bswap_32 (x)
 
 // #define SEEK_SET 0
 // #define SEEK_CUR 1
@@ -68,7 +68,8 @@ int em_type(void);
 int do_rw_test(void);
 uint64_t fw_with_fingerprint(char*);                       /* FUN_1000cb68 ish */ 
 uint verify_signature(int, __off_t *, unsigned char *, int);
-int  write_initrd(void);
+int write_initrd(void);
+int verify_initrd(void);
 int get_free_loop(void);
 
 
