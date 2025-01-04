@@ -13,6 +13,7 @@
 #include "sha2/sha2.h"
 //#include <openssl/sha.h>
 #include "md5/md5.h"
+#include "crc32/crc32.h"
 //#include "data_0x10010100.h"
 
 #define HEADER_SIZE 0xD5

@@ -113,6 +113,8 @@ int main(int argc,char **argv){
   }
 
 
+
+
 #if 0 //SHA stuff works
   do_sha256_tests();
 #endif
@@ -230,11 +232,19 @@ int main(int argc,char **argv){
 
   
 
+  /*
+   * We only need to verify the header and data crc32 are ok
+   * to prevent the "Invalid OS checksum." message.
+   */
   if(firmware){
-    ssize_t s=0;
-    char *data;
+    unsigned int crc=0;
+    unsigned char *data;
     char cmd[0x100];
-    data=calloc(0x1000,sizeof(char));
+    int s,data_len=0x1000;
+    unsigned int crc_array[0x10];
+    unsigned int header_crc_array[0x10];
+
+    data=calloc(data_len,sizeof(char));
 
     strcpy(cmd, "cp ");
     strcat(cmd, file_name);
@@ -247,30 +257,75 @@ int main(int argc,char **argv){
     fw_location_array[0]=fw_location;
     
     fd=open("dev/mtd-kernel",O_RDONLY);
-    while(s=read(fd,data,0x1000),s>0){
-      fw_location+=write(fw,data,s);
+    while(data_len=read(fd,data,data_len),data_len>0){
+      fw_location+=write(fw,data,data_len);
     }
-    close(fd);
     fw_location_array[1]=fw_location;
 
+    lseek(fd,0x00,SEEK_SET);
+    data_len=0x40;
+    crc=0;
+    data_len = read(fd,data,data_len);
+    for(i=0;i<4;i++) *(data+i+4)=0;
+    crc = crc32(crc,data,data_len);
+    header_crc_array[1]=crc;
+
+    data_len=0x1000;
+    crc=0;
+    while(data_len = read(fd,data,data_len),data_len>0){
+      crc = crc32(crc,data,data_len);
+    }
+    crc_array[1]=crc;
+    close(fd);
+    
     fd=open("dev/mtd-initrd",O_RDONLY);
     while(s=read(fd,data,0x1000),s>0){
       fw_location+=write(fw,data,s);
     }
-    close(fd);
     fw_location_array[2]=fw_location;
 
+    lseek(fd,0x0,SEEK_SET);
+    data_len=0x40;
+    crc=0;
+    data_len = read(fd,data,data_len);
+    for(i=0;i<4;i++) *(data+i+4)=0;
+    crc = crc32(crc,data,data_len);
+    header_crc_array[2]=crc;
+
+    data_len=0x1000;
+    crc=0;
+    while(data_len = read(fd,data,data_len),data_len>0){
+      crc = crc32(crc,data,data_len);
+    }
+    crc_array[2]=crc;
+    close(fd);
+
+    
     fd=open("dev/mtd-squashfs",O_RDONLY);
     while(s=read(fd,data,0x1000),s>0){
       fw_location+=write(fw,data,s);
     }
-    close(fd);
     fw_location_array[3]=fw_location;
+
+    lseek(fd,0x0,SEEK_SET);
+    data_len=0x40;
+    crc=0;
+    data_len = read(fd,data,data_len);
+    for(i=0;i<4;i++) *(data+i+4)=0;
+    crc = crc32(crc,data,data_len);
+    header_crc_array[3]=crc;
+
+    data_len=0x1000;
+    crc=0;
+    while(data_len = read(fd,data,data_len),data_len>0){
+      crc = crc32(crc,data,data_len);
+    }
+    crc_array[3]=crc;
     close(fw);
 
 
     for(i=0;i<4;i++){
-      printf("current: 0x%X, fw: 0x%X\n",current_location_array[i],fw_location_array[i]);
+      printf("current: 0x%X, fw: 0x%X, header_crc: 0x%08X, crc: 0x%08X\n",current_location_array[i],fw_location_array[i], header_crc_array[i], crc_array[i]);
     }
   }
 
@@ -1221,8 +1276,6 @@ uint64_t FUN_1000f6bc(uint param_1){
 
 /* FUN_10002160 */
 int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
-
-
   
   int i;
   size_t len;
@@ -1663,12 +1716,12 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   memset(cmd,'\0',0x100);
   strcpy(cmd,"mkdir dev/mnt-");
   strcat(cmd,partition_name);
-  printf("%s\n",cmd);
+  // printf("%s\n",cmd);
   system(cmd);
 
   memset(cmd,'\0',0x100);
   strcpy(cmd,"sync");  
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
 
   memset(cmd,'\0',0x100);
@@ -1678,7 +1731,7 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd,partition_name);
   strcat(cmd, " ; ");
   strcat(cmd,"sync");  
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
 
   memset(cmd,'\0',0x100);
@@ -1686,9 +1739,9 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd, loopname);
   strcat(cmd," dev/");
   strcat(cmd,partition_name);
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
-
+    
   memset(cmd,'\0',0x100);
   strcpy(cmd, "mount -o loop ");
   strcat(cmd, loopname);
@@ -1696,14 +1749,14 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd,partition_name);
   strcat(cmd, " ; ");
   strcat(cmd,"sync");  
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
 
   memset(cmd,'\0',0x100);
   strcpy(cmd, "echo \"udog:pD.WvCQWQJ4Kc:0:0:0,,:/:/bin/sh\" > passwd.new ");
   strcat(cmd, " ; ");  
   strcat(cmd,"sync");  
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
   
   memset(cmd,'\0',0x100);
@@ -1713,7 +1766,7 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd, "/etc/passwd >> passwd.new");
   strcat(cmd, " ; ");  
   strcat(cmd,"sync");  
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
 
   memset(cmd,'\0',0x100);
@@ -1723,7 +1776,7 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd, "/etc/passwd");
   strcat(cmd, " ; ");  
   strcat(cmd,"sync");  
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
   
   memset(cmd,'\0',0x100);
@@ -1733,7 +1786,7 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd, "/etc/passwd");
   strcat(cmd, " ; ");
   strcat(cmd,"sync");  
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
   
   memset(cmd,'\0',0x100);
@@ -1743,9 +1796,8 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd, "/etc/passwd");
   strcat(cmd, " ; ");
   strcat(cmd,"sync");
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
-
 
   memset(cmd,'\0',0x100);
   strcpy(cmd,"cp rc.sysinit ");
@@ -1754,11 +1806,9 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd, "/etc/rc.sysinit");
   strcat(cmd, " ; ");
   strcat(cmd,"sync");
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
 
-  
-  
   memset(cmd,'\0',0x100);
   strcpy(cmd,"dd if=");
   strcat(cmd, loopname);
@@ -1773,7 +1823,7 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd, loopname);
   strcat(cmd, " ; ");
   strcat(cmd,"sync");
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
 
   memset(cmd,'\0',0x100);
@@ -1781,13 +1831,13 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd,partition_name);
   strcat(cmd, " ; ");
   strcat(cmd,"sync");
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
 
   memset(cmd,'\0',0x100);
   strcpy(cmd,"rm -rf dev/mnt-");
   strcat(cmd,partition_name);
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
   
   memset(cmd,'\0',0x100);
@@ -1797,10 +1847,11 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd, partition_name);
   strcat(cmd, " 141208-0921 build\"\' -T ramdisk dev/mtd-");
   strcat(cmd, partition_name);
+  strcat(cmd, ".modified");
   strcat(cmd," >& /dev/null");
   strcat(cmd, " ; ");
   strcat(cmd,"sync");  
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
   
   /* must do md5 of gzipped partition before mkimage adds header */
@@ -1810,7 +1861,7 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd,".gz >/dev/null");
   strcat(cmd, " ; ");
   strcat(cmd,"sync");
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
 
   /* must do md5 of gzipped partition before mkimage adds header */
@@ -1820,10 +1871,9 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd, " >/dev/null");
   strcat(cmd, " ; ");
   strcat(cmd, "sync");
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
 
-  
   char *filename = calloc(0x100,sizeof(char));
   strcpy(filename,"dev/mtd-");
   strcat(filename,partition_name);
@@ -1837,9 +1887,8 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd,".gz >& /dev/null");
   strcat(cmd, " ; ");
   strcat(cmd,"sync");  
-  printf("%s\n",cmd);
+  //printf("%s\n",cmd);
   system(cmd);
-
   
   return 0;
 }
@@ -2149,8 +2198,6 @@ int get_free_loop(void){
     }
   }
   fclose(fp);
-  return loopdev[0];
+  return loopdev[0]+1;
   
 }
-
-
