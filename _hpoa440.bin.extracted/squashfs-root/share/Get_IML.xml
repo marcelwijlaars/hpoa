@@ -1,7 +1,0 @@
-<RIBCL version="2.21">
-<LOGIN USER_LOGIN="adminname" PASSWORD="password">
-<SERVER_INFO MODE="READ" >
-<GET_EVENT_LOG />
-</SERVER_INFO>
-</LOGIN>
-</RIBCL>
