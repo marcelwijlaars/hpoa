@@ -1,0 +1,258 @@
+<!--  (C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css"/>
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+<link rel="stylesheet" type="text/css" href="../Help/stylesheets/help.css" />
+<style type="text/css">
+  div.bodyDiv {
+     margin-right:10px;
+     width:98%;
+  }
+  * html div.bodyDiv {
+    margin-right:0px;
+    width:99%;
+  }
+</style>
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/tableManager.js"></script>
+<script type="text/javascript" src="../js/dropdownMenuManager.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="/120814-042457/js/helpTips.js"></script>
+
+ <!--
+  Include the init and xml javascript files from the jsolait library.
+  The xslt.js file requires that these two files be included before it.
+-->
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+
+<script type="text/javascript">
+var encNum='';
+var hpem=null;
+var uidSelection=new Array();
+var powerSelection=new Array();
+function loadContent(){
+try{
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(encNum)&&(hpem=top.getTopology().getProxy(encNum))!=null){
+loadSummary();
+top.mainPage.getHelpLauncher().setCurrentTopic("FORM_SWM_SUMMARY");
+var interconnectEvents=[
+'EVENT_INTERCONNECT_INFO',
+'EVENT_INTERCONNECT_RESET',
+'EVENT_INTERCONNECT_REMOVED',
+'EVENT_INTERCONNECT_INSERTED',
+'EVENT_TRAY_FQDN_INFO_REFRESH'
+];
+hpem.registerEventHandler(loadSummary,interconnectEvents);
+hpem.registerEventHandler(interconnectUidChanged,['EVENT_INTERCONNECT_UID']);
+hpem.registerEventHandler(interconnectStatusChanged,['EVENT_INTERCONNECT_STATUS']);
+hpem.registerEventHandler(powerStateChanged,['EVENT_INTERCONNECT_POWER']);
+}else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);
+}
+}catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+};
+function loadSummary(){
+var processor=new XsltProcessor('../Templates/interconnectSummary.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('netTrayStatusDoc',hpem.getInterconnectTrayStatusDOM());
+processor.addParameter('netTrayInfoDoc',hpem.getInterconnectTrayInfoDOM());
+processor.addParameter('numIoBays',hpem.getNumTrays());
+processor.addParameter('isLocal',''+hpem.getIsLocal());
+processor.addParameter("serviceUserAcl",hpem.getUserAccessLevel());
+processor.addParameter('enclosureNumber',encNum);
+var proxyUrl=hpem.getProxyUrl();
+if(proxyUrl.lastIndexOf('/')==proxyUrl.length-1){
+proxyUrl=proxyUrl.substring(0,proxyUrl.length-1);
+}
+processor.addParameter('proxyUrl',proxyUrl);
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+reconcilePage();
+};
+function interconnectUidChanged(result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var uidState=getElementValueXpath(result,'//hpoa:uid');
+var uidContainer=document.getElementById('bay'+bayNumber+'uid');
+if(uidContainer){
+var processor=new XsltProcessor('../Templates/uidExternal.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('uidState',uidState);
+uidContainer.innerHTML=processor.getOutput();
+if(uidSelection[bayNumber]&&uidSelection[bayNumber]==true){
+unCheckBayCheckbox(bayNumber);
+uidSelection[bayNumber]=false;
+}
+}
+};
+function interconnectStatusChanged(result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var bayStatus=getElementValueXpath(result,'//hpoa:operationalStatus');
+var statusContainer=document.getElementById('bay'+bayNumber+'status');
+if(statusContainer){
+var processor=new XsltProcessor('../Templates/statusIconExternal.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('statusCode',bayStatus);
+processor.addParameter('showLabel','true');
+statusContainer.innerHTML=processor.getOutput();
+}
+};
+function powerStateChanged(result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var powerState=getElementValueXpath(result,'//hpoa:powered');
+var powerContainer=document.getElementById('bay'+bayNumber+'powerState');
+if(powerContainer){
+if(powerState=='POWER_OFF'){
+powerContainer.innerHTML=top.getString('off');
+}
+else if(powerState=='POWER_ON'){
+powerContainer.innerHTML=top.getString('on');
+}else{
+powerContainer.innerHTML=top.getString('statusUnknown');
+}
+}
+if(powerSelection[bayNumber]&&powerSelection[bayNumber]==true){
+unCheckBayCheckbox(bayNumber);
+powerSelection[bayNumber]=false;
+}
+};
+function selectDevice(number){
+top.mainPage.getHiddenFrame().selectDevice(number,'interconnect',encNum,true);
+};
+function getSelectedDevices(){
+var interconnectTable=document.getElementById('interconnectTable');
+var inputCollection=interconnectTable.getElementsByTagName('input');
+var baySelection=new Array();
+for(var i=0;i<inputCollection.length;i++){
+if(inputCollection[i].getAttribute('type')=='checkbox'){
+var bayNumber=inputCollection[i].getAttribute('bayNumber');
+var baySelectObject=new Object();
+if(bayNumber){
+bayNumber=parseInt(bayNumber);
+baySelectObject.selected=inputCollection[i].checked;
+baySelectObject.checkboxRef=inputCollection[i];
+baySelection[bayNumber]=baySelectObject;
+}else{
+}
+}
+}
+return baySelection;
+};
+function toggleInterconnectsUids(uidState){
+var baySelection=getSelectedDevices();
+for(var i=0;i<baySelection.length;i++){
+if(typeof(baySelection[i])!='undefined'&&baySelection[i]){
+if(baySelection[i].selected){
+hpem.setInterconnectTrayUid(i,uidState,function(){});
+uidSelection[i]=true;
+}
+}
+}
+};
+function setInterconnectsPower(turnOn){
+var confirmString=top.getString('ioPowerConfirm');
+if(confirm(confirmString)){
+var baySelection=getSelectedDevices();
+for(var i=0;i<baySelection.length;i++){
+if(typeof(baySelection[i])!='undefined'&&baySelection[i]){
+if(baySelection[i].selected){
+hpem.setInterconnectTrayPower(i,turnOn,function(){});
+powerSelection[i]=true;
+}else{
+if(baySelection[i].checkboxRef){
+baySelection[i].checkboxRef.checked=false;
+}
+}
+}
+}
+}
+};
+function updateMenuStatus(){
+var menusEnabled=false;
+var inputs=document.getElementsByTagName("INPUT");
+for(var i=0;i<inputs.length;i++){
+if(inputs[i].getAttribute("affectsMenus")=='true'&&inputs[i].checked){
+menusEnabled=true;
+break;
+}
+}
+ourDropdownMenuManager.setLocalMenuEnabled(menusEnabled);
+};
+function unCheckBayCheckbox(bayNumber){
+var bladeSelect=document.getElementById('chk'+bayNumber);
+var masterSelect=document.getElementById('summaryMaster');
+if(bladeSelect){
+bladeSelect.checked=false;
+try{
+var tr=bladeSelect.parentNode.parentNode;
+var originalClass=tr.getAttribute('originalClass');
+if(originalClass=='altRowColor'){
+tr.className='altRowColor';
+}
+else{
+tr.className='';
+}
+}
+catch(e){
+alert(e.message);
+}
+}
+if(masterSelect){
+masterSelect.checked=false;
+}
+};
+function deRegisterEvents(){
+if(hpem!=null){
+hpem.removeRegisteredHandler(loadSummary);
+hpem.removeRegisteredHandler(interconnectUidChanged);
+hpem.removeRegisteredHandler(interconnectStatusChanged);
+hpem.removeRegisteredHandler(powerStateChanged);
+}
+};
+function refreshSummary(){
+var formMgr=new FormManager(function(success){
+try{
+var processor=new XsltProcessor('../Templates/interconnectSummary.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('netTrayStatusDoc',hpem.getInterconnectTrayStatusDOM(true));
+processor.addParameter('netTrayInfoDoc',hpem.getInterconnectTrayInfoDOM(true));
+processor.addParameter('numIoBays',hpem.getNumTrays());
+processor.addParameter('isLocal',hpem.getIsLocal());
+processor.addParameter('enclosureNumber',encNum);
+var proxyUrl=hpem.getProxyUrl();
+if(proxyUrl.lastIndexOf('/')==proxyUrl.length){
+proxyUrl=proxyUrl.substring(0,proxyUrl.length-1);
+}
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+}catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+reconcilePage();
+});
+formMgr.startBatch(true,true);
+formMgr.queueCall(hpem.getInterconnectTrayStatusAll);
+formMgr.queueCall(hpem.getInterconnectTrayInfoAll);
+formMgr.endBatch();
+};
+  </script>
+</head>
+<body style="margin:10px;" onload="loadContent();" onunload="deRegisterEvents();">
+    <div id="bodyContent" class="bodyDiv"></div>
+	
+	<div id="tooltip" class="popupSmallWrapper" onclick="killToolTip();" onmouseover="clearTooltipTimer();" onmouseout="updateTooltipTimer();" style="top:0;left:0;">
+        <div class="popupSmallBody" style="background-color:#fff;"></div>
+    </div>
+</body>
+</html>

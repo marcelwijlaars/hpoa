@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DIPSettingsforStandbyOA" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>TCP/IP Settings for Standby Onboard Administrator</title>
+  <source>/120814-042457/Help/en/topics/DIPSettingsforStandbyOA.xml</source>
+  <keywords>DNS server gateway address NIC settings Onboard Administrator name router advertisements standby Onboard Administrator TCP/IP settings subnet mask TCP/IP (Transmission Control Protocol/Internet Protocol) Transmission Control Protocol/Internet Protocol (TCP/IP) VLAN Id</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">This screen displays the current TCP/IP settings for the standby Onboard Administrator:</p>
+        <ul class="listbullet">
+          <li class="listbullet">IPv4 Information</li>
+          <li class="listbullet">IPv6 Information</li>
+          <li class="listbullet">General Information</li>
+        </ul>
+        <p class="bodytext">For information about the TCP/IP settings that appear on this screen, see the <a href="DIPSettingsforActiveOA.xml">Active Onboard Administrator TCP/IP Settings</a> screen.</p>
+        <p class="bodytext">To modify the TCP/IP settings, select <b>Click here.</b></p>
+        <p class="bodytext">For information about the TCP/IP settings that you can modify, see the Enclosure TCP/IP Settings <a href="DIPSettingsunderenclosuresettings.xml">IPv4 Settings tab</a>, <a href="DIPv6Settingstab.xml">IPv6 Settings tab</a>, <a href="DNICOptionstab.xml">NIC Options tab</a>, and <a href="DAdvancedSettingstab.xml">Advanced Settings tab</a>.</p>
+        <p class="bodytext">For information about TCP/IP settings seen from the Standby Onboard Administrator GUI, see "<a href="DIPSettingsfromStandby_GUI.xml">TCP/IP settings at Standby Onboard Administrator</a>."</p>
+      </content>
+    </section>
+  </sections>
+</topic>

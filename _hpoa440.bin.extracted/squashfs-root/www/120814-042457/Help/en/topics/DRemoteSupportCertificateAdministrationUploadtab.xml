@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DRemoteSupportCertificateAdministrationUploadtab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Remote Support Certificate Administration Upload tab</title>
+  <source>/120814-042457/Help/en/topics/DRemoteSupportCertificateAdministrationUploadtab.xml</source>
+  <keywords>Remote Support certificate upload/download</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>Certificate Upload tab</b>
+        </p>
+        <p class="bodytext">Upload the certificate of the Insight Remote Support server to the Onboard Administrator.</p>
+        <p class="bodytext">There are two methods for uploading certificates for use in HP BladeSystem Onboard Administrator:</p>
+        <ul class="listbullet">
+          <li class="listbullet">Paste certificate contents into the text field and click <b>Upload.</b></li>
+          <li class="listbullet">Paste the URL of the certificate into the URL field and click <b>Apply.</b></li>
+        </ul>
+      </content>
+    </section>
+  </sections>
+</topic>

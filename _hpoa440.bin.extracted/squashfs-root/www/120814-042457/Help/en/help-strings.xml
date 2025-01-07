@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+
+<!--
+	 Copyright 2006-2014 Hewlett-Packard Development Company, L.P. 
+	
+	Proprietary computer software. Valid license from HP required 
+	for possession, use or copying. 
+	
+	Consistent with FAR 12.211 and 12.212, Commercial Computer Software, 
+	Computer Software Documentation, and Technical Data for Commercial 
+	Items are licensed to the U.S. Government under vendor's standard 
+	commercial license.
+
+  HP BladeSystem Onboard Administrator Help strings file
+-->
+
+<strings xml:lang="en">
+
+	<!-- application terms -->
+	<value key="systemName">HP Onboard Administrator</value>
+	<value key="systemBuild">&#160;</value>
+	<value key="helpSystem">HP Onboard Administrator Help</value>
+		
+	<!-- General help terms -->
+	<value key="help">Help</value>
+  <value key="moreHelp">More Help</value>
+  <value key="tableOfContents">Table of Contents</value>
+	<value key="contents">Contents</value>
+  <value key="index">Index</value>
+	<value key="search">Search</value>
+	<value key="searchPrompt">Please enter a search word or phrase</value>
+	<value key="loading">Loading, please wait...</value>
+  <value key="loading...">Loading ...</value>
+	<value key="closeWindow">Close Window</value>
+	<value key="relatedTopic">Related Topics</value>
+	<value key="topic">Topic</value>
+	<value key="relatedProcedure">Related Procedures</value>
+	<value key="relatedReference">Related References</value>
+	<value key="back">Back</value>
+	<value key="next">Next</value>	
+	<value key="print">Print</value>
+	<value key="note">Note:</value>
+	
+	<!-- About Page terms -->
+	<value key="close">Close</value>
+  <value key="ok">OK</value>
+	<value key="copyright"> Copyright 2006-2014 Hewlett-Packard Development Company, L.P.</value>
+	<value key="productName">Product Name</value>
+	<value key="versionNumber">Version Number</value>	
+	<value key="productVersion">Product Version</value>
+  <value key="hardware">Hardware</value>
+  <value key="partNo">Part Number</value>
+  <value key="bay">Bay</value>
+  <value key="role">Role</value>
+  <value key="notPresent">Not present</value>
+  <value key="na">n/a</value>
+	<value key="yes">Yes</value>
+	<value key="no">No</value>
+  <value key="active">Active</value>
+  <value key="standby">Standby</value>
+	<value key="tellUsAbout">Tell us about</value>
+	<value key="supportFor">Support for the</value>
+	<value key="version">Version</value>
+	<value key="buildVersion">Firmware Version</value>
+	<value key="buildDate">Firmware Date</value>
+	<value key="browserVersion">Browser User Agent</value>
+	<value key="operatingSystem">Operating System</value>
+	
+	<!-- the following codelib notices reside in a textarea, 
+	     so the line-breaks/spacing used here will be preserved -->
+  <value key="eulaLink">End User License Agreement</value>
+  <value key="openSourceLink">Ancillary Software Copyrights and Licenses</value>
+  <value key="eulaDescription">This HP Onboard Administrator is provided under the following HP end user license:</value>
+  <value key="openSourceDescription">This HP Onboard Administrator contains one or more software products that require displaying of the following copyright notices and licenses:</value>
+	<value key="noticeHpProprietary">Proprietary computer software. Valid license from HP required for possession, use or copying. Consistent with FAR 12.211 and 12.212, Commercial Computer Software, Computer Software Documentation, and Technical Data for Commercial Items are licensed to the U.S. Government under vendor&#39;s standard commercial license.</value>
+	<value key="noticeApache">Apache Software Components:	
+    This product includes software developed by the Apache Software Foundation
+    (http://www.apache.org/)</value>
+  <value key="noticeJsolait">JavaScript o lait Library (jsolait):  
+    Copyright (c) 2003 Jan-Klaas Kollhof
+  
+    jsolait is distributed under the terms of the GNU Lesser General Public 
+    License (version 2.1 or later) as published by the Free Software Foundation.</value>  
+  <value key="noticeGSoap">gSoap Software Components:    
+    Copyright (c) 2001-2004 Robert A. Van Engelen 
+    (http://www.cs.fsu.edu/~engelen/license.html)</value>
+  <!-- end codelib notices -->
+	
+	<!-- Error Strings -->
+	<value key="notfound">not found</value>
+	<value key="tryAgain">please try again</value>
+	<value key="notification">Notification</value>
+    
+</strings>

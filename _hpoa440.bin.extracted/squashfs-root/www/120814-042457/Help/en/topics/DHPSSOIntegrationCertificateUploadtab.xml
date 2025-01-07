@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DHPSSOIntegrationCertificateUploadtab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>HP SSO Integration Certificate Upload tab</title>
+  <source>/120814-042457/Help/en/topics/DHPSSOIntegrationCertificateUploadtab.xml</source>
+  <keywords>HP SIM SSO certificate</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">This screen is used to upload an HP SSO certificate to the Onboard Administrator to establish a trusted relationship with the HP management server.</p>
+        <p class="bodytext">There are two methods for uploading a certificate:</p>
+        <ul class="listbullet">
+          <li class="listbullet">Paste certificate contents into the text field, and then click <b>Upload</b>.</li>
+          <li class="listbullet">Enter the HP management server IP address into the URL field, and click <b>Apply</b>.</li>
+        </ul>
+      </content>
+    </section>
+  </sections>
+</topic>

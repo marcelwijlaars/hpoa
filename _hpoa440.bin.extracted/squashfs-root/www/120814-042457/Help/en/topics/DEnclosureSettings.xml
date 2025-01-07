@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DEnclosureSettings" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Enclosure Settings</title>
+  <source>/120814-042457/Help/en/topics/DEnclosureSettings.xml</source>
+  <keywords>enclosure settings</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">This section provides detailed procedures to configure the management functionalities provided by the HP BladeSystem Onboard Administrator.</p>
+        <p class="bodytext">The tree view menu item Enclosure Settings cannot be selected and does not display overview information for settings. Instead, select any of the sublevel menu items for specific settings.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

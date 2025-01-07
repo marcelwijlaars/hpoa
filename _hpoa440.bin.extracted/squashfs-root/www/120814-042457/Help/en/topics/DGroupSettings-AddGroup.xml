@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DGroupSettings-AddGroup" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Group Settings—Add Group</title>
+  <source>/120814-042457/Help/en/topics/DGroupSettings-AddGroup.xml</source>
+  <keywords>adding directory group directory group adding directory group settings</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>Group information</b>
+        </p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  A maximum of 30 Directory Groups can be added.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Field
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Possible value
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Group Name
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">1 to 255 characters; all characters except quotation marks ("). The first character of the group name must be an alpha character.
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The group name is used to determine LDAP users' group membership. The group name must match one of the following five properties of a directory group: the name, distinguished name, common name, Display Name, or SAM Account Name. The distinguished name is recommended to uniquely specify the LDAP group.  If the Onboard Administrator is configured to search the GC port and a distinguished name is not used, then an incorrect match in multiple domains may occur which could result in unintended authorization.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Description
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">0 to 58 characters, including all alphanumeric characters, the dash (-), the underscore (_), and the space
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Can contain a more readable version of the group name, as well as other useful information
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">Privilege level</p>
+        <p class="tablespacerwidebefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Account classification
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Capabilities
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Account name / Privilege level
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Bays selected for this account
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Administrator
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <ul class="tablelistbullet">
+                  <li class="tablelistbullet">All commands</li>
+                  <li class="tablelistbullet">Local account, not LDAP</li>
+                  <li class="tablelistbullet">Only account remaining after a reset Onboard Administrator to factory defaults (account retains configured Administrator password)</li>
+                  <li class="tablelistbullet">Administrator account password can be reset to factory default through the Onboard Administrator serial port using <tt>L</tt> lost password recovery option</li>
+                  <li class="tablelistbullet">Can download, add, and clear SSHKey. This key only works with the Administrator account.</li>
+                </ul>
+              </p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Administrator / administrator
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">All
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">OA administrator
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <ul class="tablelistbullet">
+                  <li class="tablelistbullet">All commands</li>
+                  <li class="tablelistbullet">Allows access to all aspects of the HP BladeSystem Enclosure and Onboard Administrator including configuration, firmware updates, user management, and resetting default settings.</li>
+                </ul>
+              </p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">username / administrator
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">OA bays (all bays automatically selected)
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">administrator
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <ul class="tablelistbullet">
+                  <li class="tablelistbullet">Can perform all operations to permitted device bays and interconnect bays including virtual power and console access</li>
+                  <li class="tablelistbullet">administrator permission on device iLO</li>
+                </ul>
+              </p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">username / administrator
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">No OA bays and only selected device bays and interconnect bays
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">OA operator
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <ul class="tablelistbullet">
+                  <li class="tablelistbullet">Allows access to all aspects of the HP BladeSystem Enclosure and Onboard Administrator, with the exception of user management</li>
+                </ul>
+              </p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">username / operator
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">OA bays and can have other bays selected, but the capabilities for the other bays are defined in operator*
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">operator
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <ul class="tablelistbullet">
+                  <li class="tablelistbullet">Can perform all operations to permitted device bays and interconnect bays including virtual power and console access</li>
+                  <li class="tablelistbullet">operator permission on device iLO</li>
+                </ul>
+              </p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">username / operator
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Selected device bays and interconnect bays
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">OA user
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <ul class="tablelistbullet">
+                  <li class="tablelistbullet">Can view status and information of enclosure</li>
+                  <li class="tablelistbullet">Can view CLI history </li>
+                </ul>
+              </p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">username / user
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">OA bays and can have other bays selected, but the capabilities for the other bays are defined in user
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">user
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <ul class="tablelistbullet">
+                  <li class="tablelistbullet">Can view status and information of selected bays</li>
+                  <li class="tablelistbullet">Can view CLI history</li>
+                  <li class="tablelistbullet">Can set password for own account</li>
+                  <li class="tablelistbullet">Can set user contact information for own account</li>
+                  <li class="tablelistbullet">Can show CLI commands</li>
+                </ul>
+              </p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">username / user
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">No OA bays and some device bays and interconnect bays
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablestatementtext">*EBIPA and VLAN features allow access to all bays for an OA operator.</p>
+        <p class="bodytext" />
+        <p class="bodytext">
+          <b>Group permissions</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Check box
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Onboard Administrator Bays
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Gives the user permissions for the Onboard Administrator bays. If the user privilege level is Administrator, then All Device Bays and All Interconnect Bays are automatically selected when Onboard Administrator Bays is selected and all the check boxes are grayed out.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">All Device Bays
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Gives the user permissions for all the device bays.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Selected Device Bays
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Gives the user permissions for only the selected device bays.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">All Interconnect Bays
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Gives the user permissions for all the interconnect bays.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Selected Interconnect Bays
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Gives the user permissions for only the selected interconnect bays.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">To save settings, click <b>Add</b><b>Group.</b></p>
+      </content>
+    </section>
+  </sections>
+</topic>

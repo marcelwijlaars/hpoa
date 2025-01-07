@@ -1,0 +1,237 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html>
+  <head>
+  <title>HP BladeSystem Onboard Administrator</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE9"/>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+  <link rel="stylesheet" type="text/css" href="../css/default.css"/>
+  <link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+  <link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/> 
+  <!--[if gte IE 7]>
+  <style type="text/css">  
+    #mnuTemplateCheck, #mnuDebugCheck {padding-left:10px;} 
+  </style>
+  <![endif]-->
+  <script type="text/javascript" src="../js/global.js"></script>	
+  <script type="text/javascript" src="../js/buttonManager.js"></script>
+  <script type="text/javascript" src="../js/browser.js"></script>	
+  <script type="text/javascript" src="../js/dropdownMenuManager.js"></script>	
+  <script type="text/javascript" src="../js/EnvironConstants.js"></script>
+  <script type="text/javascript" src="../js/displayManager.js"></script>
+  <script type="text/javascript" src="../js/formManager.js"></script>
+  <script type="text/javascript" src="../js/init.js"></script>
+  <script type="text/javascript" src="../js/xml.js"></script>
+  <script type="text/javascript" src="../js/xslt.js"></script>
+  <script type="text/javascript">
+globalManagerCreate();
+var szWorkspaceHelpUrl=' ';
+var g_iPanel=1
+var g_nWidth=0;
+var g_nCount=-2;
+var g_debugMode='false';
+function myOnLoad(){
+var processor=new XsltProcessor("../Templates/contentPage.xsl");
+processor.addParameter("stringsDoc",top.getStringsDoc());
+processor.addParameter("arguments",top.window.location.href);
+document.getElementById("ID_BODY_PROXY").innerHTML=processor.getOutput();
+reconcilePage();
+updateMenuAccess();
+updateMenuChecked('mnuLaunchWizard',!getWizardCompletedStatus());
+updateMenuChecked('mnuDebugger',top.debugIsActive());
+updateMenuChecked('mnuTemplates',top.templateCacheEnabled);
+setThemeOption(null);
+setLevelOption(null);
+setFontOption(null);
+registerForEvents(true);
+g_nWidth=MxBrowserGetBodyWidth(0,0);
+setTimeout("myOnResize()",100);
+}
+function myOnUnload(){
+registerForEvents(false);
+}
+function myOnResize(){
+var h=Math.max(0,MxBrowserGetBodyHeight(0,0));
+if(g_iPanel==1)
+resizePanel_1(h);
+}
+function resizePanel_1(h){
+var hBorders=(top._browserInfo.agent.indexOf("webkit")>-1?-1:document.all?11:0);
+var oFrame=document.getElementById("CONTENT_FRAME");
+if(oFrame!=null){
+oFrame.style.height=Math.max(0,h-oFrame.offsetTop-hBorders);
+}
+}
+function setTitle(title){
+var titleContainer=document.getElementById("ID_PORTAL_TITLE");
+if(titleContainer){
+titleContainer.innerHTML=title;
+}
+}
+function toggleBorders(state){
+var border=document.getElementById("contentContainer");
+if(state==false)
+border.style["border"]="#CCCCCC 3px solid";
+else{
+border.style["borderRight"]="#CCCCCC 0px solid";
+border.style["borderLeft"]="#CCCCCC 3px solid";
+border.style["borderBottom"]="#CCCCCC 3px solid";
+}
+}
+function setContentContainerSrc(href){
+var contentWrapper=document.getElementById('CONTENT_FRAME');
+var contentContainer=contentWrapper.contentWindow.document.getElementById('CONTENT_HOME');
+contentContainer.src=href;
+}
+function refreshData(){
+top.MX_HIDDEN.resetNoDestroy(top.getString("stoppingEvents"));
+top.hiddenPageLoadData(false);
+}
+function registerForEvents(state){
+try{
+var hpemLocal=top.mainPage.getHiddenFrame().getProxyLocal();
+if(hpemLocal){
+if(state==true){
+hpemLocal.registerEventHandler(menuHandler,['EVENT_ENC_WIZARD_STATUS']);
+}else{
+hpemLocal.removeRegisteredHandler(menuHandler);
+}
+}
+}catch(e){}
+}
+function menuHandler(payload){
+var wizardStatus=getElementValueXpath(payload,'//hpoa:wizardStatus');
+updateMenuChecked('mnuLaunchWizard',(wizardStatus=='WIZARD_NOT_COMPLETED'));
+}
+function getWizardCompletedStatus(){
+try{
+var enclosureStatus=top.mainPage.getHiddenFrame().getProxyLocal().getEnclosureStatus();
+return(getElementValueXpath(enclosureStatus,'//hpoa:wizardStatus')!='WIZARD_NOT_COMPLETED');
+}catch(e){}
+}
+function setWizardCompletedStatus(state){
+try{
+var hpemLocal=top.mainPage.getHiddenFrame().getProxyLocal();
+if(hpemLocal){
+hpemLocal.setWizardComplete(state,function(result){
+if(getCallSuccess(result)==false){
+alert(top.getErrorString("305","FORM_MANAGER"));
+}
+});
+}
+}
+catch(e){}
+}
+function updateMenuChecked(id,checked){
+var item=document.getElementById(id);
+if(item){
+if(checked){
+item.className='dropdownMenuItemChecked';
+}else{
+item.className='dropdownMenuItemUnchecked';
+}
+}
+}
+function setThemeOption(value){
+if(value!=null){
+top.setDebugOption('Theme',value);
+}
+var currentTheme=top.getDebugger().theme;
+var divs=document.getElementsByTagName("DIV");
+for(var i in divs){
+if(divs[i].id&&divs[i].id.indexOf("mnuDbgColor")>-1){
+updateMenuChecked(divs[i].id,divs[i].id=="mnuDbgColor_"+currentTheme);
+}
+}
+}
+function setLevelOption(value){
+if(value!=null){
+top.setDebugOption('Level',value);
+}
+var currentLevel=top.getDebugger().debugLevel;
+var divs=document.getElementsByTagName("DIV");
+for(var i in divs){
+if(divs[i].id&&divs[i].id.indexOf("mnuDbgLevel")>-1){
+updateMenuChecked(divs[i].id,divs[i].id=="mnuDbgLevel"+currentLevel);
+}
+}
+}
+function setFontOption(value){
+if(value!=null){
+top.setDebugOption('FontSize',value);
+}
+var currentFontSize=top.getDebugger().fontSize;
+var divs=document.getElementsByTagName("DIV");
+for(var i in divs){
+if(divs[i].id&&divs[i].id.indexOf("mnuDbgFont")>-1){
+updateMenuChecked(divs[i].id,divs[i].id=="mnuDbgFont"+currentFontSize);
+}
+}
+}
+function updateMenuAccess(accessLevel){
+try{
+var oa=top.mainPage.getHiddenFrame().getProxyLocal();
+var oaAccess=oa.getUserOaPermission();
+if(accessLevel==null){
+accessLevel=oa.getUserAccessLevel();
+}
+accessLevel=convertAccessLevel(accessLevel);
+var items=document.getElementsByTagName("*");
+for(i=0;i<items.length;i++){
+var thisItem=items[i];
+var reqdLevel=thisItem.getAttribute("access-level");
+if(reqdLevel!=null){
+reqdLevel=convertAccessLevel(reqdLevel);
+var oaAdmin=thisItem.getAttribute("oa-admin");
+var accessGranted=(accessLevel>=reqdLevel&&(oaAdmin=='true'?oaAccess:true));
+switch(thisItem.tagName.toLowerCase()){
+case "div":
+thisItem.style.display=(accessGranted?"block":"none");
+break;
+case "li":
+thisItem.className=(accessGranted?"":"disabled");
+break;
+}
+}
+}
+ourDropdownMenuManager.init();
+}
+catch(e){}
+}
+function checkMenuAccess(evt){
+if(!evt){evt=window.event;}
+if(evt.shiftKey){
+toggleDebugMenus();
+return false;
+}
+}
+function toggleDebugMenus(){
+var container=document.getElementById("mnuHorizontalMain");
+if(container){
+g_debugMode=(g_debugMode=='false'?'true':'false');
+var processor=new XsltProcessor("../Templates/contentPage.xsl");
+processor.addParameter("stringsDoc",top.getStringsDoc());
+processor.addParameter("arguments",top.window.location.href);
+processor.addParameter("showDebuggerMenus",g_debugMode);
+processor.addParameter("template","horizontalMenu");
+container.innerHTML=processor.getOutput();
+ourDropdownMenuManager.init();
+updateMenuAccess();
+updateMenuChecked('mnuLaunchWizard',!getWizardCompletedStatus());
+updateMenuChecked('mnuDebugger',top.debugIsActive());
+updateMenuChecked('mnuTemplates',top.templateCacheEnabled);
+setThemeOption(null);
+setLevelOption(null);
+setFontOption(null);
+}
+}
+function doPrint(){
+try{
+top.mainPage.getRightSideFrame().frames["CONTENT_FRAME"].frames["CONTENT_HOME"].focus();
+top.mainPage.getRightSideFrame().frames["CONTENT_FRAME"].frames["CONTENT_HOME"].print();
+}catch(e){}
+}
+  </script>
+  </head>
+  <body class="body-flush-fit-inner-1" onload="myOnLoad();" onunload="myOnUnload();" onresize="setTimeout('myOnResize()', 100);" style="position:relative;height:100%;">
+    <div class="body-proxy" id="ID_BODY_PROXY"></div>
+  </body>
+</html>

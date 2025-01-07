@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DRackTopologytab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Rack Topology tab</title>
+  <source>/120814-042457/Help/en/topics/DRackTopologytab.xml</source>
+  <keywords>device security FQDN link support graphical view linked enclosures location discovery services locked bay rack information rack topology rack topology tab Virtual Connect Manager</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">The Rack Topology tab shows a graphical representation of the physical enclosure, called the graphical view. The graphical view consists of a front view and a rear view. When you mouse over a device in the graphical view, a window appears with information on that device. The graphical view provides status on each device in the enclosure and gives you the option of selecting an individual device for more detailed information.</p>
+        <p class="bodytext">
+          <b>Selecting a device</b>
+        </p>
+        <p class="bodytext">To select a device, click the graphical representation of the device in the front or rear graphical view. When you select a device, the surrounding border changes from gray to light blue to indicate it is the currently selected device. Selecting a device in the graphical view selects the corresponding device in the left navigation tree view. When you select a device from any part of the navigation system, the rest of the navigation reflects that device selection event and updates accordingly.</p>
+        <p class="bodytext">
+          <b>Status reporting</b>
+        </p>
+        <p class="bodytext">The graphical view reports the status of every device in the enclosure. The status of each device is indicated on the device by a small status icon. No status icon appears for a device that is working properly and has an OK status. However, any other status codes appear as status icons on the device.</p>
+        <p class="bodytext">The graphical view does not report the presence or absence of hard drives in the server blade or storage blade.</p>
+        <p class="bodytext">
+          <b>Device security</b>
+        </p>
+        <p class="bodytext">Although the front and rear graphical views are both affected by user permissions, security on the graphical view is handled differently from the left tree view. If the user does not have permission to access a device, a blank bay appears regardless of whether a device is present in that bay, and a padlock icon in the bay table cell appears, indicating that the bay is locked to the current user.</p>
+        <p class="bodytext">The user cannot select a locked bay. When the user's mouse hovers over the locked bay, a message appears, indicating that the user does not have permission to access the device in that bay.</p>
+        <p class="bodytext">
+          <b>Connecting to VCM</b>
+        </p>
+        <p class="bodytext">To list the web addresses that you can use to connect to a VCM, click the down arrow button next to "Virtual Connect Manager." If FQDN link support is enabled and certain DNS configuration requirements are met, an FQDN-based VCM web address is the default selection. For information about enabling FQDN link support, see the "<a href="DNetworkaccess.xml">Network Access</a>" page.</p>
+        <p class="bodytext">
+          <b>Rack information</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Row
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Enclosure Name
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The user-configured name of the enclosure in the rack.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Enclosure Rack U Position
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The location on the enclosure in the rack.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Serial Number
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The unique serial number for the enclosure.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">UUID
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The Universally Unique Identifier assigned to the enclosure.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Part Number
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The part number of the enclosure used when obtaining a new or replacement enclosure.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Asset Tag
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The asset tag is used for inventory control.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">UID State
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Displays On or Off, depending on whether the UID is active.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">
+          <b>Rack Location Information</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Row
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Rack Name
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The name of the rack.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Rack Product Description
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The common descriptive name of the rack.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Rack Part Number
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The part number to be used when ordering a replacement rack.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Rack Identifier
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">A unique string that identifies the rack.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Rack U Height
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The U height of the rack.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">To update the rack topology information, click <b>Refresh Topology.</b> When you select <b>Refresh Topology</b>, the Rack Topology screen switches to the Linked Mode, and all linked enclosures appear.</p>
+        <p class="bodytext">Much of the rack topology information is provided through Location Discovery Services. For more information about using Location Discovery Services, see "<a href="DRackOverviewhomepage.xml">Rack Overview</a>."</p>
+        <p class="bodytext">
+          <b>Linked enclosures</b>
+        </p>
+        <p class="bodytext">The Rack Topology tab displays all linked enclosures, which have one of the following states:</p>
+        <ul class="listbullet">
+          <li class="listbullet">Linked—Not Signed In. Enter a user name and password in the text boxes, and click<b> Sign In.</b> A graphical view of the enclosure appears.</li>
+          <li class="listbullet">Linked—Not Signed In with a card reader icon. This state indicates the linked enclosure is Two-Factor Authentication enabled but is not authenticated. This state occurs under two conditions:<ul class="listbullet2"><li class="listbullet2">The configuration is not supported. You must enable the primary enclosure for Two-Factor Authentication, and both the primary and linked enclosure must have the same credentials in order for the linked enclosure to authenticate using Two-Factor Authentication.</li><li class="listbullet2">If you click the Sign Out link on a Two-Factor Authenticated enclosure that is already authenticated, this state displays. To reauthenticate this enclosure, you must refresh the GUI or reauthenticate the primary enclosure.</li></ul></li>
+          <li class="listbullet">Linked—Signed In with the Load Enclosure Information button. Click <b>Load Enclosure Information</b> to display the graphical view of the enclosure.</li>
+          <li class="listbullet">Linked—Signed In with a graphical view of the enclosure displayed.</li>
+        </ul>
+        <p class="bodytext">On the right side of the linked enclosure name bar, click <b>Sign Out</b> to sign out of a linked enclosure.</p>
+        <p class="bodytext">
+          <b>Related topics</b>
+        </p>
+        <p class="bodytext">
+          <a href="DRackPowerandThermaltab.xml">Rack Power and Thermal tab</a>
+        </p>
+        <p class="bodytext">
+          <a href="DFirmwareSummarytab.xml">Rack Firmware Summary</a>
+        </p>
+        <p class="bodytext">
+          <a href="DInsightDisplay.xml">Insight Display</a>
+        </p>
+        <p class="bodytext">
+          <a href="DVirtualconnectmanager.xml">Virtual Connect Manager</a>
+        </p>
+        <p class="bodytext">
+          <a href="DEnclosureInformationtab.xml">Enclosure Information tab</a>
+        </p>
+      </content>
+    </section>
+  </sections>
+</topic>

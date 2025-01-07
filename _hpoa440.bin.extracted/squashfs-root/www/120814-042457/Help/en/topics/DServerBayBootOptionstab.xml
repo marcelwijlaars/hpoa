@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DServerBayBootOptionstab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Server blade boot options tab</title>
+  <source>/120814-042457/Help/en/topics/DServerBayBootOptionstab.xml</source>
+  <keywords>boot options Secure Boot firmware management restrictions server blade status information</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>One Time Boot from selections</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Option
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Select
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The default option when viewing for the first time or before making any changes.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Diskette Drive (A:)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Forces the server blade to reboot to the diskette drive. Be sure the diskette drive is attached to the server blade before selecting this option.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">CD-ROM
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Forces the server blade to reboot to the CD-ROM drive. Be sure the CD-ROM drive is attached to the server blade before selecting this option.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Hard Drive C:
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Forces the server blade to reboot to the hard disk.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">RBSU
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Forces the server blade to boot to the ROM-Based Setup Utility.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">PXE NIC
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Forces the server blade to boot to PXE NIC.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="bodytext">To save settings, click <b>Apply</b>.</p>
+        <p class="bodytext">If Secure Boot is configured on the server blade, the One Time Boot option cannot be selected. The option is grayed out. Secure Boot restricts users (including the Administrator) from performing this operation from the Onboard Administrator GUI or CLI. Boot operations can be performed only from the boot device configured in BIOS by the Administrator.</p>
+        <p class="bodytext">
+          <b>Standard Boot Order (IPL)</b>
+        </p>
+        <p class="bodytext">To specify a Standard Boot Order, select a device in the boot order list, and use the up and down arrows to move the boot device. Continue this process until you have arranged the devices in the order you want them used. Alternately, the RBSU can be used to set the Standard Boot Order. All reboots, unless using the One Time Boot option, use the boot order specified in the Standard Boot Order settings.</p>
+        <p class="bodytext">To save settings, click <b>Apply</b>.</p>
+        <p class="bodytext">If Secure Boot is configured on the server blade, the IPL devices cannot be selected. The device list is grayed out. Secure Boot restricts users (including the Administrator) from performing this operation from the Onboard Administrator GUI or CLI. Boot operations can be performed only from the boot device configured in BIOS by the Administrator.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

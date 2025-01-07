@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DLogOptionstab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Log Options tab</title>
+  <source>/120814-042457/Help/en/topics/DLogOptionstab.xml</source>
+  <keywords>log options tab remote log test remote system logging testing remote log</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">This screen enables you to send system log messages to a remote server on the network for persistent storage. By default, the local system log is enabled. To manage the system log settings, you must be an Administrator or Operator with OA bay permissions.</p>
+        <p class="bodytext">The syslog messages are sent from Onboard Administrator using the UDP protocol on a port that can be specified by the user. The default remote syslog port is 514.</p>
+        <p class="bodytext">Onboard Administrators Remote System Logging feature follows the guidelines in <a href="http://www.ietf.org/rfc/rfc3164.txt" target="ID0EW">RFC3164</a>.</p>
+        <p class="bodytext">In most Linux systems, remote system logging can be enabled by starting syslog with the "-r" option. The remote syslog port must also be opened in the firewall. For additional information, see documentation for your particular distribution. Windows® operating systems do not have native support for remote system logging. Any application that listens on UDP port 514 or the specified syslog port can receive remote system log messages from the Onboard Administrator.</p>
+        <p class="bodytext">To send system log messages to a remote host, select the <b>Enable remote system logging</b> check box. Specify the server and port.</p>
+        <p class="bodytext">When configured, the Onboard Administrator remote system logging feature can be tested using the GUI Test button or using the CLI <tt>TEST SYSLOG</tt> command.</p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Field
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Possible value
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Syslog Server Address
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <ul class="tablelistbullet">
+                  <li class="tablelistbullet">IPv4 address—###.###.###.### where ### ranges from 0 to 255</li>
+                  <li class="tablelistbullet">IPv6 address—####:####:####:####:####:####:####:#### where #### ranges from 0 to FFFF.</li>
+                  <li class="tablelistbullet">DNS name—1 to 64 characters including all alphanumeric characters and the dash (-)</li>
+                </ul>
+              </p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">An IPv4 address, IPv6 address, or the DNS name of the remote host*
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Port
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">An integer between 1 and 65535
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The IP port of the remote host.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">* Use an IPv6 address as the remote system log server.</p>
+        <p class="bodytext">To send a test message to the remote host address and to the local system log, click <b>Test Remote Log.</b> To use this function, you must enable remote system logging.</p>
+        <p class="bodytext">To save the settings, click <b>Apply.</b></p>
+      </content>
+    </section>
+  </sections>
+</topic>

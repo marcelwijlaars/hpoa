@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DPowerAllocationinformation" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Enclosure Power Allocation</title>
+  <source>/120814-042457/Help/en/topics/DPowerAllocationinformation.xml</source>
+  <keywords>power allocation</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Row
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Subsystem Status
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The overall status of the power subsystem. Possible values are Unknown, OK, Degraded, Major Degraded, or Critical Error.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Power Allocated
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The maximum amount of power calculated for the enclosure. It is an aggregate of the allocated power for all devices in the enclosure.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Power Available
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">This value is based on the current redundancy mode of the enclosure. It is equal to the total power of the enclosure minus the amount of power required to sustain redundancy minus the allocated power.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Power Capacity
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The amount of power available for consumption by the enclosure measured in Watts.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">If you change the enclosure redundancy mode after power is allocated to the devices, then the power subsystem might become degraded. Power is still allocated to the devices, but redundancy might not function properly. If zero watts are available and the power graph displays degraded, check your power subsystem and redundancy configurations. You can resolve the degraded condition by changing your redundancy mode or by adding more power supplies to the enclosure.</p>
+        <p class="bodytext">Power Capacity will equal Power Allocated in the case where redundancy is lost.</p>
+        <p class="bodytext">Click <b>Refresh</b> to update power information.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

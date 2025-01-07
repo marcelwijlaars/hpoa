@@ -1,0 +1,205 @@
+<!--  (C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css"/>
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+<script type="text/javascript" src="../js/domBuilder.js"></script>
+
+<script type="text/javascript">	
+var encNum;
+var hpem=null;
+var formMgr=null;
+var powerLimitInputValidator=null;
+var powerCapInputValidator=null;
+function loadContent(){
+try{
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+formMgr=new FormManager(function(success){
+var powerSubsystemInfoDoc=hpem.getPowerSubsystemInfo();
+var processor=new XsltProcessor('../Forms/PowerManagementPage.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('powerConfigInfoDoc',hpem.getPowerConfigInfo());
+processor.addParameter('powerSubsystemInfoDoc',powerSubsystemInfoDoc);
+processor.addParameter('powerSupplyInfoDoc',hpem.getPsInfoDOM());
+processor.addParameter('minVa',parseInt(getElementValueXpath(powerSubsystemInfoDoc,'//hpoa:powerSubsystemInfo/hpoa:extraData[@hpoa:name="ACLimitLow"]')));
+processor.addParameter('maxVa',parseInt(getElementValueXpath(powerSubsystemInfoDoc,'//hpoa:powerSubsystemInfo/hpoa:extraData[@hpoa:name="ACLimitHigh"]')));
+processor.addParameter('enclosureType',hpem.getEnclosureType());
+processor.addParameter('isTower',hpem.getIsTower());
+processor.addParameter('serviceUserAcl',hpem.getUserAccessLevel());
+processor.addParameter('powerCapConfigDoc',hpem.getPowerCapConfig());
+processor.addParameter('powerCapExtConfigDoc',hpem.getPowerCapExtConfig());
+processor.addParameter('powerCapBladeStatusDoc',hpem.getPowerCapBladeStatus());
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+top.mainPage.getHelpLauncher().setCurrentTopic("FORM_POWER_MGMT");
+reconcilePage();
+});
+formMgr.startBatch(true);
+formMgr.queueCall(hpem.getPowerConfigInfo);
+formMgr.queueCall(hpem.getPowerSubsystemInfo);
+formMgr.queueCall(hpem.getPowerCapConfig);
+formMgr.queueCall(hpem.getPowerCapExtConfig);
+formMgr.queueCall(hpem.getPowerCapBladeStatus);
+formMgr.endBatch();
+}else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);
+}
+}catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+top.mainPage.setMainTitle(top.getString('powerManagement'));
+}
+function setEnclosurePowerConfig(){
+var redundancyMode='';
+var powerCeiling='';
+var powerCap='';
+var deratedCircuit='';
+var ratedCircuit='';
+var dynamicPowerSaver=false;
+var lockedout=true;
+if(document.getElementById('redundancyAC').checked){
+redundancyMode='AC_REDUNDANT';
+}else if(document.getElementById('redundancyPS').checked){
+redundancyMode='POWER_SUPPLY_REDUNDANT';
+}else if(document.getElementById('redundancyNone').checked){
+redundancyMode='NON_REDUNDANT';
+}
+if(document.getElementById('staticPowerLimit').checked&&
+!document.getElementById('staticPowerLimit').disabled){
+lockedout=false;
+powerCeiling=document.getElementById('powerCeiling').value;
+if(powerCeiling==''){
+powerCeiling=0;
+}else{
+powerCeiling=parseInt(powerCeiling);
+}
+powerCap=0;
+powerLimitInputValidator=new InputValidator("validate-power-limit","powerLimitError",true);
+if(!powerLimitInputValidator.allInputsValidate()){
+powerLimitInputValidator.updateMessages(true);
+powerLimitInputValidator.autoFocus();
+return;
+}else{
+powerLimitInputValidator.clearMessages();
+}
+}else if(document.getElementById('dynamicPowerCap').checked&&
+!document.getElementById('dynamicPowerCap').disabled){
+lockedout=false;
+powerCap=document.getElementById('powerCap').value;
+deratedCircuit=document.getElementById('deratedCircuit').value;
+ratedCircuit=document.getElementById('ratedCircuit').value;
+if(powerCap==''){
+powerCap=0;
+}else{
+powerCap=parseInt(powerCap);
+}
+if(deratedCircuit==''){
+deratedCircuit=0;
+}else{
+deratedCircuit=parseInt(deratedCircuit);
+}
+if(ratedCircuit==''){
+ratedCircuit=0;
+}else{
+ratedCircuit=parseInt(ratedCircuit);
+}
+powerCapInputValidator=new InputValidator("validate-power-cap","powerCapError",true);
+if(!powerCapInputValidator.allInputsValidate()){
+powerCapInputValidator.updateMessages(true);
+powerCapInputValidator.autoFocus();
+return;
+}else{
+powerCapInputValidator.clearMessages();
+}
+powerCeiling=0;
+}else if(document.getElementById('powerLimitNone').checked&&
+!document.getElementById('powerLimitNone').disabled){
+lockedout=false;
+powerCeiling=0;
+powerCap=0;
+deratedCircuit=0;
+ratedCircuit=0;
+}
+dynamicPowerSaver=document.getElementById('dpsEnabled').checked;
+var powerCapConfig=getPowerCapConfigDocument(powerCap,deratedCircuit,ratedCircuit);
+var waitPhrase=top.getString('completingPowerMgmtSettings');
+var waitDescription=top.getString('settingUpPowerRelatedSettings');
+formMgr=new FormManager(function(success){
+if(success){
+loadContent();
+}
+},false,'powerErrorDisplay','bodyContent','waitContainer');
+formMgr.createWaitContainer(waitPhrase,waitDescription);
+formMgr.batchEventDelay=5;
+formMgr.startBatch();
+if(powerCap!=0&&!lockedout){
+formMgr.queueCall(hpem.setPowerConfig,[redundancyMode,powerCeiling,dynamicPowerSaver]);
+formMgr.queueCall(hpem.setPowerCapConfig,[powerCapConfig]);
+}else{
+if(lockedout){
+powerCeiling=0;
+}else if(powerCeiling==0){
+formMgr.queueCall(hpem.setPowerCapConfig,[powerCapConfig]);
+}
+formMgr.queueCall(hpem.setPowerConfig,[redundancyMode,powerCeiling,dynamicPowerSaver]);
+}
+formMgr.endBatch();
+}
+function getPowerCapConfigDocument(powerCap,deratedCircuit,ratedCircuit){
+var domBuilder=new DomBuilder();
+domBuilder.addDocument("hpoa:config",['xmlns:'+OA_NAMESPACE(),OA_NAMESPACE_URI()]);
+domBuilder.appendChild("hpoa:powerCap",[],powerCap);
+domBuilder.appendChild("hpoa:extraData",["hpoa:name","deratedCircuit"],deratedCircuit);
+domBuilder.appendChild("hpoa:extraData",["hpoa:name","ratedCircuit"],ratedCircuit);
+domBuilder.appendChild("hpoa:extraData",["hpoa:name","rdpcAware"],1);
+return domBuilder.getDocument().documentElement.cloneNode(true);
+}
+function enablePowerLimitInput(state){
+toggleFormEnabled('vaLimitContainer',state);
+if(!state){
+document.getElementById('powerCeiling').value='';
+if(powerLimitInputValidator!=null){
+powerLimitInputValidator.clearMessages();
+}
+}
+}
+function enablePowerCapInput(state){
+toggleFormEnabled('powerCapContainer',state);
+if(!state){
+document.getElementById('powerCap').value='';
+document.getElementById('deratedCircuit').value='';
+document.getElementById('ratedCircuit').value='';
+if(powerCapInputValidator!=null){
+powerCapInputValidator.clearMessages();
+}
+}
+}
+function toggleDpsAvailable(radio){
+if(radio.getAttribute('id')=='redundancyOver'){
+document.getElementById('dpsEnabled').setAttribute('disabled','true');
+}
+else{
+document.getElementById('dpsEnabled').removeAttribute('disabled','true');
+}
+}
+  </script>
+</head>
+<body style="margin:10px;" onload="loadContent();">
+    <div id="bodyContent"></div>
+    <div id="waitContainer" class="waitContainer"></div>
+</body>
+</html>

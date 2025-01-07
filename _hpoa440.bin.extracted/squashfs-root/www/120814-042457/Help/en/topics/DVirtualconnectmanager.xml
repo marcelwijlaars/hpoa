@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DVirtualconnectmanager" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Virtual Connect Manager</title>
+  <source>/120814-042457/Help/en/topics/DVirtualconnectmanager.xml</source>
+  <keywords>FQDN link support Virtual Connect Manager</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">The Virtual Connect Manager link in the tree menu launches the Virtual Connect Manager in a new window. To view available VCM address links (IPv4 and IPv6), click the down arrow alongside the link. When FQDN link support is enabled and certain DNS configuration requirements are met, an FQDN-based address displays as the default. For more information about enabling FQDN link support, see the "<a href="DNetworkaccess.xml">Network Access</a>" page.</p>
+        <p class="bodytext">For more information on using the Virtual Connect Manager, see the <i>HP Virtual Connect Manager User Guide</i>.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

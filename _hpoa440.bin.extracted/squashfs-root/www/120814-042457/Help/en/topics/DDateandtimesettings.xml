@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DDateandtimesettings" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Date and Time</title>
+  <source>/120814-042457/Help/en/topics/DDateandtimesettings.xml</source>
+  <keywords>date and time settings Network Time Protocol (NTP) NTP (Network Time Protocol) NTP settings poll interval time and date setting</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>Manual Date and Time Settings</b>
+        </p>
+        <p class="bodytext">Select <b>Set time manually</b> to enable this feature. The date and time are static and do not update in real-time.</p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Field
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Possible value
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Date
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>yyyy-mm-dd</p>
+                <ul class="tablelistbullet">
+                  <li class="tablelistbullet">mm is an integer from 1 to 12</li>
+                  <li class="tablelistbullet">dd is an integer from 1 to 31</li>
+                </ul>
+              </p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The date assigned to the enclosure
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Time
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>hh:mm (24-hour time)</p>
+                <ul class="tablelistbullet">
+                  <li class="tablelistbullet">hh is an integer from 0 to 23</li>
+                  <li class="tablelistbullet">mm is an integer from 0 to 59</li>
+                </ul>
+              </p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The time assigned to the enclosure
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Time Zone
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>Time zone settings</p>
+                <ul class="tablelistbullet">
+                  <li class="tablelistbullet">
+                    <a href="DAfricatimezonesettings.xml">Africa time zone settings</a>
+                  </li>
+                  <li class="tablelistbullet">
+                    <a href="DAmericastimezonesettings.xml">Americas time zone settings</a>
+                  </li>
+                  <li class="tablelistbullet">
+                    <a href="DAsiatimezonesettings.xml">Asia time zone settings</a>
+                  </li>
+                  <li class="tablelistbullet">
+                    <a href="DUniversaltimezonesettings.xml">Universal time zone settings</a>
+                  </li>
+                  <li class="tablelistbullet">
+                    <a href="DOceanictimezonesettings.xml">Oceanic time zone settings</a>
+                  </li>
+                  <li class="tablelistbullet">
+                    <a href="DEuropetimezonesettings.xml">Europe time zone settings</a>
+                  </li>
+                  <li class="tablelistbullet">
+                    <a href="DPolartimezonesettings.xml">Polar time zone settings</a>
+                  </li>
+                </ul>
+              </p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The time zone assigned to the enclosure
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="bodytext">
+          <b>Network Time Protocol (NTP) Settings</b>
+        </p>
+        <p class="bodytext">Select <b>Set time using an NTP server</b> to enable this feature.</p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Field
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Possible value
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Primary NTP Server
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <ul class="tablelistbullet">
+                  <li class="tablelistbullet">IPv4 address—###.###.###.### where ### ranges from 0 to 255</li>
+                  <li class="tablelistbullet">IPv6 address—####:####:####:####:####:####:####:#### where #### ranges from 0 to FFFF.</li>
+                  <li class="tablelistbullet">DNS name—1 to 64 characters including all alphanumeric characters and the dash (-).</li>
+                </ul>
+              </p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IP address or DNS name of primary NTP server that provides date and time information
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Secondary NTP Server
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <ul class="tablelistbullet">
+                  <li class="tablelistbullet">IPv4 address—###.###.###.### where ### ranges from 0 to 255</li>
+                  <li class="tablelistbullet">IPv6 address—####:####:####:####:####:####:####:#### where #### ranges from 0 to FFFF.</li>
+                  <li class="tablelistbullet">DNS name—1 to 64 characters including all alphanumeric characters and the dash (-).</li>
+                </ul>
+              </p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IP address or DNS name of secondary NTP server that provides date and time information
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Poll Interval
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">An integer from 60 to 86400
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">This is the interval at which the NTP server is polled in seconds
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Time Zone
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>Time zone settings</p>
+                <ul class="tablelistbullet">
+                  <li class="tablelistbullet">
+                    <a href="DAfricatimezonesettings.xml">Africa time zone settings</a>
+                  </li>
+                  <li class="tablelistbullet">
+                    <a href="DAmericastimezonesettings.xml">Americas time zone settings</a>
+                  </li>
+                  <li class="tablelistbullet">
+                    <a href="DAsiatimezonesettings.xml">Asia time zone settings</a>
+                  </li>
+                  <li class="tablelistbullet">
+                    <a href="DUniversaltimezonesettings.xml">Universal time zone settings</a>
+                  </li>
+                  <li class="tablelistbullet">
+                    <a href="DOceanictimezonesettings.xml">Oceanic time zone settings</a>
+                  </li>
+                  <li class="tablelistbullet">
+                    <a href="DEuropetimezonesettings.xml">Europe time zone settings</a>
+                  </li>
+                  <li class="tablelistbullet">
+                    <a href="DPolartimezonesettings.xml">Polar time zone settings</a>
+                  </li>
+                </ul>
+              </p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The time zone assigned to the enclosure
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">Click <b>Apply</b> to save settings.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

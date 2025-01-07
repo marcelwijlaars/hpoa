@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DActiveOnboardAdministratorUSBtab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Active Onboard Administrator USB tab</title>
+  <source>/120814-042457/Help/en/topics/DActiveOnboardAdministratorUSBtab.xml</source>
+  <keywords>KVM using USB devices</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">The <b>USB</b> tab only appears if an early version of the c3000 Onboard Administrator board (hardware revision level A0, B0, X1, or X3) is present. </p>
+        <p class="bodytext">With such boards, you can only use one USB controller at a time. This screen allows you to select which USB controller to enable: the one for the USB ports on the KVM module in the rear of the enclosure or the one for the DVD drive and USB port on the front of the enclosure. Changing the active USB controller resets the Active Onboard Administrator.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

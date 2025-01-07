@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DConfigurationScripts" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Configuration scripts</title>
+  <source>/120814-042457/Help/en/topics/DConfigurationScripts.xml</source>
+  <keywords>configuration script upload configuration script using gateway address script files</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>Current configuration</b>
+        </p>
+        <p class="procedurelead-in">To view a current configuration for the enclosure:</p>
+        <ol class="listnumber">
+          <li class="listnumber">Click the <b>SHOW CONFIG</b> link. The configuration opens in a new browser window.</li>
+          <li class="listnumber">To save the configuration as a text file, choose one of the following options:<ul class="listbullet2"><li class="listbullet2">If you use Microsoft Internet Explorer, select <b>Save As</b>.</li><li class="listbullet2">If you use Mozilla Firefox, select <b>Save Page As</b>.</li><li class="listbullet2">If you use Google Chrome, select <b>Save Link As</b>.</li></ul></li>
+        </ol>
+        <p class="bodytext">You can also select a local file or a URL for the configuration script.</p>
+        <ul class="listbullet">
+          <li class="listbullet">
+            <b>Local file</b>—You can browse for the configuration file or you can enter the path of the configuration file into the text box. The maximum number of characters in the file path cannot exceed 256. After entering the configuration file path, click <b>Upload</b>.</li>
+          <li class="listbullet">
+            <b>URL</b>—If the configuration file is located on a web server, enter an HTTP:// path to it. The maximum number of characters in the file path cannot exceed 256. Enter the URL, and then click <b>Apply</b>.</li>
+        </ul>
+        <p class="bodytext">For security, the retrieved current configuration does not contain any user passwords. You can manually edit the script to add the user passwords after the user name on the ADD USER lines. Also, the retrieved current configuration does not contain any of the LCD settings (Lock Buttons, Enable PIN Protection, and PIN Code). These settings cannot be added from the configuration script.</p>
+        <p class="bodytext">
+          <b>Current enclosure inventory</b>
+        </p>
+        <p class="bodytext">To view a script of the current enclosure inventory, click the <b>Show All</b> link. The current enclosure inventory opens in a new browser window. To save the inventory as a text file, choose either of the following options:</p>
+        <ul class="listbullet">
+          <li class="listbullet">If you are using Microsoft Internet Explorer, select <b>Save As</b>.</li>
+          <li class="listbullet">If you are using Mozilla Firefox, select <b>Save Page As</b>.</li>
+          <li class="listbullet">If you use Google Chrome, select <b>Save Link As</b>.</li>
+        </ul>
+        <p class="bodytext">The downloaded text file provides the same information as a CLI <tt>SHOW ALL</tt> command. The text file also displays the current configuration for the enclosure.</p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  The enclosure inventory information in the new browser window might take a few minutes to load. You must wait until the <tt>Variable list</tt> command appears.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="bodytext">
+          <b>USB support</b>
+        </p>
+        <p class="bodytext">This field appears when a USB key is detected in the Active Onboard Administrator USB port and configuration files are present. To download a configuration file, select a file from the menu, and then click <b>Apply</b>.</p>
+        <p class="bodytext">To save the current Onboard Administrator configuration file to the USB key, enter a simple file path, either a relative path in the format <tt>path/file</tt> or with a leading dot (.), such as <tt>./path/file</tt>, or an absolute path beginning with a slash (/), in the format <tt>/path/file.</tt> Do not enter a URL. Do not include spaces within the file name. Click <b>Apply</b>.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

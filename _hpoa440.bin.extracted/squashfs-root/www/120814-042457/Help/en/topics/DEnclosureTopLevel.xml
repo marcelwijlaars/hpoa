@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DEnclosureTopLevel" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Enclosure information</title>
+  <source>/120814-042457/Help/en/topics/DEnclosureTopLevel.xml</source>
+  <keywords>enclosure information status</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>Enclosure Status tab</b>
+        </p>
+        <p class="bodytext">
+          <b>Status information</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Row
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Enclosure Status
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The overall status of the enclosure. Possible values are Unknown, OK, Degraded, N/A, or Critical Error.*
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Active OA Status
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The overall status of the Active Onboard Administrator. Possible values are Unknown, OK, Degraded, or Failed.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Standby OA Status
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The overall status of the Standby Onboard Administrator. Possible values are Absent, Unknown, OK, Degraded, or Failed.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Power Mode
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">A user setting to configure the enclosure DC power capacity and the input power redundancy mode of the enclosure. See Power Management for possible values.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablestatementtext">* The enclosure status appears as N/A if the Enable Extended Data on GUI Login Page setting is disabled. This setting is accessible at Enclosure Settings&gt;Network Access&gt;Anonymous Data.</p>
+        <p class="tablespacerafter" />
+        <p class="bodytext">
+          <b>Enclosure Diagnostic Information</b>
+        </p>
+        <p class="bodytext">Diagnostic information is gathered by polling a device microcontroller (resulting in a degraded status if a failure has occurred) or is sent by the device microcontroller, without being polled to report a failure.</p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Row
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Device Identification Data
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Information such as model name, part number, serial number, and other information used to identify the device is checked. This data is also referred to as FRU data. If the data is not present or not readable by the Onboard Administrator, a device identification data error displays. Possible values are OK or Error.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Redundancy
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Possible values are OK or Error. An error indicates the redundant Onboard Administrators are having problems syncing up. Check the syslog for errors. Possible reasons for the error are mismatched firmware or a software or hardware failure.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Location Services
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Possible values are OK or Other. Other indicates a location services error has occurred. Data might be corrupted.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">
+          <b>Enclosure Status Overview</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Subsystems and Devices
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Device Bay Overview
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The overall status of all device bays. The status is an aggregate status of all the devices in the enclosure. If more than one device has a status other than OK, then they are displayed in a list in this table.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Interconnect Bay Overview
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The overall status of the interconnect bays. The status is an aggregate status of all the interconnects in the enclosure. If more than one interconnect has a status other than OK, then they are displayed in a list in this table.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Power Subsystem
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The overall status of the Power Subsystem of the enclosure. The status is an aggregate status of all the power supplies in the enclosure. If more than one power supply has a status other than OK, then they are displayed in a list in this table.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Thermal Subsystem
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The overall status of the Thermal Subsystem of the enclosure. The status is an aggregate status of all the fans in the enclosure. If more than one fan has a status other than OK, then they are displayed in a list in this table.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+      </content>
+    </section>
+  </sections>
+</topic>

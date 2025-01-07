@@ -1,0 +1,7 @@
+<RIBCL version="2.21">
+<LOGIN USER_LOGIN="adminname" PASSWORD="password">
+<RIB_INFO MODE="WRITE" >
+<GET_EVENT_LOG />
+</RIB_INFO>
+</LOGIN>
+</RIBCL>

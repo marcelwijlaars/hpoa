@@ -1,0 +1,119 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>HP BladeSystem Onboard Administrator</title>
+  <link rel="stylesheet" type="text/css" href="../css/default.css" />
+  <link rel="stylesheet" type="text/css" href="../css/blue_theme.css" />
+  <link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css" />
+  <style type="text/css">
+    td.mastheadlinks a:link, a:visited, a:active, a:hover {text-decoration:none;}
+    td.mastheadlinks a:hover {text-decoration:underline;}    
+    td.mastheadlinks img {border:0px;margin-top:0px;}
+    * html td.mastheadlinks img {margin-top:1px;}
+  </style>
+  <script type="text/javascript" src="../js/helpTips.js"></script>
+  <script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript">
+function getString(key,altText){
+return(window.opener?window.opener.top.getString(key):altText);
+}
+function printView(){
+var txt=""
+try{
+txt+="<!DOCTYPE HTML PUBLIC '-//W3C//DTD W3 HTML//EN'>";
+txt+="<html>\n<head>";
+txt+="<meta http-equiv='content-type' content='text/plain; charset=utf-8' />";
+txt+="<title>"+window.titleText+"</title>";
+txt+="<style type='text/css'>";
+txt+="body{font-family:monospace,arial;font-size:12px;color:#000;}";
+txt+="</style>";
+txt+="</head>\n<body>";
+txt+=window.content.replace(/\r\n/g,"<br />").replace(/\n/g,"<br />");
+txt+="</body>\n</html>";
+if(document.body){
+document.body.innerHTML=txt;
+}else{
+document.open();
+document.write(txt);
+document.close();
+}
+}catch(e){}
+};
+function myOnLoad(){
+var owner=window.opener;
+if(owner&&isFunction(owner._dialogCallback)){
+try{
+var logData=owner.top.getLogDataItem(getSearchValue(location.search,"log-index"));
+if(logData!=null){
+window.titleText=logData.titleText;
+window.txtStyle=logData.txtStyle;
+window.isHtml=logData.isHtml;
+window.content=logData.content;
+}
+owner._dialogCallback(window);
+}catch(e){
+printView();
+}
+}else{
+printView();
+}
+}
+function myOnResize(){
+try{
+var txtBox=document.getElementsByTagName("textarea")[0];
+}catch(e){}
+if(txtBox){
+var page=getDocumentCoords(txtBox);
+txtBox.style.height=(page.height-64)+"px";
+}
+};
+function myOnUnload(){
+try{
+if(window.opener){
+window.opener.top.removeLogDataItem(getSearchValue(location.search,"log-index"));
+}
+}catch(e){}
+}
+</script>
+</head>
+<body class="body-flush-fit" style='overflow: hidden;' onresize="myOnResize();" onload="window.setTimeout(myOnLoad,500);" onunload="myOnUnload();">
+  <table class="applicationMastheadSmall" border="0" style="width: 100%;" cellpadding="0"
+    cellspacing="0">
+    <tr>
+      <td class="mastheadIcon" style="width:40px;text-align:right;">
+        <img border="0" hspace="7" src="/120814-042457/images/themes/blue/logo_hp_smallmasthead.gif"
+          alt="" width="30" height="19" />
+      </td>
+      <td class="mastheadTitle" style="width:60%;padding-left:0px;">
+        <h1 id='mastheadTitle' style="color: white;"><script type="text/javascript">document.write(getString('results', 'Results'));</script></h1>
+      </td>
+      <td>
+        <div class="mastheadPhoto">
+          <img border="0" src="/120814-042457/images/masthead_photo_small.jpg" alt="" width="310" height="39" /></div>
+      </td>
+      <td class="mastheadLinks" style="white-space: nowrap; width: 15%; vertical-align: middle;padding-left: 10px;">
+        <a href="javascript:void(0);" onclick="printView()"><img alt="" src="/120814-042457/images/icons/print-img.gif" /><span style="vertical-align:top;"><script type="text/javascript">document.write(getString('printableVersion', 'Printable Version'));</script></span></a>
+      </td>
+    </tr>
+  </table>
+  <table style='width: 100%;border-collapse: collapse;'>
+    <tr>
+      <td style="padding:10px;">
+        <div style='width: 100%; font-size: 12px;' id='bodyContent'>
+          <div style="padding: 10px;">
+            <div id="waitTextContainer" class="waitTextContainer" style="padding-top:50px;">
+              <script type="text/javascript">document.write(getString('loadingResultsPleaseWait', 'Loading results, please wait ...'));</script>
+            </div>
+            <div style="text-align: center;">
+              <img src="/120814-042457/images/progress_bar_large.gif" style="border: 0px;" alt="" />
+            </div>
+            <div class="waitDescriptionContainer">&#160;</div>
+          </div>         
+        </div>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

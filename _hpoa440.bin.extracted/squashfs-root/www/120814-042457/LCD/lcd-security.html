@@ -1,0 +1,151 @@
+ <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html>
+<head>
+<title>HP Insight Display Security</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../css/default.css" />
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css" />
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css" />
+<style type="text/css">
+	input.chkLeftAlign{margin-left:0px;margin-bottom:1px;}
+	* html input.chkLeftAlign{margin-left:-5px;margin-bottom:0px;}
+	#chkboxSpacer{font-size:4px;height:4px;}
+	* html #chkboxSpacer{font-size:2px;height:2px;}
+</style>
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+
+ <!--
+	Include the init and xml javascript files from the jsolait library.
+	The xslt.js file requires that these two files be included before it.
+-->
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+<script type="text/javascript">
+var ourDisplayManager;
+var ourInputValidator;
+var enabledBox;
+var lockedBox;
+var pinInputs=new Object();
+var encNum;
+var hpem=null;
+function getMgr(){
+return window.parent.getLcdMgr();
+}
+function myOnLoad(){
+loadContent();
+ourDisplayManager=new DisplayManager('bodyContent','waitContent');
+globalComponentInit();
+ourInputValidator=new InputValidator();
+ourInputValidator.init();
+enabledBox=document.getElementById("chkEnablePinProtection");
+lockedBox=document.getElementById("chkButtonsLocked");
+pinInputs['pin1']=document.getElementById('LCDPin');
+pinInputs['pin2']=document.getElementById('LCDPinConfirm');
+getMgr().getPinSecurity().pinEnableMethod=togglePinInputsEnabled;
+getMgr().getPinSecurity().pinEnableControl=enabledBox;
+getMgr().getPinSecurity().buttonLockControl=lockedBox;
+togglePinInputsEnabled(enabledBox.checked);
+}
+function myOnUnload(){
+getMgr().getPinSecurity().pinEnableMethod=null;
+getMgr().getPinSecurity().pinEnableControl=null;
+getMgr().getPinSecurity().buttonLockControl=null;
+}
+function loadContent(){
+try{
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(encNum)&&
+(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+var processor=new XsltProcessor('lcd-security.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('pinInfoDoc',getMgr().getPinInfo());
+processor.addParameter('lcdInfoDoc',getMgr().getScreenInfo());
+processor.addParameter('accessLevel',hpem.getUserAccessLevel());
+processor.addParameter('enclosureNetworkInfoDoc',hpem.getEnclosureNetworkInfo());
+processor.addParameter('oaAccess',hpem.getUserOaPermission());
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+processor=new XsltProcessor('../Templates/waitContainer.xsl');
+processor.addParameter('waitText',top.getString('completingLcdPin'));
+document.getElementById("waitContent").innerHTML=processor.getOutput();
+}else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);}
+}catch(e){displayContentFailed('bodyContent',[e.message]);}
+}
+function initUpdate(){
+getMgr().startBatch();
+getMgr().setCallback(LcdSecurityResponse);
+var forceNewPinCode=(getElementValueXpath(hpem.getLcdStatus(),'//hpoa:extraData[@hpoa:name="forceNewPinCode"]')=='true');
+if(getMgr().getPinSecurity().enabled!=enabledBox.checked||ourInputValidator.getInput('LCDPin').isClean()==false||(forceNewPinCode&&!lockedBox.checked)){
+if(enabledBox.checked){
+if(ourInputValidator.allInputsValidate()){
+ourDisplayManager.showWaitScreen();
+var pinValue=document.getElementById('LCDPin').value;
+getMgr().getPinSecurity().setPinCode(pinValue);
+}else{
+var msg=ourInputValidator.getFirstRuleBroken();
+if(ourInputValidator.getInput('LCDPin').isClean()&&forceNewPinCode&&!lockedBox.checked)
+msg=top.getErrorString(440);
+alert(msg,AlertMsgTypes.Warning,60);
+ourInputValidator.autoFocus();
+return;
+}
+}else{
+ourDisplayManager.showWaitScreen();
+getMgr().getPinSecurity().setPinCode("");
+}
+}
+ourDisplayManager.showWaitScreen();
+getMgr().setLcdButtonsLocked(lockedBox.checked);
+getMgr().endBatch();
+}
+function LcdSecurityResponse(success){
+ourDisplayManager.showMainScreen();
+if(!success){
+myOnLoad();
+alert(getMgr().callManager.getErrorList(),AlertMsgTypes.Warning,60);
+}
+}
+function togglePinInputsEnabled(enable){
+var clsName=(enable?'stdInput':'stdInputDisabled');
+if(!enable){
+ourButtonManager.disableButtonById('btnClear');
+clearPin();
+}else{
+ourButtonManager.enableButtonById('btnClear');
+}
+for(index in pinInputs){
+pinInputs[index].disabled=!enable;
+pinInputs[index].className=clsName;
+}
+focusPin();
+}
+function clearPin(){
+for(index in pinInputs){
+pinInputs[index].value='';
+}
+focusPin();
+}
+function focusPin(){
+try{
+pinInputs['pin1'].focus();
+}catch(e){}
+}
+function setTabContent(tabId){
+window.parent.setTabContent(tabId);
+}
+function getCurrentTab(){
+return 'tabSecurity';
+}
+</script>
+</head>
+<body style="margin:10px;" onload="myOnLoad();" onunload="myOnUnload();">
+<div id="bodyContent"></div>
+<span id="waitContent" class="waitContainer"></span>
+</body>
+</html>
+ 
+ 

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DDirectoryGroups" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Directory Groups</title>
+  <source>/120814-042457/Help/en/topics/DDirectoryGroups.xml</source>
+  <keywords>directory group settings</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Column
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Check box
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Used to select Directory Group for editing or deleting
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Group Name
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">1 to 255 characters and contains the same characters as search contexts. The group name is used to determine LDAP users' group membership. The group name must match one of the following five properties of a directory group: the name, distinguished name, common name, Display Name, or SAM Account Name. The distinguished name is recommended to uniquely specify the LDAP group.  If the Onboard Administrator is configured to search the GC port and a distinguished name is not used, then an incorrect match in multiple domains may occur which could result in unintended authorization.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Privilege Level
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Used to determine which administrative functions the user is allowed to perform. A user's privilege level can be administrator, operator, or user.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Description
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">0 to 58 characters, containing alphanumeric characters, the dash (-), the underscore (_), and the space. The description of the LDAP group, a more readable version of the group name, or other useful information.
+</p>
+            </td>
+          </tr>
+        </table>
+        <ul class="listbullet">
+          <li class="listbullet">
+            <b>New</b>—To add a new Directory Group to the selected enclosure, click <b>New.</b> You can add a maximum of 30 Directory Groups. The Add LDAP Group screen appears.</li>
+          <li class="listbullet">
+            <b>Edit</b>—Select a Directory Group to be edited by selecting the check box next to the name of the group. To change the settings on the Edit LDAP Group screen, click <b>Edit.</b></li>
+          <li class="listbullet">
+            <b>Delete</b>—Select the Directory Group to be deleted by selecting the check box next to the name of the group. To remove the group, click <b>Delete.</b></li>
+        </ul>
+      </content>
+    </section>
+  </sections>
+</topic>

@@ -1,0 +1,79 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css">
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css">
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css">
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/navigationControlManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+
+<script type="text/javascript">
+var g_iPanel=1
+var g_nWidth=0;
+var g_nCount=-2;
+var encNum='1';
+var bayNum=0;
+var hpem=null;
+function initStandbyContent(){
+hpem=top.mainPage.getHiddenFrame().getProxyLocal();
+bayNum=hpem.getOaBayNumber('STANDBY');
+var processor=new XsltProcessor('../Templates/standbyNavigation.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('serviceUserAcl',hpem.getUserAccessLevel());
+processor.addParameter('serviceUserOaAccess',hpem.getUserOaPermission());
+document.getElementById('ID_BODY_PROXY').innerHTML=processor.getOutput();
+loadStandbyContent('oaContent.html');
+myOnResize();
+reconcilePage();
+hpem.registerEventHandler(handleFailoverEvent,['EVENT_OA_FAILOVER']);
+}
+function handleFailoverEvent(result){
+top.mainPage.getHiddenFrame().startFailover(hpem);
+}
+function loadStandbyContent(url){
+var delim='?';
+if(url.indexOf('?')>-1){
+delim='&';
+}
+var urlString=url+delim+'encNum='+encNum+'&emNum='+bayNum;
+getStandbyContentFrame().location=urlString;
+if(top._browserInfo.browserName=="Chrome"){
+try{
+top.mainPage.myOnResize();
+this.parent.myOnResize();
+myOnResize();
+}catch(e){
+}
+}
+}
+function getStandbyContentFrame(){
+return document.getElementById('STANDBY_INNER_CONTENT').contentWindow;
+}
+function myOnResize(){
+var h=Math.max(0,MxBrowserGetBodyHeight(0,0));
+resizePanel_1(h);
+}
+function resizePanel_1(h){
+var hBorders=(top._browserInfo.agent.indexOf("webkit")>-1?-1:document.all?10:0);
+var oFrame=document.getElementById("STANDBY_INNER_CONTENT");
+if(oFrame!=null){
+oFrame.style.height=Math.max(0,h-oFrame.offsetTop-hBorders);
+}
+}
+</script>
+</head>
+<body style="margin:10px;" onload="initStandbyContent();" onresize="myOnResize();">
+    <div class="body-proxy" id="ID_BODY_PROXY"></div>
+</body>
+</html>

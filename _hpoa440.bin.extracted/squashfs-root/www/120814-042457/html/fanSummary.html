@@ -1,0 +1,304 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>HP BladeSystem Onboard Administrator</title>
+	<link rel="stylesheet" type="text/css" href="../css/default.css" />
+	<link rel="stylesheet" type="text/css" href="../css/blue_theme.css" />
+	<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css" />
+	<link rel="stylesheet" type="text/css" href="../css/widgets.css" />
+	<link rel="stylesheet" type="text/css" href="../Help/stylesheets/help.css" />
+	<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+	<script type="text/javascript" src="../js/buttonManager.js"></script>
+	<script type="text/javascript" src="../js/tabManager.js"></script>
+	<script type="text/javascript" src="../js/formManager.js"></script>
+	<script type="text/javascript" src="../js/displayManager.js"></script>
+	<script type="text/javascript" src="../js/global.js"></script>
+	<script type="text/javascript" src="../js/browser.js"></script>
+	<script type="text/javascript" src="../js/helpTips.js"></script>
+	<!--
+	Include the init and xml javascript files from the jsolait library.
+	The xslt.js file requires that these two files be included before it.
+	-->
+	<script type="text/javascript" src="../js/init.js"></script>
+	<script type="text/javascript" src="../js/xml.js"></script>
+	<script type="text/javascript" src="../js/xslt.js"></script>
+	<script type="text/javascript">
+var me=this;
+var encNum;
+var hpem=null;
+var fwVersion="1.30";
+var hasFanZones=true;
+var oaInfo=null;
+var labelArray=null;
+var zoneArray=null;
+var tabId=null;
+var encType=0;
+function loadContent(){
+try{
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+oaInfo=hpem.getOaInfo(hpem.getOaBayNumber("ACTIVE"));
+if(oaInfo){
+fwVersion=getElementValueXpath(oaInfo,'//hpoa:fwVersion');
+}
+if(Number(fwVersion)<Number(1.30)){
+hasFanZones=false;
+}
+if(fwVersion>="2.00"){
+encType=hpem.getEnclosureType();
+}
+hpem.registerEventHandler(handleFanEvents,['EVENT_FAN_STATUS','EVENT_FAN_INSERTED','EVENT_FAN_REMOVED','EVENT_COOLING_STATUS','EVENT_FAN_ZONE_STATUS']);
+try{
+top.mainPage.getHelpLauncher().setCurrentTopic("FORM_FAN_SUMMARY");
+}catch(e){}
+}
+else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);
+}
+}
+catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+adjustTabDisplay();
+selectTab('fanSummary');
+reconcilePage();
+}
+function selectTab(tabId){
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+ourTabManager.toggleTabs(tabId);
+setTabContent(tabId);
+}
+}
+function getCurrentTab(){
+return ourTabManager.getCurrentTab();
+}
+function setTabContent(tabId,showProgress){
+var contentTab=document.getElementById(tabId);
+var contentLocation=contentTab.getAttribute('content_location');
+var contextId=contentTab.getAttribute('context_id');
+this.tabId=tabId;
+top.mainPage.getHelpLauncher().setCurrentTopic(contextId);
+if(contentLocation){
+fanInfoLoaded(contentLocation,tabId,assertTrue(showProgress));
+}
+}
+function adjustTabDisplay(){
+if(encType==0&&fwVersion>="1.30"&&hpem.getUserOaPermission()){
+document.getElementById('fanZones').style.display='block';
+}else{
+document.getElementById('fanZones').style.display='none';
+}
+};
+function fanInfoLoaded(contentLocation,tabId,showProgress){
+var formMgr=new FormManager(function(success){
+if(success){
+var processor=new XsltProcessor(contentLocation);
+if(hasFanZones&&tabId=="fanZones"){
+var fanZoneDOM=null;
+try{
+fanZoneDOM=formMgr.getDataByCallIndex(2);
+}catch(e){
+displayContentFailed('bodyContent',[e.message]);
+reconcilePage();
+return;
+}
+processor.addParameter('fanZoneDoc',fanZoneDOM);
+processor.addParameter('bladeStatusDoc',hpem.getBladeStatusDOM());
+processor.addParameter('bladeInfoDoc',hpem.getBladeInfoDOM());
+processor.addParameter('netTrayStatusDoc',hpem.getInterconnectTrayStatusDOM());
+processor.addParameter('netTrayInfoDoc',hpem.getInterconnectTrayInfoDOM());
+}
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('fanInfoDoc',hpem.getFanInfoDOM(true));
+processor.addParameter('thermalSubsystemInfoDoc',hpem.getThermalSubsystemInfo());
+if(fwVersion>="2.00"){
+processor.addParameter('enclosureType',encType);
+}
+processor.addParameter('isTower',hpem.getIsTower()+"");
+processor.addParameter('numFansPerRow',parseInt(hpem.getNumFans())/2);
+processor.addParameter('numFansPerEnclosure',hpem.getNumFans());
+processor.addParameter('encNum',me.encNum);
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+if(!hasFanZones||fwVersion<"1.30"){
+displayContentFailed('fwVersionContent',[" This Onboard Administrator has an older firmware version.","Please go to the Firmware Update page and upload the latest version for full functionality."],AlertMsgTypes.Information);
+}
+labelArray=null;
+zoneArray=null;
+reconcilePage();
+}else{
+displayContentFailed('bodyContent',formMgr.getErrorsArray());
+}
+},false,'','bodyContent');
+with(formMgr){
+startBatch(assertTrue(showProgress),true);
+if(hpem.getUserOaPermission()){
+queueCall(hpem.getFanInfoAll);
+queueCall(hpem.getThermalSubsystemInfo);
+if(fwVersion>="1.30"){
+if(encType==1){
+queueCall(hpem.getFanZoneArray,[getXmlBayArray(getAllArray(1,1))]);
+}else{
+queueCall(hpem.getFanZoneArray,[getXmlBayArray(getAllArray(1,4))]);
+}
+}
+}else{
+queueCall(hpem.getThermalSubsystemInfo);
+}
+endBatch();
+}
+}
+function refreshSummary(){
+setTabContent(tabId);
+}
+function selectDevice(number,type){
+if(typeof(type)=='undefined'||type==null||type==""){
+var type=FAN();
+}
+top.mainPage.getHiddenFrame().selectDevice(number,type,encNum,true);
+}
+function handleFanEvents(result){
+setTabContent(tabId,true);
+}
+function highlightZone(zone,highlight){
+var i=1;
+var j=0;
+if(labelArray==null){
+labelArray=new Array();
+while(document.getElementById("fanZoneLabelTable"+i)!=null){
+labelArray[j]=new Array();
+labelArray[j][0]=i;
+labelArray[j++][1]=document.getElementById("fanZoneLabelTable"+i++);
+}
+i=1;
+while(document.getElementById("fanZoneLabelFront"+i)!=null){
+labelArray[j]=new Array();
+labelArray[j][0]=i;
+labelArray[j++][1]=document.getElementById("fanZoneLabelFront"+i++);
+}
+i=1;
+while(document.getElementById("fanZoneLabelRear"+i)!=null){
+labelArray[j]=new Array();
+labelArray[j][0]=i;
+labelArray[j++][1]=document.getElementById("fanZoneLabelRear"+i++);
+}
+}
+i=1;
+j=0;
+if(zoneArray==null){
+zoneArray=new Array();
+while(document.getElementById("front_zone_"+i)!=null){
+zoneArray[j]=new Array();
+zoneArray[j][0]=i;
+zoneArray[j++][1]=document.getElementById("front_zone_"+i++);
+}
+i=1;
+while(document.getElementById("rear_zone_"+i)!=null){
+zoneArray[j]=new Array();
+zoneArray[j][0]=i;
+zoneArray[j++][1]=document.getElementById("rear_zone_"+i++);
+}
+}
+for(i=0;i<labelArray.length;i++){
+if(highlight&&parseInt(""+labelArray[i][0])==parseInt(""+zone)){
+removeClassName(labelArray[i][1],"blah_normal");
+appendClassName(labelArray[i][1],"blah_bold");
+}else{
+removeClassName(labelArray[i][1],"blah_bold");
+appendClassName(labelArray[i][1],"blah_normal");
+}
+}
+for(i=0;i<zoneArray.length;i++){
+if(highlight&&parseInt(""+zoneArray[i][0])==parseInt(""+zone)){
+removeClassName(zoneArray[i][1],"zone");
+appendClassName(zoneArray[i][1],"zoneHighlight");
+}else{
+removeClassName(zoneArray[i][1],"zoneHighlight");
+appendClassName(zoneArray[i][1],"zone");
+}
+}
+}
+	</script>
+
+	<style type="text/css">
+	<!--
+	.blah_bold {
+	  font-size:12px; 
+	  font-weight:bold;
+	}
+	.blah_normal {
+	  font-size:11px; 
+	  font-weight:normal;
+	}
+	.trans_box {
+	  /* Mozilla doesn't support MS image filters, so it will ignore the following */
+	  filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled=true, sizingMethod=scale src='/120814-042457/images/20p_white.png');
+	}
+	.trans_box_green {
+	  /* Mozilla doesn't support MS image filters, so it will ignore the following */
+	  filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled=true, sizingMethod=scale src='/120814-042457/images/10p_green.png');
+	}
+	.trans_box_yellow {
+	  /* Mozilla doesn't support MS image filters, so it will ignore the following */
+	  filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled=true, sizingMethod=scale src='/120814-042457/images/10p_yellow.png');
+	}
+	.trans_box_red {
+	  /* Mozilla doesn't support MS image filters, so it will ignore the following */
+	  filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled=true, sizingMethod=scale src='/120814-042457/images/10p_red.png');
+	}
+
+	/* IE 6 ignores css styles with [attributes], so it will skip the following. */
+	.trans_box_green[class] {
+	  background-image:url(/120814-042457/images/10p_green.png);
+	}
+	.trans_box_yellow[class] {
+	  background-image:url(/120814-042457/images/10p_yellow.png);
+	}
+	.trans_box_red[class] {
+	  background-image:url(/120814-042457/images/10p_red.png);
+	}
+	.trans_box[class] {
+	  background-image:url(/120814-042457/images/20p_white.png);
+	}-->
+	</style>
+</head>
+	
+<body class="body-padded" onload="loadContent();">
+	<!--<div id="bodyContent" ></div>-->
+	<table cellpadding="0" cellspacing="0" border="0" width="100%">
+		<tr >
+			<td valign="bottom">
+				<div class="tabSet" id="tabSet">
+					<div class="tabOff" tabid="fanSummary" context_id="FORM_FAN_SUMMARY" id="fanSummary"
+						content_location="../Templates/fanSummary.xsl">
+						<script type="text/javascript">document.write(top.getString('fanSummary'));</script>
+					</div>
+					<div class="tabOff" tabid="fanZones" context_id="FORM_FAN_ZONES" id="fanZones"
+						content_location="../Templates/fanZoneSummary.xsl">
+						<script type="text/javascript">document.write(top.getString('fanZones'));</script>
+					</div>
+					<div class="tabBottomLine">
+					</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td style="padding-top: 10px;">
+				<div id="bodyContent">
+				</div>
+				<div id="waitContainer">
+				</div>
+			</td>
+		</tr>
+	</table>
+
+  <script type="text/javascript">
+if(typeof(TabManager)!="undefined"){
+ourTabManager.init();
+}
+  </script>
+
+	<div id="fwVersionContent"  ></div>
+</body>
+</html>

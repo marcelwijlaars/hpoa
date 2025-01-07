@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html>
+<head>
+  <title>HP BladeSystem Onboard Administrator</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE9"/>
+  <script type="text/javascript" src="../js/global.js"></script>
+  <script type="text/javascript" src="../js/EnvironConstants.js"></script>
+  <script type="text/javascript" src="../js/selectionManager.js"></script>
+  <script type="text/javascript">	
+var TOGGLE_IMG_WIDTH=11;
+var TOTAL_PADDING=10;
+var BODY_COLS_EXPANDED='*,250';
+var BODY_COLS_EXPANDED_TOWER='*,180';
+var BODY_COLS_CONTRACTED='*,'+TOGGLE_IMG_WIDTH;
+function getExpandedSize(){
+var currentProxy=top.getTopology().getSelectedProxy();
+if(currentProxy&&currentProxy.getIsTower()){
+return BODY_COLS_EXPANDED_TOWER;
+}else{
+return BODY_COLS_EXPANDED;
+}
+}
+function toggleEnclosureTrayContainer(state){
+var statusFrame=top.mainPage.getStatusFrame();
+var enclosureTrayContainer=statusFrame.document.getElementById('enclosureTrayContainer');
+if(enclosureTrayContainer){
+if(state){
+enclosureTrayContainer.style['visibility']='visible';
+}else{
+enclosureTrayContainer.style['visibility']='hidden';
+}
+}
+}
+function showStatus(state){
+if(state==false){
+document.body.cols='*,0';
+toggleEnclosureTrayContainer(false);
+}else{
+if(isStatusCollapsed()==true){
+return;
+}
+document.body.cols=getExpandedSize();
+toggleEnclosureTrayContainer(true);
+}
+top.mainPage.getRightSideFrame().toggleBorders(state);
+}
+function isStatusCollapsed(){
+return(document.body.cols=='*,'+(TOGGLE_IMG_WIDTH+TOTAL_PADDING));
+}
+function isStatusExpanded(){
+return(!(isStatusCollapsed()));
+}
+function toggleStatus(img){
+var imgWidth=TOGGLE_IMG_WIDTH+TOTAL_PADDING;
+if(img==null){
+var img=frames[1].document.getElementById('imgStatusTray');
+}
+if(document.body.cols==getExpandedSize()){
+document.body.cols="*,"+imgWidth;
+img.src="/120814-042457/images/icon_tray_expand_d.gif";
+frames[1].document.body.style.overflow='hidden';
+toggleEnclosureTrayContainer(false);
+}else{
+document.body.cols=getExpandedSize();
+img.src="/120814-042457/images/icon_tray_contract_u.gif";
+frames[1].document.body.style.overflow='';
+toggleEnclosureTrayContainer(true);
+}
+}
+function loadFrameContent(){
+var deviceType=getSearchValue(encodeURI(top.location.search),'deviceType');
+var deviceId=getSearchValue(encodeURI(top.location.search),'deviceId');
+if(getCookieValue("pageRestore")!=""){
+var args=(getCookieValue("pageRestore")).split("^");
+deleteCookieValue("pageRestore");
+if(args.length==5){
+if(top.getTopology().getProxy(args[2])!=null){
+switch(args[1]){
+case "enc_network":
+case "config_script":
+case "net_access":
+setTimeout(function(){top.mainPage.getHiddenFrame().selectDevice(args[0],args[1],args[2],true,parseBool(args[3]),(args[4]=="none"?"":args[4]));},1000);
+return;
+default:
+}
+}
+}
+}
+var deviceType=getSearchValue(encodeURI(top.location.search),'deviceType');
+var deviceId=getSearchValue(encodeURI(top.location.search),'deviceId');
+if((deviceType==''&&deviceId=='')||top.mainPage.getHiddenFrame().contentSelectedFlag==true){
+top.mainPage.getContentContainer().location="rackOverview.html";
+}else{
+var hpemObj=top.getTopology().getProxyLocal();
+var cInfo=getContentInfo(deviceType,deviceId,hpemObj);
+if(cInfo.bayNumber!=-1){
+setTimeout("top.mainPage.getHiddenFrame().selectDevice("+cInfo.bayNumber+", '"+cInfo.type+"', 1, true);",200);
+top.mainPage.getHiddenFrame().contentSelectedFlag=true;
+}else{
+top.mainPage.getContentContainer().location="/120814-042457/html/contentLoadError.html";
+}
+}
+}
+function myOnload(){
+if(top._browserInfo.browserName=="Chrome"){
+try{
+top.mainPage.myOnResize();
+top.mainPage.getLeftSideFrame().myOnResize();
+top.mainPage.getNavigationFrame().myOnResize();
+top.mainPage.getRightSideFrame().myOnResize();
+}catch(e){
+}
+}
+}
+  </script>
+ </head>
+<frameset cols="*,0" frameborder="no" noresize="true">
+  <frame src="blank.html" name="CONTENT_HOME" id="CONTENT_HOME" scrolling="auto" noresize onload="myOnload();">
+	<frame src="systemStatusTray.html" name="SYSTEM_STATUS" id="SYSTEM_STATUS" scrolling="auto" noresize onload="loadFrameContent();">
+</frameset>
+</html>

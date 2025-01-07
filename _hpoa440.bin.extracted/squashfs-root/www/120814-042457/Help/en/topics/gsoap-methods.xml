@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DMethods" parent-id="" author="slamasla" modified="10-8-2009" type="reference">
+<source>/120814-042457/help/en/topics/gsoap-methods.xml</source>
+<title>Soap Methods</title>  
+<keywords>methods search</keywords>
+<intro></intro>
+<sections>
+  <section>
+    <desc/>
+    <content>
+      <p>
+        The complete list of supported methods for the current namespace is added to the Method dropdown box. This list is automatically 
+        generated using the WSDL file, so it is always accurate.
+      </p>
+      <p>
+        <h5>Selecting Methods</h5>
+        
+        The user may scroll through the list of methods in the Method dropdown box and select the desired method. After 
+        selection, the results window will display the arguments required for the method, and an input will be generated
+        for each of the required arguments (some methods do not require arguments).
+      </p>
+      <p>
+        To simplify method selection, the user may also click the <img src="/120814-042457/images/find.gif" border="0" width="22" height="20" /> icon and type a search word to locate 
+        a specific soap method. The search performed will be case-insensitive, and will only locate the first method that matches the criteria. 
+        <br />
+        <br />
+        It is not necessary to type the entire method name in the search phrase. For example, typing "y2" would match the method "getTopology2."
+        <br />
+        <br />
+        <attention type="tip">
+        The search feature will only examine the methods that are currently loaded in the Method dropdown list. If you can't locate
+        a known method using the search feature, make sure you have Method Filter set to All and try again.        
+        </attention>
+      </p>
+      <p>
+        <h5>Method Filtering</h5>
+
+        For large method lists, it may be helpful to filter the methods to reduce the number of available choices.
+        <br />
+        <br />
+
+        <table cellpadding="5" border="0" cellspacing="0" margin="0" style="width:100%;border-collapse:collapse;vertical-align:top;">
+          <tr>
+            <th style="text-align:left;border:1px solid #010101;white-space:nowrap">Option</th>
+            <th style="text-align:left;border:1px solid #010101;white-space:nowrap;">Description</th>
+          </tr>
+          <tr>
+            <td style="border:1px solid #010101;white-space:nowrap;vertical-align:top;">All (default)</td>
+            <td style="border:1px solid #010101;">Filtering is off. All available methods are shown.</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #010101;white-space:nowrap;vertical-align:top;">Gets</td>
+            <td style="border:1px solid #010101;">Only methods beginning with 'get' are shown.</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #010101;white-space:nowrap;vertical-align:top;">Sets</td>
+            <td style="border:1px solid #010101;">Only methods beginning with 'set' are shown.</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #010101;white-space:nowrap;vertical-align:top;">Other</td>
+            <td style="border:1px solid #010101;">Only methods NOT beginning with 'get or 'set' are shown.</td>
+          </tr>
+        </table>
+      </p>
+    </content>
+  </section>
+</sections>
+</topic>

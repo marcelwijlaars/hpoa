@@ -1,0 +1,75 @@
+<!--  (C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>HP Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css"/>
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/tableManager.js"></script>
+<script type="text/javascript" src="../js/users.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+<script type="text/javascript" src="../js/domBuilder.js"></script>
+
+<script type="text/javascript">
+var encNum;
+var hpem=null;
+var ourInputValidator=null;
+function loadContent(){
+try{
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+var processor=new XsltProcessor('../Forms/addVlan.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+reconcilePage();
+top.mainPage.getHelpLauncher().setCurrentTopic("FORM_VLAN_ADD");
+}else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);
+}
+}
+catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+}
+function addVlan(){
+ourInputValidator=new InputValidator(null,'errorDisplay',true);
+if(!ourInputValidator.allInputsValidate()){
+ourInputValidator.updateMessages(true);
+ourInputValidator.autoFocus();
+return;
+}
+var id=document.getElementById('vlanId').value;
+var name=document.getElementById('vlanName').value;
+var formMgr=new FormManager(function(success){
+if(success){
+formMgr.displayManager.showWaitScreen();
+location.replace('/120814-042457/html/vlan.html?encNum='+encNum+'&tabId=definedVlans');
+}
+},false,'errorDisplay','bodyContent','waitContainer');
+formMgr.createWaitContainer(top.getString('addingVlan'));
+formMgr.startBatch();
+formMgr.queueCall(hpem.addVlan,[id,name]);
+formMgr.endBatch();
+}
+function cancelAdd(){
+location.replace('/120814-042457/html/vlan.html?encNum='+encNum+'&tabId=definedVlans');
+}
+  </script>
+</head>
+<body style="margin:10px;" onload="loadContent();">
+    <div id="bodyContent"></div>
+    <div id="waitContainer"></div>
+</body>
+</html>
+

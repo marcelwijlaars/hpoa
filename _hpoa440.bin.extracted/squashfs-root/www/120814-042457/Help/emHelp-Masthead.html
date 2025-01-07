@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html>
+<head>
+<title></title>
+    <!--[if gte IE 10]>
+      <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE9"/>
+    <![endif]-->
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <link rel="stylesheet" type="text/css" href="/120814-042457/css/default.css"/>
+    <link rel="stylesheet" type="text/css" href="/120814-042457/css/blue_theme.css"/>
+    <link rel="stylesheet" type="text/css" href="/120814-042457/css/MxPortalEx.css"/>
+    <style type="text/css">
+      html>body #contents {margin-left:1px;}
+    </style>
+    <script type="text/javascript" src="/120814-042457/js/buttonManager.js"></script>
+    <script type="text/javascript" src="/120814-042457/js/tabManager.js"></script>
+    <script type="text/javascript">	
+var ourButtonManager;
+var ourTabManager;
+function myOnLoad(){
+ourTabManager=new TabManager();
+ourTabManager.init();
+ourButtonManager=new ButtonManager();
+ourButtonManager.init();
+var helpType=top.getKeyValue(top.getHelpManager().getQueryString(),"type");
+setTabContent((helpType==""?"contents":helpType));
+}
+function setTabContent(tabid){
+ourTabManager.toggleTabs(tabid);
+top.getHelpManager().initDirectory(tabid);
+}
+function doPrint(){
+top.getHelpManager().printContent();
+}
+function getText(key){
+document.write(top.getHelpManager().getString(key));
+}
+    </script>
+  <base target="iframeContent" />
+  </head>
+  <body class="body-flush-fit" onload="myOnLoad();">
+    <table class="applicationMastheadSmall" id="tblMain" width="100%" border="0" height="39px" cellspacing="0" cellpadding="0"><!-- masthead table -->
+      <tr>
+        <td class="mastheadIcon" style="width:40px;text-align:right;"><a href="http://www.hp.com" target="__new__"><img src="/120814-042457/images/themes/blue/logo_hp_smallmasthead.gif" width="30" height="19" border="0" alt="HP"/></a></td>
+        <td class="mastheadTitle" style="padding-top:0px;vertical-align:middle;white-space:nowrap"><h1><script>getText('systemName');</script> <script>getText('help');</script></h1></td>
+        <td style="width:60%">&nbsp;</td>
+        <td style="height:39px;width:324px;"><img src="/120814-042457/images/masthead_photo_small.jpg" style="border-left:7px solid white;border-right:7px solid white;" alt="" width="310" height="39"/></td>
+        <td style="height:39px;width:50px;padding-right:45px">&#160;</td>
+      </tr>
+    </table>
+    <table cellpadding="0" cellspacing="0" width="100%" height="45" border="0" style="border-left:7px solid white;border-right:7px solid white;"> 
+      <!-- this tab group does not use a div for the bottom line because it was causing resizing problems. a 5px cell border is used instead -->
+      <tr>
+        <td style="width:400px;border-bottom:5px solid #cccccc;white-space:nowrap;vertical-align:bottom;"><!-- tab group -->
+          <div style="margin-top:0px;width:350px;" class="tabSet">
+            <div id="contents" tabid="contents" class="tabOff"><script>getText('contents');</script></div>
+            <div id="index" tabid="index" class="tabOff"><script>getText('index');</script></div>
+            <div id="search" tabid="search" class="tabOff"><script>getText('search');</script></div>
+          </div>
+        </td><!-- end tab group -->
+        <td style="border-bottom:5px solid #cccccc;">&#160;</td>
+        <td style="width:100px;border-bottom:5px solid #cccccc;background:white;vertical-align:bottom;white-space:nowrap">
+          <div class="buttonSet" style="width:80px;margin-bottom:2px;padding-right:10px;"><!-- print button -->
+            <div class="bWrapperUp"><div><div><button class="hpButtonSmall" id="btnPrint" onclick="doPrint();"><script>getText('print');</script></button></div></div></div>
+          </div>
+        </td>
+      </tr>
+    </table> <!-- end masthead table -->
+  </body>
+</html>

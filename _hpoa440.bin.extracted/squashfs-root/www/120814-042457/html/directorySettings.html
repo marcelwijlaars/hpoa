@@ -1,0 +1,304 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css">
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css">
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css">
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/tabManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/batchManager.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+<script type="text/javascript" src="../js/domBuilder.js"></script>
+<script type="text/javascript" src="../js/ldap.js"></script>
+
+<script type="text/javascript">
+var encNum;
+var hpem=null;
+var testStatusDoc=null;
+var minTestVersion=2.25;
+function loadContent(){
+top.mainPage.setMainTitle(top.getString('directorySettings'));
+try{
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+if(hpem.getActiveFirmwareVersion()>=minTestVersion){
+document.getElementById('testSettings').style.display='block';
+}
+ourTabManager.toggleTabs('ldapSettings');
+setTabContent('ldapSettings');
+hpem.registerEventHandler(certificateAdded,['EVENT_LDAP_DIRECTORY_SERVER_CERTIFICATE_ADDED']);
+hpem.registerEventHandler(certificateRemoved,['EVENT_LDAP_DIRECTORY_SERVER_CERTIFICATE_REMOVED']);
+}
+}
+catch(e){}
+}
+function getCurrentTab(){
+return ourTabManager.getCurrentTab();
+}
+function setTabContent(tabId){
+var contentTab=document.getElementById(tabId);
+var contentLocation=contentTab.getAttribute('contentLocation');
+var contextHelpId=contentTab.getAttribute('contextId');
+if(contentLocation){
+try{
+if(hpem!=null){
+var formMgr=new FormManager(function(success){
+if(success){
+var processor=new XsltProcessor(contentLocation);
+if(testStatusDoc==null&&hpem.getActiveFirmwareVersion()>=minTestVersion){
+testStatusDoc=hpem.getLdapTestStatus();
+}
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('ldapInfoDoc',hpem.getLdapInfo());
+processor.addParameter('isWizard','false');
+processor.addParameter('encNum',encNum);
+if(hpem.getActiveFirmwareVersion()>=minTestVersion){
+processor.addParameter('testStatusDoc',testStatusDoc);
+}
+document.getElementById('tabContent').innerHTML=processor.getOutput();
+reconcilePage();
+showLDAPIPv6DisabledNote('false',encNum);
+}
+else{
+displayContentFailed('tabContent',formMgr.getErrorsArray());
+}
+},true,'','tabContent');
+formMgr.startBatch(true);
+formMgr.queueCall(hpem.getLdapInfo);
+if(hpem.getActiveFirmwareVersion()>=minTestVersion){
+formMgr.queueCall(hpem.getLdapTestStatus);
+}
+formMgr.endBatch();
+top.mainPage.getHelpLauncher().setCurrentTopic(contextHelpId);
+}
+else{
+displayContentFailed('tabContent',[top.getString('noOnboardAdmin')]);
+}
+}
+catch(e){
+displayContentFailed('tabContent',[e.message]);
+}
+}
+}
+function setLdapSettings(){
+var ldapEnabled=document.getElementById('ldapEnabled').checked;
+var localEnabled=document.getElementById('localEnabled').checked;
+if(ldapEnabled){
+var ourInputValidator=new InputValidator(null,'errorDisplay',true);
+if(!ourInputValidator.allInputsValidate()){
+ourInputValidator.updateMessages(true);
+ourInputValidator.autoFocus();
+return;
+}else{
+ourInputValidator.clearMessages();
+}
+}
+if(ldapEnabled||localEnabled){
+var waitPhrase=top.getString('completingLdapSettings');
+var confirmString='';
+var requiresConfirm=false;
+var dsAddress=document.getElementById('dsAddress').value;
+var ldapPort=document.getElementById('ldapPort').value;
+var searchContext1=document.getElementById('searchContext1').value;
+var searchContext2=document.getElementById('searchContext2').value;
+var searchContext3=document.getElementById('searchContext3').value;
+var ntAccountMapping=document.getElementById('ntAccountMapping').checked;
+if(ldapPort==''){
+ldapPort=0;
+}
+var emptyCount=0;
+var inputCount=0;
+if(ldapEnabled){
+var inputs=document.getElementsByTagName("input");
+for(var i=0;i<inputs.length;i++){
+if(inputs[i].getAttribute("type")=="text"&&
+inputs[i].getAttribute("id").indexOf("searchContext")>-1){
+inputCount++;
+if(inputs[i].value==''){
+emptyCount++;
+}
+}
+}
+if(emptyCount==inputCount){
+requiresConfirm=true;
+confirmString=top.getString('areYouSureEnableLDAP');
+}
+}
+if((requiresConfirm&&confirm(confirmString))||!requiresConfirm){
+var batchMgr=new BatchManager(null,false,'errorDisplay','tabContent','waitContainer');
+batchMgr.createWaitContainer(waitPhrase);
+var batch=batchMgr.addBatch('LDAP Settings');
+if(ldapEnabled){
+if(hpem.getActiveFirmwareVersion()>=2.60){
+var domBuilder=new DomBuilder();
+domBuilder.addDocument("hpoa:searchContexts",['xmlns:'+OA_NAMESPACE(),OA_NAMESPACE_URI()]);
+var inputs=document.getElementsByTagName("input");
+for(var i=0;i<inputs.length;i++){
+if(inputs[i].getAttribute("type")=="text"&&
+inputs[i].getAttribute("id").indexOf("searchContext")>-1){
+domBuilder.appendChild("hpoa:searchContext",null,inputs[i].value);
+}
+}
+var searchContexts=domBuilder.getDocument().documentElement.cloneNode(true);
+if(hpem.getActiveFirmwareVersion()>=3.80){
+var gcPort=document.getElementById('gcPort').value;
+if(gcPort==''){
+gcPort=0;
+}
+var trans1=batch.addTransaction(waitPhrase,new FormManager(),true);
+trans1.formMgr.queueCall(hpem.setLdapInfo3,[dsAddress,ldapPort,gcPort,ntAccountMapping,searchContexts]);
+}else{
+var trans1=batch.addTransaction(waitPhrase,new FormManager(),true);
+trans1.formMgr.queueCall(hpem.setLdapInfo2,[dsAddress,ldapPort,ntAccountMapping,searchContexts]);
+}
+}else if(hpem.getActiveFirmwareVersion()>=2){
+var trans1=batch.addTransaction(waitPhrase,new FormManager(),true);
+trans1.formMgr.queueCall(hpem.setLdapInfoEx,[dsAddress,ldapPort,searchContext1,searchContext2,searchContext3,ntAccountMapping]);
+}
+else{
+var trans1=batch.addTransaction(waitPhrase,new FormManager(),true);
+trans1.formMgr.queueCall(hpem.setLdapInfo,[dsAddress,ldapPort,searchContext1,searchContext2,searchContext3,ntAccountMapping]);
+}
+}
+var trans2=batch.addTransaction('Enable LDAP Authentication',new FormManager());
+trans2.formMgr.queueCall(hpem.enableLdapAuthentication,[ldapEnabled,localEnabled]);
+batchMgr.runBatches();
+}
+}else{
+alert(top.getString('mustEnableLeastOneAuth'));
+}
+}
+function uploadCertificate(){
+var certContent=document.getElementById('certificateContents').value;
+if(certContent!=''){
+var formMgr=new FormManager(function(success){
+if(success){
+formMgr.displayManager.showWaitScreen();
+}
+},false,'errorDisplay','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString('completingCertUpload'));
+formMgr.startBatch();
+formMgr.queueCall(hpem.addLdapDirectoryServerCertificate,[certContent]);
+formMgr.endBatch();
+}
+else{
+alert(top.getString('pleaseEnterCertContents'));
+}
+}
+function downloadCertificate(){
+var certUrl=document.getElementById('certUrl').value;
+if(certUrl!=''){
+var formMgr=new FormManager(function(){
+if(success){
+formMgr.displayManager.showWaitScreen();
+}
+},false,'errorDisplay','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString('downloadingCertificate'));
+formMgr.startBatch();
+formMgr.queueCall(hpem.downloadLdapDirectoryServerCertificate,[certUrl]);
+formMgr.endBatch();
+}
+else{
+alert(top.getString('pleaseProvideValidUrl'));
+}
+}
+function certificateAdded(result){
+if(getCurrentTab()=='certUpload'){
+ourTabManager.toggleTabs('ldapCertificates');
+setTabContent('ldapCertificates');
+}
+}
+function certificateRemoved(result){
+ourTabManager.toggleTabs('ldapCertificates');
+setTabContent('ldapCertificates');
+}
+function removeCertificate(md5Fingerprint){
+var confirmString=top.getString('confirmDeleteCert');
+if(confirm(confirmString)){
+var formMgr=new FormManager(function(){
+if(success){
+formMgr.displayManager.showWaitScreen();
+}
+},false,'errorDisplay','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString('removingCertificate'));
+formMgr.startBatch();
+formMgr.queueCall(hpem.removeLdapDirectoryServerCertificate,[md5Fingerprint]);
+formMgr.endBatch();
+}
+}
+function testLdap(){
+var username=document.getElementById('username').value;
+var password=document.getElementById('password').value;
+var logContents='';
+var formMgr=new FormManager(function(success){
+testStatusDoc=formMgr.getDataByCallIndex(0);
+setTabContent('testSettings');
+logContents=getElementValueXpath(testStatusDoc,'//hpoa:ldapTestResult/hpoa:testLog');
+logContents=logContents.replace(/\^/g,'');
+document.getElementById('testLog').innerHTML=logContents;
+myOnResize();
+},false,'errorDisplay','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString('performingLdapTests'));
+formMgr.startBatch();
+formMgr.queueCall(hpem.testLdap,[username,password]);
+formMgr.endBatch();
+}
+function deRegisterHandlers(){
+if(hpem!=null){
+hpem.removeRegisteredHandler(certificateAdded);
+hpem.removeRegisteredHandler(certificateRemoved);
+}
+}
+function myOnResize(){
+var testLog=document.getElementById('testLog');
+if(testLog&&document.all){
+testLog.style.width="";
+testLog.style.width=testLog.offsetWidth;
+}
+}
+</script>
+</head>
+<body style="margin:10px;" onload="loadContent();" onresize="myOnResize();" onunload="deRegisterHandlers();">
+    <div id="bodyContent">
+	
+		<table cellpadding="0" cellspacing="0" border="0" width="100%">
+			<tr>
+				<td valign="bottom">
+					<div class="tabSet" id="tabSet">
+						<div class="tabOff" tabid="ldapSettings" contextId="FORM_LDAP_SETTINGS" id="ldapSettings" contentLocation="../Forms/DirectorySettingsPage.xsl"><script type="text/javascript">document.write(top.getString('directorySettings'));</script></div>
+						<div class="tabOff" tabid="ldapCertificates" contextId="FORM_LDAP_CERTIFICATES" id="ldapCertificates" contentLocation="../Templates/ldapCertificateInformation.xsl"><script type="text/javascript">document.write(top.getString('certificateInformation'));</script></div>
+						<div class="tabOff" tabid="certUpload" contextId="FORM_CERTIFICATE_UPLOAD" id="certUpload" contentLocation="../Templates/certificateUpload.xsl"><script type="text/javascript">document.write(top.getString('certificateUpload'));</script></div>
+						<div class="tabOff" style="display:none;" tabid="testSettings" contextId="FORM_LDAP_TEST" id="testSettings" contentLocation="../Templates/ldapTest.xsl"><script type="text/javascript">document.write(top.getString('testSettings'));</script></div>
+						<div class="tabBottomLine"></div>
+					</div>
+					
+				</td>
+			</tr>
+			<tr>
+				<td style="padding-top:10px;">
+					<div id="tabContent"></div>
+					<div id="waitContainer" class="waitContainer"></div>
+				</td>
+			</tr>
+		</table>
+
+    <script type="text/javascript">
+if(typeof(TabManager)!="undefined"){
+ourTabManager.init();
+}
+    </script>
+		
+	</div>
+</body>
+</html>

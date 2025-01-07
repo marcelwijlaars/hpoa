@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DSystemLogforActive_EM_short_name_" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>System Log for Active Onboard Administrator</title>
+  <source>/120814-042457/Help/en/topics/DSystemLogforActive_EM_short_name_.xml</source>
+  <keywords>extended system log log files</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">The System Log displays logged information of events within the Onboard Administrator.</p>
+        <p class="bodytext">Events are logged from the top of the list to the bottom, with the most recent logged event appearing at the bottom of the list. If the list is longer than the display box, you can scroll using the scroll bar on the right side of the log screen.</p>
+        <p class="bodytext">When the log reaches maximum capacity, it automatically deletes the oldest logged event first (first in, first out).</p>
+        <p class="bodytext">To clear the list of all logged events, click <b>Clear</b><b>Log </b>(below the system log display).</p>
+        <p class="bodytext">
+          <b>Extended system log</b>
+        </p>
+        <p class="bodytext">The Onboard Administrator automatically saves 300 KB of the latest system log history (in optimal scenarios, 400 KB). This extended system log is retained during a reboot, restart, and power off, if those actions are performed gracefully. In optimal circumstances, the Onboard Administrator automatically saves up to 400 KB of the latest system log history. If power to the Onboard Administrator is removed unexpectedly or the Onboard Administrator is removed from the enclosure without a proper shutdown, the latest (unsaved) portions of the extended system log might be lost.</p>
+        <p class="bodytext">To display the extended system log, use the CLI <tt>SHOW SYSLOG HISTORY</tt> command. </p>
+        <p class="bodytext">For persistent storage of system log history, you can set up remote system logging, using the <a href="DLogOptionstab.xml">Log Options tab</a>.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

@@ -1,0 +1,382 @@
+/** (C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P. */
+.mxPageSubTitle
+{
+color: black;
+font-size:larger;
+}
+.body-flush-fit
+{
+margin: 0px;
+border: 0px;
+padding: 0px;
+-moz-box-sizing:border-box;
+-webkit-box-sizing:border-box;
+}
+.body-flush-fit-scrolling
+{
+margin: 0px;
+border: 0px;
+padding: 0px;
+overflow: auto;
+-moz-box-sizing:border-box;
+-webkit-box-sizing:border-box;
+}
+.body-flush-fit-inner-0
+{
+background-color: white;
+margin: 0px;
+border: 0px;
+padding: 0px;
+overflow: hidden;
+-moz-box-sizing:border-box;
+-webkit-box-sizing:border-box;
+}
+.body-flush-fit-inner-1
+{
+background-color: white;
+margin: 0px;
+border: white 4px solid;
+padding: 0px;
+-moz-box-sizing:border-box;
+-webkit-box-sizing:border-box;
+}
+.body-set-aside
+{
+background-color: white;
+margin: 0px;
+border: 0px;
+padding: 0px;
+overflow: auto;
+}
+.body-proxy
+{
+margin: 0px;
+border: 0px;
+padding: 0px;
+width: 100%;
+height: 100%;
+}
+.body-flush-fit-scrolling-nobackground
+{
+margin: 0px;
+border: 0px;
+padding: 0px;
+}
+.body-padded
+{
+margin:10px;
+-moz-box-sizing:border-box;
+-webkit-box-sizing:border-box;
+}
+.action-button
+{
+font-size: 120%;
+border-left: white 1px solid;
+border-top: white 1px solid;
+border-right: #666666 1px solid;
+border-bottom: #666666 1px solid;
+background: #CCCCCC;
+cursor: pointer;
+color: black;
+}
+.window-border-table
+{
+background-color: white;
+width: 100%;
+border-left: 0px;
+border-right: 0px;
+border-top: 0px;
+border-bottom: 0px;
+}
+.window-border-table-small
+{
+background-color: white;
+border-left: 0px;
+border-right: 0px;
+border-top: 0px;
+border-bottom: 0px;
+}
+.window-title-row
+{
+font-weight: bold;
+background-color: #666666;
+border-bottom: #484848 2px solid;
+color: white;
+cursor: default;
+}
+.window-title-row img
+{
+cursor: pointer;
+margin-left: 1px;
+margin-right: 1px
+}
+.window-nodelist-row
+{
+background-color: white;
+}
+.portal-mxlink
+{
+font-size: 120%;
+white-space: nowrap;
+}
+A.help-mxlink
+{
+color: #006699;
+white-space: nowrap;
+text-decoration: none;
+}
+.window-sizer-cell
+{
+text-align: center;
+width: 100%;
+background-color: #999999;
+cursor: move;
+}
+.title-outer-table
+{
+margin-top: 0px;
+}
+.title-name
+{
+font-size:20px;
+padding-left:10px;
+padding-bottom:10px;
+padding-top:15px;
+background: #CCCCCC;
+vertical-align: middle;
+width: 100%;
+}
+.title-subtitle
+{
+background: #CCCCCC;
+padding-left:10px;
+padding-bottom:10px;
+padding-top:0px;
+font-size:11px;
+}
+.title-links
+{
+font-weight: normal;
+background: #CCCCCC;
+padding-right:4px;
+white-space: nowrap;
+text-align: right;
+}
+.subwindow-header {
+font-size: 139%;
+font-weight: bold;
+color: black;
+}
+.header-links
+{
+text-align: left;
+font-weight: bold;
+background: #003366;
+color: white;
+text-decoration: none;
+}
+.header-line
+{
+text-align: left;
+border-right: white 4px solid;
+border-bottom: white 2px solid;
+}
+.header-status-labels
+{
+white-space: nowrap;
+text-decoration: none;
+}
+.header-status-counts
+{
+text-decoration: none;
+}
+.header-timestamp
+{
+text-align: center;
+white-space: nowrap;
+text-decoration: none;
+}
+.logon-warning
+{
+font-size: 120%;
+display: none;
+color: red;
+text-align: center;
+}
+.portal-legend-img
+{
+white-space: nowrap;
+text-align: right;
+}
+.portal-legend-txt
+{
+white-space: nowrap;
+text-align: left;
+}
+.monitor-divider {
+border-top:#999999 1px solid;
+margin:5px 5px 5px 5px;
+height:1px;
+overflow:hidden;
+}
+.debugTable
+{
+border:thin solid black 1px;
+}
+.debugTableHeader
+{
+color:white;
+background:#006699;
+font-family: arial,sans-serif;
+font-size: 10pt;
+font-weight:bold;
+}
+.debugTableRow
+{
+color:black;
+background:#EEEEEE;
+font-family: arial,sans-serif;
+font-size: 8pt;
+}
+.debugTablePropertyCell
+{
+font-weight:bold;
+border:thin solid black 1px;
+font-family: arial,sans-serif;
+font-size: 8pt;
+}
+.debugTableValueCell
+{
+border:thin solid black 1px;
+font-family: arial,sans-serif;
+font-size: 8pt;
+}
+.errorText
+{
+font-size: 120%;
+color:red;
+}
+.errorTextBold
+{
+font-size: 120%;
+font-weight:bold;
+color:red;
+}
+.required_label
+{
+color:black;
+border-top: white 10px solid;
+border-bottom: white 10px solid;
+}
+.required
+{
+color:black;
+}
+HR.mx-hr
+{
+height: 1px;
+color: #999999;
+background: #999999;
+}
+.mx-subheader-nosep
+{
+font-size: 139%;
+font-weight: bold;
+color: black;
+}
+.mx-subheader
+{
+margin-top: 1em;
+border-top: #999999 1px solid;
+font-size: 139%;
+font-weight: bold;
+color: black;
+margin-bottom: 1em;
+}
+.mx-button
+{
+font-size: 120%;
+border-left: white 1px solid;
+border-top: white 1px solid;
+border-right: #666666 1px solid;
+border-bottom: #666666 1px solid;
+background: #cccccc;
+cursor: default;
+color: black;
+}
+.mx-button-disabled
+{
+font-size: 120%;
+border-left: white 1px solid;
+border-top: white 1px solid;
+border-right: #666666 1px solid;
+border-bottom: #666666 1px solid;
+background: #cccccc;
+cursor: default;
+color: #999999;
+}
+A.mx-link
+{
+}
+A.mx-link:active { color: #006699; }
+A.mx-link:link { color: #006699; }
+A.mx-link:visited { color: #660066; }
+.home-customize {
+padding: 2px 4px 2px 0px;
+text-align:right;
+background-color:#cccccc;
+}
+.home-heading {
+color:white;
+background-color:#666666;
+font-weight:bold;
+padding:2px 4px 2px 10px;
+}
+TD.home-fta {
+width: 50%;
+padding-left: 8px;
+}
+TD.home-fta-1 {
+padding-right: 10px;
+}
+TD.home-dns {
+text-align: right;
+padding-right: 4px;
+}
+TD.home-monitor {
+padding-right: 10px;
+}
+.home-monitor-1 {
+padding-left: 8px;
+}
+TD.home-dyk {
+width: 75%;
+padding-left: 10px;
+}
+.home-dyk-1 {
+padding-right: 4px;
+}
+TD.home-dyk-img {
+padding-right: 5px;
+}
+TABLE.top-border-table
+{
+border-top-style: solid;
+border-top-width: 1px;
+border-bottom-style: none;
+border-left-style: none;
+border-right-style: none;
+}
+.menu_frame_ie
+{
+margin-top: 1px;
+width: 100%;
+height: 26px;
+}
+.menu_frame_mozilla
+{
+width: 100%;
+height: 50px;
+position: absolute;
+visibility: hidden;
+}

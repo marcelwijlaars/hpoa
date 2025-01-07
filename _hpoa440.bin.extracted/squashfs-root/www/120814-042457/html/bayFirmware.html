@@ -1,0 +1,208 @@
+<!--  (C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css"/>
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+<link rel="stylesheet" type="text/css" href="../Help/stylesheets/help.css"/>
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/tabManager.js"></script>
+<script type="text/javascript" src="../js/tableManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/helpTips.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+<script type="text/javascript" src="../js/iLO.js"></script>
+<script type="text/javascript" src="../js/firmwareManagement.js"></script>
+
+<script type="text/javascript">
+var encNum;
+var bayNum;
+var hpem=null;
+function loadContent(){
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+bayNum=parseInt(getSearchValue(location.search,'bayNum'));
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+hpem.registerEventHandler(bladeStatusChanged,['EVENT_BLADE_STATUS']);
+hpem.registerEventHandler(firmwareLogsClearedEvent,['EVENT_FW_MGMT_ALL_LOGS_CLEARED']);
+selectTab('fwSummary',true);
+}else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);
+}
+}
+function firmwareLogsClearedEvent(result){
+setTabContent(getCurrentTab(),true);
+}
+function getCurrentTab(){
+return ourTabManager.getCurrentTab();
+}
+function selectTab(tabId,init){
+ourTabManager.toggleTabs(tabId);
+setTabContent(tabId,init);
+}
+function setTabContent(tabId,init){
+var contentTab=document.getElementById(tabId);
+if(!contentTab){
+return;
+}
+var contentLocation=contentTab.getAttribute('contentLocation');
+var contextHelpId=contentTab.getAttribute('contextId');
+top.mainPage.getHelpLauncher().setCurrentTopic(contextHelpId);
+switch(tabId){
+case 'fwSummary':
+var formMgr=new FormManager(function(success){
+if(getCurrentTab()=='fwSummary'){
+var processor=new XsltProcessor(contentLocation);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('bladeInfoDoc',hpem.getBladeInfo(bayNum));
+processor.addParameter('bladeMpInfoDoc',hpem.getBladeMpInfo(bayNum));
+processor.addParameter('firmwareDoc',hpem.getBladeFirmwareDoc(bayNum));
+processor.addParameter('enclosureType',hpem.getEnclosureType());
+processor.addParameter('isTower',hpem.getIsTower()+"");
+processor.addParameter('numDeviceBays',hpem.getNumBlades());
+processor.addParameter('encNum',encNum);
+processor.addParameter('fwManagementSettings',hpem.getFirmwareManagementSettings());
+processor.addParameter('serviceUserAcl',hpem.getUserAccessLevel());
+processor.addParameter('saPciList',hpem.getSaPCIList());
+processor.addParameter('bladeStatusDoc',hpem.getBladeStatus(bayNum));
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+reconcilePage();
+var baySelectContainer=document.getElementById('svbSelectEnc'+encNum);
+if(baySelectContainer){
+var inputCollection=baySelectContainer.getElementsByTagName('input');
+for(var i=0;i<inputCollection.length;i++){
+var currentInput=inputCollection[i];
+if(currentInput.getAttribute('type')=='checkbox'&&currentInput.getAttribute('bayId')){
+var bayId=currentInput.getAttribute('bayId');
+if(bayId==bayNum){
+currentInput.checked=true;
+break;
+}
+}
+}
+}
+}
+},false,'','bodyContent');
+if(init){
+formMgr.createWaitContainer(top.getString('loading...'),top.getString('loadingFirmwareManagement'));
+formMgr.startBatch(false,init);
+}else{
+formMgr.startBatch(true);
+}
+formMgr.queueCall(hpem.getBladeFirmware,[bayNum]);
+formMgr.queueCall(hpem.getBladeMpInfo,[bayNum]);
+formMgr.queueCall(hpem.getFirmwareManagementSettings);
+formMgr.queueCall(hpem.getSaPCIList);
+formMgr.queueCall(hpem.getBladeStatus,[bayNum]);
+formMgr.endBatch();
+break;
+case 'fwLog':
+var processor=new XsltProcessor(contentLocation);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('serviceUserAcl','USER');
+processor.addParameter('logTitle',top.getString('bladeFwLog'));
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+var syslogText=document.getElementById('sysLogText');
+if(syslogText){
+syslogText.innerHTML=top.getString('loading...');
+}
+hpem.getBladeFirmwareLog(bayNum,sysLogLoaded);
+break;
+case 'execLog':
+var processor=new XsltProcessor(contentLocation);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('serviceUserAcl','USER');
+processor.addParameter('logTitle',top.getString('execLogTitle'));
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+var syslogText=document.getElementById('sysLogText');
+if(syslogText){
+syslogText.innerHTML=top.getString('loading...');
+}
+hpem.getBladeFirmwareExecLog(bayNum,sysLogLoaded);
+break;
+case 'postLog':
+var processor=new XsltProcessor(contentLocation);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('serviceUserAcl','USER');
+processor.addParameter('logTitle',top.getString('postLog'));
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+var syslogText=document.getElementById('sysLogText');
+if(syslogText){
+syslogText.innerHTML=top.getString('loading...');
+}
+hpem.getBladePostLog(bayNum,sysLogLoaded);
+break;
+}
+reconcilePage();
+}
+function sysLogLoaded(result){
+var logText='';
+if(result.xml.indexOf(SOAP_FAULT_TEST())==-1&&!(result.xml.indexOf('<hpoa:logContents/>')>-1)){
+logText=getElementValueFromString(result.xml,'hpoa:logContents');
+}
+else if(result.xml.indexOf(SOAP_FAULT_TEST())>-1){
+logText='The log does not exist for this blade.';
+}else{
+logText='Information is not available at this time.';
+}
+if(document.getElementById('sysLogText'))
+document.getElementById('sysLogText').value=logText;
+}
+function selectDevice(bayNumber,type,encNum){
+top.mainPage.getHiddenFrame().selectDevice(bayNumber,type,encNum,true);
+}
+function bladeStatusChanged(result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+if(bayNumber==bayNum){
+if(getCurrentTab()=='fwSummary'){
+setTabContent(getCurrentTab(),true);
+}
+}
+}
+function deRegisterEvents(){
+if(hpem!=null){
+hpem.removeRegisteredHandler(bladeStatusChanged);
+hpem.removeRegisteredHandler(firmwareLogsClearedEvent);
+}
+}
+</script>
+</head>
+<body style="margin:10px;" onload="loadContent();" onunload="deRegisterEvents();">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+      <td valign="bottom">
+        <div class="tabSet" id="tabSet">
+          <div class="tabOff" tabid="fwSummary" contextId="FORM_SVB_FW_SUMMARY" id="fwSummary" contentLocation="../Templates/bayFirmware.xsl"><script type="text/javascript">document.write(top.getString('firmwareSummary'));</script></div>
+          <div class="tabOff" tabid="fwLog" contextId="FORM_SVB_FW_LOG" id="fwLog" contentLocation="../Forms/SysLogPage.xsl"><script type="text/javascript">document.write(top.getString('firmwareLog'));</script></div>
+          <div class="tabOff" tabid="execLog" contextId="FORM_SVB_FW_SESSION_LOG" id="execLog" contentLocation="../Forms/SysLogPage.xsl"><script type="text/javascript">document.write(top.getString('execLog'));</script></div>
+<!--
+          <div class="tabOff" tabid="postLog" contextId="FORM_OA_SYSTEM_LOG_OPTIONS" id="postLog" contentLocation="../Forms/SysLogPage.xsl"><script type="text/javascript">document.write(top.getString('postLog'));</script></div>
+-->
+          <div class="tabBottomLine"></div>
+        </div>					
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-top:10px;">
+        <div id="bodyContent"></div>
+        <div id="waitContainer" class="waitContainer"></div>
+      </td>
+    </tr>
+  </table>
+
+  <script type="text/javascript">
+if(typeof(TabManager)!="undefined"){
+ourTabManager.init();
+}
+  </script>
+
+</body>
+</html>

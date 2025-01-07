@@ -1,0 +1,72 @@
+<!--  (C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css"/>
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/tableManager.js"></script>
+<script type="text/javascript" src="../js/snmp.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+
+<script type="text/javascript">
+var encNum;
+var hpem=null;
+var ourInputValidator=null;
+var user='';
+function loadContent(){
+top.mainPage.setMainTitle(top.getString('addSnmpUser'));
+top.mainPage.getHelpLauncher().setCurrentTopic("FORM_SNMP_ADD_USER");
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+hpem=top.mainPage.getHiddenFrame().getProxy(encNum);
+hpem.registerEventHandler(handleSnmpv3Event,['EVENT_SNMPV3_INFO_CHANGED']);
+var formMgr=new FormManager(function(success){
+var processor=new XsltProcessor('../Templates/addSnmpUserExternal.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('networkInfoDoc',formMgr.getDataByCallName("getEnclosureNetworkInfo"));
+processor.addParameter('snmpInfo3Doc',formMgr.getDataByCallName("getSnmpInfo3"));
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+reconcilePage();
+ourInputValidator=new InputValidator(null,"errorDisplay",true);
+user='';
+focusTextbox("username");
+},false,'errorDisplay','bodyContent','waitContainer');
+formMgr.startBatch(true);
+formMgr.queueCall(hpem.getEnclosureNetworkInfo);
+formMgr.queueCall(hpem.getSnmpInfo3);
+formMgr.endBatch();
+}
+function handleSnmpv3Event(result){
+var found=getElementValueXpath(result,"//hpoa:userInfo[hpoa:user='"+user+"']",true);
+if(found){
+cancelSnmpUser();
+}
+}
+function cancelSnmpUser(){
+snmpUpdatePageTitle();
+location='/120814-042457/html/snmp.html?encNum='+encNum+'&tab=snmpUsers';
+}
+function myOnUnload(){
+try{
+hpem.removeRegisteredHandler(handleSnmpv3Event);
+}catch(e){}
+}
+  </script>
+</head>
+<body style="margin:10px;" onload="loadContent();" onunload="myOnUnload();">
+  <div id="bodyContent"></div>
+  <div id="waitContainer" class="waitContainer"></div>  
+</body>
+</html>
+

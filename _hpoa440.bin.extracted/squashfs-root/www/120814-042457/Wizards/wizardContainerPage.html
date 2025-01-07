@@ -1,0 +1,189 @@
+<html xmlns="http://www.w3.org/1999/xhtml"><!--
+  (C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<head>
+  <title>HP BladeSystem Onboard Administrator</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+  <link rel="stylesheet" type="text/css" href="../css/default.css" />
+  <link rel="stylesheet" type="text/css" href="../css/blue_theme.css" />
+  <link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css" />
+  <link rel="stylesheet" type="text/css" href="../css/widgets.css" />
+  <link rel="stylesheet" type="text/css" href="../Help/stylesheets/help.css" />
+  <link rel="stylesheet" type="text/css" href="../css/calendar.css" />
+  
+  <style type="text/css">
+    #enablePinProtection{margin-left:0px;}
+    * html #enablePinProtection{margin-left:-4px;}
+  </style>
+
+  <!--[if gte IE 11]>
+    <script type="text/javascript">
+var browserDOM7011=true;
+    </script>  
+  <![endif]-->
+  
+  <script type="text/javascript" src="../js/helpTips.js"></script>
+  <script type="text/javascript" src="../js/EnvironConstants.js"></script>
+  <script type="text/javascript" src="../js/ipv4.js"></script>
+  <script type="text/javascript" src="../js/navigationControlManager.js"></script>
+  <script type="text/javascript" src="../js/transferBoxManager.js"></script>
+  <script type="text/javascript" src="../js/inputValidator.js"></script>
+  <script type="text/javascript" src="../js/buttonManager.js"></script>
+  <script type="text/javascript" src="../js/postBackManager.js"></script>
+  <script type="text/javascript" src="../js/tableManager.js"></script>
+  <script type="text/javascript" src="../js/global.js"></script>
+  <script type="text/javascript" src="../js/init.js"></script>
+  <script type="text/javascript" src="../js/xml.js"></script>
+  <script type="text/javascript" src="../js/xslt.js"></script>
+  <script type="text/javascript" src="../js/tabManager.js"></script>
+  <script type="text/javascript" src="../js/displayManager.js"></script>
+  <script type="text/javascript" src="../js/formManager.js"></script>
+  <script type="text/javascript" src="../js/batchManager.js"></script>
+  <script type="text/javascript" src="../js/users.js"></script>
+  <script type="text/javascript" src="../js/ldap.js"></script>
+  
+  <script type="text/javascript" src="js/Setup.js"></script> 
+  <script type="text/javascript" src="../js/progressBarManager.js"></script> 
+  <script type="text/javascript" src="js/Firmware.js"></script> 
+  <script type="text/javascript" src="../js/domBuilder.js"></script>
+  <script type="text/javascript" src="../js/ebipa.js"></script>
+  <script type="text/javascript" src="../js/ebipav6.js"></script>
+  <script type="text/javascript" src="../js/snmp.js"></script>
+  <script type="text/javascript" src="../js/calendar_us.js"></script>
+  
+  <script type="text/javascript">
+var STEP_CONTENT_STYLESHEET='/120814-042457/Wizards/SetupStepContentPage.xsl';
+var listeners=new Array();
+var xml=top.getXml();
+var ftswTabManager;
+function myOnLoad(){
+ftswTabManager=new TabManager();
+ftswTabManager.init();
+openCurrentStep();
+}
+function getWizardTop(){
+return window.parent;
+}
+function removePreviousStepListeners(){
+for(var index in listeners){
+switch(listeners[index].type){
+case "topologyComplete":
+top.getTopology().removeListener(listeners[index].func);
+break;
+default:
+top.getTopology().getProxyLocal().removeRegisteredHandler(listeners[index].func);
+}
+}
+listeners=new Array();
+}
+function setCurrentStepListeners(stepInfo){
+removePreviousStepListeners();
+if(stepInfo.eventListeners){
+for(var index in stepInfo.eventListeners){
+var listener=stepInfo.eventListeners[index];
+switch(listener.type){
+case "topologyComplete":
+top.getTopology().addTopologyCompleteListener(listener.func);
+break;
+default:
+top.getTopology().getProxyLocal().registerEventHandler(listener.func,listener.events);
+}
+listeners.push(listener);
+}
+}
+};
+function navigateToStep(stepNumber){
+try{
+var stepInfo=getStepInformation(stepNumber,getWizardTop().getStepsDocument());
+setCurrentStepListeners(stepInfo);
+var processor=new XsltProcessor(STEP_CONTENT_STYLESHEET);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('wizardStepsDoc',getWizardTop().getStepsDocument());
+processor.addParameter('currentStep',stepNumber);
+processor.addParameter('title',top.getString(stepInfo.title));
+document.body.innerHTML=processor.getOutput();
+if(getTotalXpath(getWizardTop().getStepsDocument(),"//step[number="+stepNumber+"]/buttons")==0){
+if(stepNumber!='0'){
+var num=parseInt(stepNumber);
+var prev=num-1;
+var prevButton=document.getElementById('previousButton');
+if(prevButton){
+prevButton.onclick=new Function("","javascript:location='/120814-042457/Wizards/wizardContainerPage.html?step="+prev+"'");
+}
+}
+setWizardButtonSetEnabled(true);
+}
+try{
+processor=new XsltProcessor(stepInfo.content);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('enclosureList',getWizardTop().getSelectedEnclosures());
+if(typeof(stepInfo.initFunction)!='undefined'&&stepInfo.initFunction!=null){
+eval(stepInfo.initFunction+'("'+stepInfo.content+'");');
+}
+else{
+document.getElementById('stepContent').innerHTML=processor.getOutput();
+}
+try{
+if(stepInfo!=null&&typeof(stepInfo.helpContext)!='undefined'){
+getWizardTop().setHelpCurrentContext(stepInfo.helpContext);
+getWizardTop().removeParam("helpContext","");
+}else if(getWizardTop().getParam("helpContext")!=""){
+getWizardTop().setHelpCurrentContext(getWizardTop().getParam("helpContext"));
+}else{
+getWizardTop().setHelpCurrentContext(0);
+}
+}
+catch(e){
+}
+}
+catch(e){
+}
+}
+catch(e){
+}
+reconcilePage();
+}
+function setWizardButtonSetEnabled(enabled){
+var buttonSetContainer=document.getElementById('wizardButtonSet');
+if(buttonSetContainer){
+var wizardButtons=buttonSetContainer.getElementsByTagName('button');
+for(var i=0;i<wizardButtons.length;i++){
+if(enabled){
+ourButtonManager.enableButtonById(wizardButtons[i].getAttribute('id'));
+}
+else{
+ourButtonManager.disableButtonById(wizardButtons[i].getAttribute('id'));
+}
+}
+}
+}
+function openCurrentStep(){
+var stepNumber=getSearchValue(location.search,'step');
+if(stepNumber!=''){
+navigateToStep(stepNumber);
+}else{
+alert(top.getString('invalidStep'),AlertMsgTypes.Warning);
+}
+}
+function exitWizard(confirmExit){
+if(typeof(confirmExit)=='undefined'){
+var confirmExit=false;
+}
+if(confirmExit){
+var confirmString=top.getString('reallyCancelWizard')+'\n'+top.getString('canStartWizardAgain');
+if(confirm(confirmString)){
+top.mainPage.cancelWizard();
+}
+}
+else{
+top.mainPage.cancelWizard();
+}
+}
+  </script>
+  
+</head>
+
+<body onload="myOnLoad();" onunload="removePreviousStepListeners();">
+
+</body>
+</html>

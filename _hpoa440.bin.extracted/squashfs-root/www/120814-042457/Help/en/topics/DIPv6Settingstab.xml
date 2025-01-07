@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DIPv6Settingstab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>IPv6 Settings tab</title>
+  <source>/120814-042457/Help/en/topics/DIPv6Settingstab.xml</source>
+  <keywords>DHCP (Dynamic Host Configuration Protocol) dynamic DNS enable IPv6 enable router advertisements gateway static route IP settings enclosure IPv6 Settings tab IPv6 static address SLAAC addresses</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>Enclosure IP Mode</b>
+        </p>
+        <p class="bodytext">When enabled, the <b>Enclosure IP Mode</b> setting ensures all management applications point to the Active Onboard Administrator of the enclosure, using a single static IP address. This mode is for enclosures with an Active and Standby Onboard Administrator. When the Standby Onboard Administrator takes over the role of the Active Onboard Administrator, that Onboard Administrator is assigned the IP address of the previous Active Onboard Administrator. This ensures the <b>Enclosure IP Mode</b> IP address is consistently pointing to the Active Onboard Administrator.</p>
+        <p class="bodytext">The <b>Enclosure IP Mode</b> requires the Active Onboard Administrator to have a static IPv4 address or a static IPv6 address (IPv6 must be enabled). The Standby Onboard Administrator can be configured for DHCP or static IP settings. This mode is optional and is disabled by default.</p>
+        <p class="bodytext">To ensure that the <b>Enclosure IP Mode</b> setting is not changed when removing an Onboard Administrator module from the enclosure, do not remove the module while it is in the failover transition phase (about six minutes after a failover). After you remove a module, to ensure that all settings are transferred to the Standby module, add a replacement module and leave it in place for five minutes. If both the Active and Standby Onboard Administrator modules are powered off or removed from the enclosure at the same time, the Standby Onboard Administrator returns to the default network settings and all manually configured static network addresses are lost.</p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  This feature is disabled while in the FIPS Mode ON/DEBUG.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  Enabling <b>Enclosure IP Mode</b> on either the IPv4 Settings tab or the IPv6 Settings tab automatically enables this mode on both tabs.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="bodytext">
+          <b>Enclosure Network Settings</b>
+        </p>
+        <p class="bodytext">IPv6 supports multiple addresses. You can enable any combination of the network settings. With IPv6, SLAAC and/or DHCPv6 enabled, the Onboard Administrator can obtain IP addresses from all the selected sources. It can have both automatically assigned IP addresses and user-specified static IP addresses. The <b>Enable SLAAC</b>, <b>Enable DHCPv6</b>, and <b>Enable Router Advertisements</b> settings take effect only if IPv6 is enabled.</p>
+        <ul class="listbullet">
+          <li class="listbullet">
+            <b>Enable IPv6</b>—Enables IPv6 protocol for all Onboard Administrator, interconnect, and server iLO modules in the enclosure. When enabled, one link-local address is auto configured.</li>
+          <li class="listbullet">
+            <b>Enable Router Advertisements</b>—Allows IPv6 router advertisements from the external management network onto the internal enclosure management network. If you disable this setting, the Onboard Administrator blocks IPv6 router advertisements sent from the external management network, preventing them from entering the internal enclosure management network.</li>
+          <li class="listbullet">
+            <b>Enable SLAAC</b>—Enables IPv6 Stateless address autoconfiguration messages to all Onboard Administrator, interconnect, and server iLO modules in the enclosure. This feature affects only global IPv6 addresses. When IPv6 and SLAAC are both enabled, the Onboard Administrator can obtain up to 11 SLAAC IP addresses.</li>
+          <li class="listbullet">
+            <b>Enable DHCPv6</b>—Enables the active (and standby, if configured) Onboard Administrator to request a DHCPv6 IP address. Allows DHCPv6 traffic on the enclosure management network.<p class="alertspacerbefore" /><table width="90%" cellspacing="0" cellpadding="2" rowsep="0" colsep="0"><tr valign="top"><td style="border:0px;width:1%;" align="left"><p class="tablebodytext"><img src="/120814-042457/Help/images/35928.png" alt="" /></p></td><td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left"><p class="tablebodytext"><b style="color:#0066FF;">CAUTION: </b> If you disable IPv6 in an IPv6-only environment, you will lose your connection to the Onboard Administrator GUI and any SSH sessions. To reestablish your connection, you must perform the initial enclosure configuration via IPv4 networking, the Insight Display, or the Onboard Administrator serial console interface. When disabling IPv6, SLAAC, or DHCPv6, all connections that depend on the disabled protocol are closed. For example, if you are connected to the Onboard Administrator using its DHCPv6-assigned address, disabling the enclosure DHCPv6 setting results in your session being closed.
+</p></td></tr></table><p class="alertspacerafter" /><p class="alertspacerbefore" /><table width="90%" cellspacing="0" cellpadding="2" rowsep="0" colsep="0"><tr valign="top"><td style="border:0px;width:1%;" align="left"><p class="tablebodytext"></p></td><td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left"><p class="tablebodytext"><b style="color:#0066FF;">NOTE:</b>  For SLAAC addresses to be successfully configured, the <b>Enable SLAAC</b> and <b>Enable Router Advertisements</b> settings must be enabled on the enclosure. In addition, an IPv6 router must be configured on the enclosure management network to provide the SLAAC addresses via router advertisements. Any iLOs may need to be configured separately to obtain SLAAC addresses. The <b>Enable SLAAC</b>, <b>Enable Router Advertisements</b>, and <b>Enable IPv6</b> settings must be enabled to allow the necessary traffic on the enclosure management network.
+</p></td></tr></table><p class="alertspacerafter" /><p class="alertspacerbefore" /><table width="90%" cellspacing="0" cellpadding="2" rowsep="0" colsep="0"><tr valign="top"><td style="border:0px;width:1%;" align="left"><p class="tablebodytext"></p></td><td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left"><p class="tablebodytext"><b style="color:#0066FF;">NOTE:</b>  For DHCPv6 addresses to be successfully configured, the <b>Enable IPv6</b> enclosure setting must be enabled and a DHCPv6 server configured on the management network. Any iLOs and interconnects must be configured separately to request a DHCPv6 address. If they are configured to request DHCPv6 addresses, the <b>Enable IPv6</b> and <b>Enable DHCPv6</b> settings must be enabled to allow the necessary traffic on the enclosure management network.
+</p></td></tr></table><p class="alertspacerafter" /><p class="alertspacerbefore" /><table width="90%" cellspacing="0" cellpadding="2" rowsep="0" colsep="0"><tr valign="top"><td style="border:0px;width:1%;" align="left"><p class="tablebodytext"></p></td><td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left"><p class="tablebodytext"><b style="color:#0066FF;">NOTE:</b>  After a factory reset, the enclosure IPv6 network settings for IPv6, SLAAC, DHCPv6, and Router Advertisements are enabled by default. 
+</p></td></tr></table><p class="alertspacerafter" /></li>
+        </ul>
+        <p class="bodytext">
+          <b>Active and Standby Onboard Administrator Network Settings</b>
+        </p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  Changing network settings on the Onboard Administrator that you are signed in to might disconnect you from that Onboard Administrator, in which case after you apply settings, you must sign in to the Onboard Administrator again.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Field
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Possible value
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IPv6 Static Address 1
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">####:####:####:####:####:####:####:####/###, where #### ranges from 0 to FFFF and the prefix /### ranges from 1 to 128.1 ,2
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Onboard Administrator external NIC IPv6 address 1.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IPv6 Static Address 2
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">####:####:####:####:####:####:####:####/###, where #### ranges from 0 to FFFF and the prefix /### ranges from 1 to 128.1,2
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Onboard Administrator external NIC IPv6 address 2.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IPv6 Static Address 3
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">####:####:####:####:####:####:####:####/###, where #### ranges from 0 to FFFF and the prefix /### ranges from 1 to 128.1,2
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Onboard Administrator external NIC IPv6 address 3.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IPv6 DNS Server 1
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">####:####:####:####:####:####:####:####/###, where #### ranges from 0 to FFFF and the prefix /### ranges from 1 to 128. The prefix is optional.1
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The IPv6 address for the first Static IPv6 DNS server.3
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IPv6 DNS Server 2
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">####:####:####:####:####:####:####:####/###, where #### ranges from 0 to FFFF and the prefix /### ranges from 1 to 128. The prefix is optional.1
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The IPv6 address for the second Static IPv6 DNS server.3
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Enable IPv6 Dynamic DNS
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Enabled (check box selected) or disabled (check box cleared).
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>Enables you to use a host name for the Onboard Administrator that persists even when the dynamically assigned IP address might change. The host name is registered with a DNS server. Dynamic DNS updates the DNS server with new or changed records for IP addresses.4</p>
+                <p>Disabling Dynamic DNS on the Onboard Administrator  stops the OA’s updates to the DNS server. However, note that some DHCP servers may have a provision to update DNS servers directly. To completely disable Dynamic DNS updates, disable Dynamic DNS both at the OA as well as at the DHCP server.</p>
+              </p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Static Default Gateway
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">####:####:####:####:####:####:####:#### where #### ranges from 0 to FFFF. Do not specify a prefix. The gateway must be reachable from within the Onboard Administrator network.1
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The static IPv6 address for the default gateway. This setting is required in an IPv6 network environment configured to be fully static. The Onboard Administrator can accept IPv6 gateway configuration directly via this setting and, if router advertisements are configured, via router advertisements from IPv6 routers on the management network. If router advertisements provide IPv6 gateway configuration, the gateway configuration provided by router advertisements overrides the static IPv6 gateway setting. The IPv6 gateway currently in use by the Onboard Administrator is displayed in the Current Default Gateway field on the <a href="DIPSettingsforActiveOA.xml">Active Onboard Administrator TCP/IP Settings</a> screen and the <a href="DIPSettingsforStandbyOA.xml">Standby Onboard Administrator TCP/IP Settings</a> screen.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Static Route 1
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">####:####:####:####:####:####:####:####/###, where #### ranges from 0 to FFFF and the prefix /### ranges from 1 to 128.1
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>Adds an IPv6 static route to the Onboard Administrator's routing table (manual configuration).5 The static route defines an explicit path that the Onboard Administrator uses to reach an external network through a gateway. In a static network configuration, the static route removes the need to configure the router to send route information via router advertisements.</p>
+                <p>If router advertisements are active in the network, and the default gateway is already configured, the router informs all nodes about the available static routes, thereby making manual configuration of the static routes unnecessary.</p>
+                <p>If you specify the Static Route 1, you must also specify the associated Gateway (Static Route 1).</p>
+              </p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Gateway  
+      (Static Route 1)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">####:####:####:####:####:####:####:#### where #### ranges from 0 to FFFF. Do not specify a prefix. The gateway must be reachable from both the Onboard Administrator network and the external network.1
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>The IPv6 address of the gateway using the path defined by Static Route 1.</p>
+                <p>You must also specify Static Route 1.</p>
+              </p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Static Route 2
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">####:####:####:####:####:####:####:####/###, where #### ranges from 0 to FFFF and the prefix /### ranges from 1 to 128.1
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>Adds a second IPv6 static route to the Onboard Administrator's routing table (manual configuration).</p>
+                <p>If you specify the Static Route 2, you must also specify the associated Gateway (Static Route 2).</p>
+              </p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Gateway  
+      (Static Route 2)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">####:####:####:####:####:####:####:#### where #### ranges from 0 to FFFF. Do not specify a prefix. The gateway must be reachable from both the Onboard Administrator network and the external network.1
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>The IPv6 address of the gateway using the path defined by Static Route 2.</p>
+                <p>You must also specify Static Route 2.</p>
+              </p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Static Route 3
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">####:####:####:####:####:####:####:####/###, where #### ranges from 0 to FFFF and the prefix /### ranges from 1 to 128.1
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>Adds a third IPv6 static route to the Onboard Administrator's routing table (manual configuration).</p>
+                <p>If you specify the Static Route 3, you must also specify the associated Gateway (Static Route 3).</p>
+              </p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Gateway  
+      (Static Route 3)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">####:####:####:####:####:####:####:#### where #### ranges from 0 to FFFF. Do not specify a prefix. The gateway must be reachable from both the Onboard Administrator network and the external network.1
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>The IPv6 address of the gateway, using the path defined by Static Route 3.</p>
+                <p>You must also specify Static Route 3.</p>
+              </p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablestatementtext">1 A compressed version of the same IPv6 address is also supported.</p>
+        <p class="tablestatementtext">2 The Onboard Administrator does not accept a link local address as an IPv6 Static address.</p>
+        <p class="tablestatementtext">3 The order in which the Onboard Administrator uses DNS servers is described after this table.</p>
+        <p class="tablestatementtext">4 IPv6 Dynamic DNS requires that a valid DNS server (either IPv4 or IPv6) be configured on the Onboard Administrator.</p>
+        <p class="tablestatementtext">5<b>Caution</b>: Adding or removing a static route can result in loss of connectivity for clients accessing the Onboard Administrator.</p>
+        <p class="tablespacerafter" />
+        <p class="bodytext">Depending on how many DNS servers are configured, the Onboard Administrator can use up to six DNS servers to look up an IP address: two IPv4 DNS servers (either static or DHCP assigned, but not both) and four IPv6 DNS servers (static or DHCP assigned, or both). The Onboard Administrator uses DNS servers in the following order:</p>
+        <ol class="listnumber">
+          <li class="listnumber">IPv4 DNS server 1 (static)</li>
+          <li class="listnumber">IPv6 DNS server 1 (static)</li>
+          <li class="listnumber">IPv4 DNS server 2 (static)</li>
+          <li class="listnumber">IPv6 DNS server 2 (static)</li>
+          <li class="listnumber">IPv4 DNS server 1 (DHCP assigned)</li>
+          <li class="listnumber">IPv6 DNS server 1 (DHCP assigned)</li>
+          <li class="listnumber">IPv4 DNS server 2 (DHCP assigned)</li>
+          <li class="listnumber">IPv6 DNS server 2 (DHCP assigned)</li>
+        </ol>
+        <p class="bodytext">If any of the DNS servers in this list are not configured, the DNS servers that follow them in the list move up in order, accordingly. For example, if the DHCP-assigned IPv4 DNS servers 1 and 2 are not configured, the two DHCP-assigned IPv6 DNS servers move up to 5th and 6th in the list. As noted previously, IPv4 DNS servers can either be static or DHCP assigned, not both; so the maximum number of DNS servers that the Onboard Administrator can use is 6.</p>
+        <p class="bodytext">To save new IPv6 settings, click <b>Apply.</b></p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext">
+                <img src="/120814-042457/Help/images/35928.png" alt="" />
+              </p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">CAUTION: </b> Certain browsers such as Mozilla Firefox and Google Chrome might include a check box to popup dialogs that, if selected, will prevent future dialogs on the page. Do not select the check box on any of these dialogs. If you do, dialogs will remain hidden until the application is closed and reloaded in a new tab window.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  When you change settings and click <b>Apply</b>, a popup message warns that changing your network settings could disconnect you from the Onboard Administrator. When you click <b>OK, </b>if the  changes will disable certain protocols, another popup message warns that all connections using those protocols will be closed and you might lose your session. You are asked to confirm whether you want to perform this action (click <b>OK</b> or<b> Cancel</b>). 
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+      </content>
+    </section>
+  </sections>
+</topic>

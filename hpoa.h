@@ -57,6 +57,17 @@ const int __i__ = 1;
 #define CYAN    "\x1b[1;36m"
 #define DEFAULT "\x1b[1;0m"
 
+typedef struct partition{
+  uint8_t  nr; 
+  uint32_t jump_size; 
+  uint8_t  md5[MD5_DIGEST_LENGTH];
+  uint32_t header_crc32; 
+  uint32_t data_crc32;
+}*partition;
+
+
+
+
 
 uint open_mtd_for_output_internal(int,char*,int); /* FUN_10001edc */
 int open_mtd_for_input_internal(char*, int, void*); /* FUN_10002160 */

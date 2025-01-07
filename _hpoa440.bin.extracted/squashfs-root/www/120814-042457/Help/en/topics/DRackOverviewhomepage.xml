@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DRackOverviewhomepage" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Rack Overview</title>
+  <source>/120814-042457/Help/en/topics/DRackOverviewhomepage.xml</source>
+  <keywords>Help icon location discovery services Virtual Connect Manager</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">Welcome to the Onboard Administrator home page. The following links provide you with detailed information on navigating the Onboard Administrator, the Rack Topology tab, and the menus located at the top of the home page. For Help information, click the Help icon ( ? ) on any screen.</p>
+        <ul class="listbullet">
+          <li class="listbullet">
+            <a href="DRackTopologytab.xml">Rack Topology tab</a>
+          </li>
+          <li class="listbullet">
+            <a href="DNavigating.xml">Navigation</a>
+          </li>
+          <li class="listbullet">
+            <a href="DWizardsOptionsandHelpMenus.xml">Wizards, Options, and Help menus</a>
+          </li>
+        </ul>
+        <p class="bodytext">
+          <b>Using Location Discovery Services</b>
+        </p>
+        <p class="bodytext">Location Discovery Services is a component of HP Discovery Services. Location Discovery Services automatically reports server locations to HP SIM and Insight Control, eliminating this manual task for server administrators. Administrators can use the location information and system data with HP Asset Manager to obtain more precise and complete asset data.</p>
+        <p class="bodytext">Location Discovery Services is a rack U location discovery solution for G3 and later racks. It enables HP iLO, BL Onboard Administrator, and SL Chassis firmware to report and display the rack ID and the server U position in the rack. Supported racks are programmed with unique U values in 7U and/or 8U modules, and are installed with the tag version number, rack identifier, part number, product name, rack height, and U position. Location Discovery Services supports 14U, 22U, 36U, 42U, and 47U racks.</p>
+        <p class="bodytext">The rack device reads the rack U location tag each time iLO receives AC power or iLO is reset. The U position value denotes the U position read by the device. The contact position offset is a fixed value for each model that indicates the position of the contact relative to the bottom U position of the device. It is normally 0, but can be a positive value if the contact cannot be placed at the bottom U position of the device. The bottom-most U position occupied by the device is calculated by subtracting the U offset from the U position.</p>
+        <p class="bodytext">You can view the discovered data in certain Onboard Administrator screens, such as the Rack Information table in the <a href="DEnclosureInformationtab.xml">Enclosure Information tab</a>. In addition, several Onboard Administrator CLI commands display the discovered data, such as the <tt>SHOW ENCLOSURE INFO </tt>and <tt>SHOW TOPOLOGY INFO</tt> commands. For more information on these commands, see the <i>HP BladeSystem Onboard Administrator Command Line Interface User Guide</i>. </p>
+        <p class="bodytext">
+          <b>Related topics</b>
+        </p>
+        <p class="bodytext">
+          <a href="DSystemStatusAlerts.xml">System Status Alerts</a>
+        </p>
+        <p class="bodytext">
+          <a href="DFirmwareSummarytab.xml">Rack Firmware Summary</a>
+        </p>
+        <p class="bodytext">
+          <a href="DVirtualconnectmanager.xml">Virtual Connect Manager</a>
+        </p>
+      </content>
+    </section>
+  </sections>
+</topic>

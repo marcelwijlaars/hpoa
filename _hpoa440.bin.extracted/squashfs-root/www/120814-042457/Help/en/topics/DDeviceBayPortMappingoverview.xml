@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DDeviceBayPortMappingoverview" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Device Bay Port Mapping</title>
+  <source>/120814-042457/Help/en/topics/DDeviceBayPortMappingoverview.xml</source>
+  <keywords />
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">The following links provide an overview of the device bay port mapping.</p>
+        <ul class="listbullet">
+          <li class="listbullet">
+            <a href="DDeviceBayPortMappingforc3000enclosure.xml">Device Bay Port Mapping for c3000 Enclosure</a>
+          </li>
+          <li class="listbullet">
+            <a href="DServerBayPortMapping.xml">Device Bay Port Mapping for c7000 Enclosure</a>
+          </li>
+        </ul>
+      </content>
+    </section>
+  </sections>
+</topic>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DLDAPconfiguration" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Directory Settings First Time Setup</title>
+  <source>/120814-042457/Help/en/topics/DLDAPconfiguration.xml</source>
+  <keywords>configuring LDAP directory group settings LDAP (Lightweight Directory Access Protocol) LDAP configuration Lightweight Directory Access Protocol (LDAP) search context</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">On this screen, you can configure the following settings:</p>
+        <ul class="listbullet">
+          <li class="listbullet">
+            <b>Enable LDAP Authentication</b>—Select this check box to enable a directory server to authenticate a user sign in.</li>
+          <li class="listbullet">
+            <b>Enable Local Users</b>—Select this check box to enable a user to sign in using a local user account instead of a directory account.</li>
+        </ul>
+        <p class="bodytext">
+          <b>Use NT Account Name Mapping (DOMAIN\username)</b>—Select this check box to enable NT name mapping. This field enables users to log in by using the NT<tt> domain\username</tt> format. The Onboard Administrator may be optionally configured to search the Directory Server Global Catalog and locate the authenticated user information and associated authorized groups. The standard Directory Server GC SSL Port is 3269. This field is optional, and if left blank, the global catalog is not used.</p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext">
+                <img src="/120814-042457/Help/images/35894.png" alt="" />
+              </p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">IMPORTANT:</b>  If NT Account Name Mapping is used with the global catalog, and the search context is not restrictive enough, or the domain name is not specified, the Onboard Administrator may associate the authenticated user with a user account that has the same name in a different domain. The authenticated user would then receive the authorization of the user in the other domain. To avoid ambiguity when logging on LDAP user, select search contexts or provide the domain name.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  If NT Account Name Mapping is used with the global catalog, and cannot be resolved to a single user, then the user is not authorized to access the Onboard Administrator. This may occur with search contexts that are not restrictive enough and if multiple accounts with the same name exist in different domains. To avoid ambiguity, select search contexts.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Field
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Possible value
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Directory Server Address
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>IPv4 Address: ###.###.###.###, where ### ranges from 0 to 255, or the DNS name of the directory server or the name of the domain.</p>
+                <p>IPv6 Address: ####:####:####:####:####:####:####:####, where #### ranges from 0 to FFFF. A compressed version of the same IPv6 address is also supported.</p>
+              </p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The IP address or the DNS name or the name of the domain of the directory service. This field is required.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Directory Server SSL Port
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">1 to 65535
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The port used for LDAP communications. Port 636 is the standard SSL LDAP port. This field is required.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Search Context 1
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">All characters except " (quotes), not to exceed 127 characters
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">First searchable path used to locate the user when the user is trying to authenticate using directory services
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Search Context 2
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">All characters except " (quotes), not to exceed 127 characters
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Second searchable path used to locate the user when the user is trying to authenticate using directory services
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Search Context 3
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">All characters except " (quotes), not to exceed 127 characters
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Third searchable path used to locate the user when the user is trying to authenticate using directory services
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Search Context 4
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">All characters except " (quotes), not to exceed 127 characters
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Fourth searchable path used to locate the user when the user is trying to authenticate using directory services
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Search Context 5
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">All characters except " (quotes), not to exceed 127 characters
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Fifth searchable path used to locate the user when the user is trying to authenticate using directory services
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Search Context 6
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">All characters except " (quotes), not to exceed 127 characters
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Sixth searchable path used to locate the user when the user is trying to authenticate using directory services
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+      </content>
+    </section>
+  </sections>
+</topic>

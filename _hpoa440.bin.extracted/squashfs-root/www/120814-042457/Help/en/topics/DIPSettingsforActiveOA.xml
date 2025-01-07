@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DIPSettingsforActiveOA" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>TCP/IP Settings for Active Onboard Administrator</title>
+  <source>/120814-042457/Help/en/topics/DIPSettingsforActiveOA.xml</source>
+  <keywords>active Onboard Administrator TCP/IP settings Current Default Gateway DHCPv6 address DNS server gateway address gateway static route IPv6 static address NIC settings Onboard Administrator name router advertisements Static Default subnet mask TCP/IP (Transmission Control Protocol/Internet Protocol) Transmission Control Protocol/Internet Protocol (TCP/IP) VLAN Id</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">This screen displays the current TCP/IP settings for the active Onboard Administrator:</p>
+        <ul class="listbullet">
+          <li class="listbullet">IPv4 Information</li>
+          <li class="listbullet">IPv6 Information</li>
+          <li class="listbullet">General Information</li>
+        </ul>
+        <p class="bodytext">
+          <b>IPv4 Information</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Parameter
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IP Address
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The IPv4 address of the Active Onboard Administrator, with indication of the type of IP address assigned (static or dynamic).
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Dynamic DNS
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Indicates whether Dynamic DNS is enabled or disabled. Dynamic DNS updates the DNS server with new or changed records for IP addresses. This enables you to use the same host name over time, although the dynamically assigned IP address might change for the Active Onboard Administrator.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Subnet Mask
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The subnet mask for the Active Onboard Administrator. The mask determines the subnet to which the Active Onboard Administrator IP address belongs.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Gateway
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The gateway address for the Active Onboard Administrator.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="bodytext">
+          <b>IPv6 Information</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Parameter
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IPv6
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Indicates whether IPv6 is enabled or disabled on the Active Onboard Administrator.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IPv6 Link Local Address
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The link local IPv6 address of the Active Onboard Administrator. When IPv6 is enabled, one link local IPv6 address is autoconfigured for the Active Onboard Administrator.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IPv6 Static Address 1
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Onboard Administrator external NIC IPv6 address 1.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IPv6 Static Address 2
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Onboard Administrator external NIC IPv6 address 2.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IPv6 Static Address 3
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Onboard Administrator external NIC IPv6 address 3.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IPv6 Dynamic DNS
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Indicates whether Dynamic DNS is enabled or disabled. Dynamic DNS updates the DNS server with new or changed records for IP addresses. This enables you to use the same host name over time, although the dynamically assigned IP address might change for the Active Onboard Administrator.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">DHCPv6
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Indicates whether DHCPv6 is enabled or disabled on the Active Onboard Administrator.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">DHCPv6 Address
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The DHCPv6 address of the Active Onboard Administrator.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Router Advertisements
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Indicates whether router advertisements are enabled or disabled. Router advertisements are used for automatically configuring IPv6 addresses. When disabled, router advertisements are blocked, thereby preventing SLAAC address configuration of all devices within the enclosure.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Stateless address autoconfiguration (SLAAC)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Indicates whether SLAAC is enabled or disabled on the Active Onboard Administrator. Router advertisements must be enabled. See the description of Router Advertisements.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Stateless address autoconfiguration (SLAAC) Address
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">An autoconfigured SLAAC address. The Onboard Administrator can be assigned multiple SLAAC addresses based on its MAC address and the information received from router advertisements.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Current Default Gateway
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Indicates the IPv6 address of the default gateway currently being used by the Active Onboard Administrator. The Current Default Gateway can be either the Static Default Gateway or a gateway configured via router advertisements. If router advertisements provide IPv6 gateway configuration, their gateway configuration overrides the static IPv6 gateway setting.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Static Default Gateway
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Indicates the static IPv6 address of the IPv6 default gateway. This is displayed only if configured.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Static Route 1
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The address of the external network or node that the Onboard Administrator can reach through an associated static route gateway.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Gateway (Static Route 1)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The address of the gateway used by the Onboard Administrator to reach the Static Route 1 destination.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Static Route 2
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">A second IPv6 static route.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Gateway (Static Route 2)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The address of the gateway used by the Onboard Administrator to reach the Static Route 2 destination.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Static Route 3
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">A third IPv6 static route.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Gateway (Static Route 3)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The address of the gateway used by the Onboard Administrator to reach the Static Route 3 destination.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="bodytext">
+          <b>General information</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Parameter
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Active IPv4 DNS Servers
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Lists the configured IPv4 DNS servers that are active on the Active Onboard Administrator.*
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Primary
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IP address of the first IPv4 DNS server used by the Active Onboard Administrator. If not configured, <tt>Not set</tt> is displayed.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Secondary
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IP address of the second IPv4 DNS server used by the Active Onboard Administrator. If not configured, <tt>Not set</tt> is displayed.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Active IPv6 DNS Servers
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Lists the configured IPv6 DNS servers that are active on the Active Onboard Administrator.*
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Primary 
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IP address of the first IPv6 DNS server used by the Active Onboard Administrator. If not configured, <tt>Not set</tt> is displayed.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Secondary
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IP address of the second IPv6 DNS server used by the Active Onboard Administrator. If not configured, <tt>Not set</tt> is displayed.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Tertiary
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IP address of the third IPv6 DNS server used by the Active Onboard Administrator. If not configured, this parameter and address are not displayed.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Quaternary
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IP address of the fourth DNS server used by the Active Onboard Administrator. If not configured, this parameter and address are not displayed.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Onboard Administrator Name
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The name (DNS host name) used for the Active Onboard Administrator.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">VLAN ID (Name)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The unique number that identifies the VLAN. Displayed only if VLAN Mode is enabled.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">MAC Address
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The MAC address of the Active Onboard Administrator.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Domain Name
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The name of the domain for the Active Onboard Administrator.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">NIC Settings
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The NIC settings for the Active Onboard Administrator, such as auto negotiation, duplex mode, and speed.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Link Status
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Indicates whether the NIC is actively connected to the network.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablestatementtext">* The order in which the Onboard Administrator uses DNS servers is described in <a href="DIPSettingsunderenclosuresettings.xml">IPv4 Settings tab</a> and <a href="DIPv6Settingstab.xml">IPv6 Settings tab</a>.</p>
+        <p class="bodytext">To modify TCP/IP settings, select <b>Click here.</b></p>
+        <p class="bodytext">For information about the TCP/IP settings that you can modify, see the Enclosure TCP/IP <a href="DIPSettingsunderenclosuresettings.xml">IPv4 Settings tab</a>, <a href="DIPv6Settingstab.xml">IPv6 Settings tab</a>, <a href="DNICOptionstab.xml">NIC Options tab</a>, and the <a href="DAdvancedSettingstab.xml">Advanced Settings tab</a>.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

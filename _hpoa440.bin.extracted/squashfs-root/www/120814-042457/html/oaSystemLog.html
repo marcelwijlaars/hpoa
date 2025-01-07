@@ -1,0 +1,189 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css"/>
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/tabManager.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+
+ <!--
+	Include the init and xml javascript files from the jsolait library.
+	The xslt.js file requires that these two files be included before it.
+-->
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+
+<script type="text/javascript">
+var emNum;
+var encNum;
+var hpem=null;
+function loadContent(){
+setTabContent('logContents');
+}
+function setTabContent(tabId){
+ourTabManager.toggleTabs(tabId);
+var contentLocation=document.getElementById(tabId).getAttribute("contentLocation");
+var contextId=document.getElementById(tabId).getAttribute("contextId");
+try{
+emNum=parseInt(getSearchValue(location.search,'emNum'));
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(emNum)&&!isNaN(encNum)&&
+(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+var oaStatus=hpem.getOaStatus(emNum);
+var oaRole=getElementValueXpath(oaStatus,'//hpoa:oaRole');
+var acl=hpem.getUserAccessLevel();
+if(acl!='USER'&&hpem.getUserOaPermission()==true&&oaRole=='ACTIVE'){
+document.getElementById('tabSet').style.display='block';
+}
+if(tabId=='logContents'){
+var processor=new XsltProcessor(contentLocation);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('serviceUserAcl',acl);
+document.getElementById('tabContent').innerHTML=processor.getOutput();
+var syslogText=document.getElementById('sysLogText');
+if(syslogText){
+syslogText.innerHTML=top.getString('loading...');
+}
+hpem.registerEventHandler(sysLogCleared,['EVENT_SYSLOG_CLEARED']);
+if(oaRole==STANDBY()){
+contextId="FORM_STDBY_OA_SYSTEM_LOG";
+}
+top.mainPage.getHelpLauncher().setCurrentTopic(contextId);
+hpem.getOaSyslog(emNum,sysLogLoaded);
+reconcilePage();
+}
+else{
+var formMgr=new FormManager(function(success){
+var processor=new XsltProcessor(contentLocation);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('serviceUserAcl',acl);
+processor.addParameter('syslogSettingsDoc',hpem.getSyslogSettings());
+document.getElementById('tabContent').innerHTML=processor.getOutput();
+top.mainPage.getHelpLauncher().setCurrentTopic(contextId);
+reconcilePage();
+},false,'','tabContent');
+formMgr.startBatch(true);
+formMgr.queueCall(hpem.getSyslogSettings);
+formMgr.endBatch();
+}
+}
+else{
+displayContentFailed('tabContent',[top.getString('noOnboardAdmin')]);
+}
+}
+catch(e){
+displayContentFailed('tabContent',[e.message]);
+}
+}
+function getCurrentTab(){
+return ourTabManager.getCurrentTab();
+}
+function sysLogLoaded(result){
+var logText='';
+if(result.xml.indexOf(SOAP_FAULT_TEST())==-1&&!(result.xml.indexOf('<hpoa:logContents/>')>-1)){
+logText=getElementValueFromString(result.xml,'hpoa:logContents');
+}
+else if(result.xml.indexOf(SOAP_FAULT_TEST())>-1){
+logText='Error loading system log.';
+}
+document.getElementById('sysLogText').value=logText;
+}
+function clearOASyslog(){
+if(confirm(top.getString('syslogConfirm'))){
+hpem.clearOaSyslog(emNum,function(result){});
+}
+}
+function sysLogCleared(result){
+if(getCurrentTab()=='logContents'){
+var numValue=getElementValueXpath(result,'//hpoa:numValue');
+if(numValue==emNum){
+hpem.getOaSyslog(emNum,sysLogLoaded);
+}
+}
+}
+function setSyslogSettings(){
+var ourInputValidator=new InputValidator('validate-port','errorDisplay',true);
+if(!ourInputValidator.allInputsValidate()){
+ourInputValidator.updateMessages(true);
+ourInputValidator.autoFocus();
+return;
+}
+var remoteLogEnabled=document.getElementById('remoteEnabled').checked;
+var remoteLogAddress=document.getElementById('syslogAddress').value;
+var remoteLogPort=document.getElementById('syslogPort').value;
+var formMgr=new FormManager(null,false,'errorDisplay','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString('settingSystemLogSettings'));
+formMgr.startBatch();
+if(remoteLogEnabled){
+formMgr.queueCall(hpem.setRemoteSyslogServer,[remoteLogAddress]);
+formMgr.queueCall(hpem.setRemoteSyslogPort,[remoteLogPort]);
+}
+formMgr.queueCall(hpem.setRemoteSyslogEnabled,[remoteLogEnabled]);
+formMgr.endBatch();
+}
+function testSyslog(){
+var formMgr=new FormManager(function(success){
+if(success){
+alert(top.getString('testRemoteSyslogMessageWasSent'));
+}
+},false,'errorDisplay','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString('testingSysetmLogSettings'));
+formMgr.startBatch();
+formMgr.queueCall(hpem.testRemoteSyslog,[]);
+formMgr.endBatch();
+}
+function toggleOptionsForm(enabled){
+toggleFormEnabled('syslogSettingsForm',enabled);
+if(enabled){
+ourButtonManager.enableButtonById('btnTest');
+}
+else{
+ourButtonManager.disableButtonById('btnTest');
+}
+}
+function deRegisterEventHandler(){
+hpem.removeRegisteredHandler(sysLogCleared);
+}
+function refreshPage(){
+setTabContent(getCurrentTab());
+}
+</script>
+</head>
+<body style="margin:10px;" onload="loadContent();" onunload="deRegisterEventHandler();">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+		<tr>
+			<td valign="bottom">
+				<div class="tabSet" id="tabSet" style="display:none;">
+					<div class="tabOff" tabid="logContents" contextId="FORM_OA_SYSTEM_LOG" id="logContents" contentLocation="../Forms/SysLogPage.xsl"><script type="text/javascript">document.write(top.getString('systemLog'));</script></div>
+					<div class="tabOff" tabid="logOptions" contextId="FORM_OA_SYSTEM_LOG_OPTIONS" id="logOptions" contentLocation="../Forms/SysLogOptions.xsl"><script type="text/javascript">document.write(top.getString('logOption'));</script></div>
+					<div class="tabBottomLine"></div>
+				</div>					
+			</td>
+		</tr>
+		<tr>
+			<td style="padding-top:10px;">
+				<div id="tabContent"></div>
+				<div id="waitContainer"></div>
+			</td>
+		</tr>
+	</table>
+
+  <script type="text/javascript">
+if(typeof(TabManager)!="undefined"){
+ourTabManager.init();
+}
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DStandby_EM_short_name_CertificateUploadTab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Standby Certificate Upload tab</title>
+  <source>/120814-042457/Help/en/topics/DStandby_EM_short_name_CertificateUploadTab.xml</source>
+  <keywords>certificates installing</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">There are two methods for uploading certificates for use in HP BladeSystem Onboard Administrator:</p>
+        <ul class="listbullet">
+          <li class="listbullet">Paste certificate contents into the text field and click <b>Upload.</b></li>
+          <li class="listbullet">Paste the URL of the certificate into the URL field and click <b>Apply.</b></li>
+        </ul>
+        <p class="bodytext">The certificate to be uploaded must be from a certificate request sent out and signed by a certificate authority for this particular Onboard Administrator. Otherwise, the certificate fails to match the private keys used to generate the certificate request, and the certificate is rejected. Also, if the Onboard Administrator domain has been destroyed or reimported, then you must repeat the steps for generating a certificate request. It will be re-signed by a certificate authority because the private keys are destroyed and recreated along with the Onboard Administrator domain.</p>
+        <p class="bodytext">If the new certificate is successfully accepted and installed by the Onboard Administrator, then you are automatically signed out. The HTTP server must be restarted for the new certificate to take effect.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

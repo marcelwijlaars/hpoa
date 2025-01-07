@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DValidation" parent-id="" author="slamasla" modified="10-8-2009" type="reference">
+<source>/120814-042457/help/en/topics/gsoap-validation.xml</source>
+<title>Arguments and Validation</title>  
+<keywords>input validation</keywords>
+<intro></intro>
+<sections>
+  <section>
+    <desc/>
+    <content>
+      <p>
+        The new and improved gSoap Library Analyzer 2&#x2122; utility now supports all complex types, automatically generates the inputs needed for each soap call selected from
+        the Method dropdown box, and also creates sample xml input for complex type arguments (when a valid WSDL file is imported).
+        <br />
+        <br />
+        Basic client-side validation has also been added to assist in testing.
+      </p>
+      <p>
+        <h5>Argument Options</h5>
+        <table cellpadding="5" border="0" cellspacing="0" margin="0" style="width:100%;border-collapse:collapse;vertical-align:top;">
+          <tr>
+            <th style="text-align:left;border:1px solid #010101;white-space:nowrap">Option</th>
+            <th style="text-align:left;border:1px solid #010101;white-space:nowrap">Value</th>
+            <th style="text-align:left;border:1px solid #010101;white-space:nowrap;">Description</th>
+          </tr>
+          <tr>
+            <td style="border:1px solid #010101;white-space:nowrap;vertical-align:top;">Enable client-side validation</td>
+            <td style="border:1px solid #010101;;vertical-align:top;">Checked</td>
+            <td style="border:1px solid #010101;">
+              Basic validation will be performed on all text and numeric inputs. Keyword matching will be used to modify validation 
+              rules for field names that contain certain keywords, such as IP Address or Netmask. 
+              <br />
+              <br />
+              This process is not 100% reliable, and is only added for convenience. To circumvent problems with this type of validation, 
+              simply disable client-side validation by unchecking the Enable Client-Side Validation checkbox when attempting to call the 
+              problem method(s).
+            </td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #010101;white-space:nowrap;vertical-align:top;">Enable Client-Side Validation</td>
+            <td style="border:1px solid #010101;;vertical-align:top;">Unchecked</td>
+            <td style="border:1px solid #010101;">No client-side validation is performed.</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #010101;white-space:nowrap;vertical-align:top;">Recycle Bay Numbers</td>
+            <td style="border:1px solid #010101;;vertical-align:top;">Checked</td>
+            <td style="border:1px solid #010101;">
+              This is a convenience feature that pre-populates any input that is named 'bay' or 'bayNumber' with the last bay number 
+              the user entered. On first use, the number 1 is used as a default value.
+            </td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #010101;white-space:nowrap;vertical-align:top;">Recycle Bay Numbers</td>
+            <td style="border:1px solid #010101;;vertical-align:top;">Unchecked</td>
+            <td style="border:1px solid #010101;">No pre-population of bay number inputs is performed.</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #010101;white-space:nowrap;vertical-align:top;">Bay Array Size</td>
+            <td style="border:1px solid #010101;;vertical-align:top;">Integer</td>
+            <td style="border:1px solid #010101;">The default value is 1. If a bay array is already loaded in an argument input, its size can
+            be changed by updating the Bay Array Size input and pressing enter.</td>
+          </tr>
+        </table>
+      </p>
+      <p>
+        <attention type="tip">
+          Non-contiguous bays are not currently available for auto-generation. However, if non-contiguous bays are desired
+          you can still generate a contiguous number of bays and delete the unwanted bays.
+        </attention>        
+      </p>   
+      <p>
+        <h5>Simple Types</h5>
+        
+        The following simple types are common to the soap services. The string inputs will be validated as text, and the numeric inputs will be
+        validated as numbers. Boolean fields will not be validated since their inputs will be offered as a radio option pair. Likewise, any text
+        fields that belong to an enumeration will not be validated because their inputs will be offered as a dropdown list containing all the 
+        values expected by the soap service.
+         
+        <ul>
+          <li>string</li>
+          <li>int</li>
+          <li>unsignedInt</li>
+          <li>hexBinary</li>
+          <li>base64Binary</li>
+          <li>byte</li>
+          <li>short</li>
+          <li>unisgnedShort</li>
+          <li>boolean</li>
+        </ul>
+      </p>
+      <p>
+        <h5>Complex Types</h5>
+        
+        Complex types will not be validated, but a valid xml representation of the complex type will be generated and pre-populated with sample
+        values when a valid WSDL file is imported. The user is then free to modify the values for each call.
+        <br />
+        <br />
+        The user may also paste their own custom xml text into the complex type inputs, and it will be evaluated on the fly. If the user adds
+        their own xml data and the call fails due to an invalid request, pay attention to any attributes that were generated in the original sample
+        that may have been omitted from the custom xml.
+      </p>
+    </content>
+  </section>
+</sections>
+</topic>

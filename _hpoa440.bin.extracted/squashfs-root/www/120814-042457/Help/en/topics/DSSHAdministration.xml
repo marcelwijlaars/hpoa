@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DSSHAdministration" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>SSH Administration</title>
+  <source>/120814-042457/Help/en/topics/DSSHAdministration.xml</source>
+  <keywords>adding SSH Key SSH key adding SSH keys authorized</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">This page lists the owner of each authorized SSH key and enables the adding of new keys.</p>
+        <p class="bodytext">
+          <b>SSH Fingerprint</b>—Lists the public key portion of a public/private key pair.</p>
+        <p class="bodytext">
+          <b>Authorized SSH Keys</b>—Lists the authorized SSH key data. The owner is always the Administrator. To add additional Authorized SSH Keys, enter the SSH key in the text box and click <b>Apply.</b> To clear all Authorized SSH Keys, delete all the text in the text box and click <b>Apply.</b></p>
+        <p class="bodytext">
+          <b>Download SSH Key File</b>—In the URL to SSH Keys File field, enter the location of the public key file, and click <b>Apply</b> to download. All currently authorized SSH keys are replaced when the SSH key file is downloaded. Each key is associated with the Administrator account.</p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  When the Onboard Administrator is operating in FIPS Mode, certificates must have a minimum RSA key length of 2048 bits, and the signature hash algorithm must be SHA1, SHA-224, SHA-256, SHA-384, or SHA-512. 
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+      </content>
+    </section>
+  </sections>
+</topic>

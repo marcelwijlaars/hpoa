@@ -38,9 +38,20 @@ int main(int argc,char **argv){
   unsigned int *local_5c;
   local_5c=calloc(6,sizeof(uint));
 
-  unsigned int  partition_nr;  //was unsigned char, was uVar9
+  unsigned int      partition_nr;  //was unsigned char, was uVar9
 
-  unsigned int jump_size=0;                                     /* _Var12*/
+  /* dit moet een struct worden */
+  uint8_t  partition_nr_array[0x10]; 
+  uint8_t  partition_md5_array[0x10*MD5_DIGEST_LENGTH];
+  uint32_t partition_jump_size_array[0x10]; 
+  uint32_t partition_header_crc_array[0x10]; 
+  uint32_t partition_data_crc_array[0x10];
+
+
+
+  unsigned int jump_size=0;             //mag uiteindelijk ook weg  /* _Var12*/
+  unsigned int jump_size_array[0x10];     // mag weg, ook hier boven gedefineerd
+  unsigned int image_data_size_array[0x10];   //dubbel up denk ik
   unsigned int current_location=0;
   unsigned int fw_location=0;
   unsigned int fw_location_array[0x10];
@@ -57,6 +68,7 @@ int main(int argc,char **argv){
   int burn=0;
   int firmware=0;
   int verify=0;
+  int analyse=0;
   int have_fingerprint=0;
 
   char *md5_sum;
@@ -72,9 +84,16 @@ int main(int argc,char **argv){
     return -1;
   }else{
   
-    while ( opt = getopt(argc,argv,"fbmtv"), opt != -1) {
+    while ( opt = getopt(argc,argv,"afbmtv"), opt != -1) {
       if (true) {
 	switch(opt) {
+	case 'a':
+	  analyse=1;
+	  if( (analyse==1) && (modify==0) && (burn==0) && (firmware==0) ){
+	    goto analyse_only;
+	    //printf("Choosen option: %c, analyse the hp oa binary file\n",opt);
+	  }
+	  break;
 	case 'm':
 	  modify=1;
 	  //printf("Choosen option: %c, will modify rc.sysinit\n",opt);
@@ -161,8 +180,7 @@ int main(int argc,char **argv){
   /****************************************************************************************/
   /*                              main while loop                                         */
   /****************************************************************************************/
-
-
+  int jsa_index=0;
   while( true ) {
     current_location = lseek(fd,0,SEEK_CUR);
     current_location_array[index]=current_location;
@@ -180,8 +198,10 @@ int main(int argc,char **argv){
     partition_name = partition_selector(partition_nr);      
 
     jump_size= *(__off_t*)(read_buffer+1+iVar5+1);
-        if(!is_bigendian()) jump_size = __htobe32(jump_size);
-
+    if(!is_bigendian()) jump_size = __htobe32(jump_size);
+    jump_size_array[jsa_index]=jump_size;
+    jsa_index++;
+    
     /* write mtd partition */
     local_5c[0] = open_mtd_for_output_internal(fd, partition_name,jump_size);
 
@@ -230,15 +250,13 @@ int main(int argc,char **argv){
     write_initrd();
   }
 
-  
 
-  /*
-   * We only need to verify the header and data crc32 are ok
-   * to prevent the "Invalid OS checksum." message.
-   */
+  
+  unsigned char *data;
+  
   if(firmware){
     unsigned int crc=0;
-    unsigned char *data;
+    uint32_t image_data_size=0;
     char cmd[0x100];
     int s,data_len=0x1000;
     unsigned int crc_array[0x10];
@@ -266,6 +284,10 @@ int main(int argc,char **argv){
     data_len=0x40;
     crc=0;
     data_len = read(fd,data,data_len);
+    image_data_size=*((unsigned int*)data+3);
+    if(!is_bigendian()) image_data_size = __htobe32(image_data_size);
+    image_data_size_array[1]=image_data_size;
+      
     for(i=0;i<4;i++) *(data+i+4)=0;
     crc = crc32(crc,data,data_len);
     header_crc_array[1]=crc;
@@ -288,6 +310,9 @@ int main(int argc,char **argv){
     data_len=0x40;
     crc=0;
     data_len = read(fd,data,data_len);
+    image_data_size=*((unsigned int*)data+3);
+    if(!is_bigendian()) image_data_size = __htobe32(image_data_size);
+    image_data_size_array[2]=image_data_size;
     for(i=0;i<4;i++) *(data+i+4)=0;
     crc = crc32(crc,data,data_len);
     header_crc_array[2]=crc;
@@ -311,6 +336,9 @@ int main(int argc,char **argv){
     data_len=0x40;
     crc=0;
     data_len = read(fd,data,data_len);
+    image_data_size=*((unsigned int*)data+3);
+    if(!is_bigendian()) image_data_size = __htobe32(image_data_size);
+    image_data_size_array[3]=image_data_size;
     for(i=0;i<4;i++) *(data+i+4)=0;
     crc = crc32(crc,data,data_len);
     header_crc_array[3]=crc;
@@ -325,18 +353,22 @@ int main(int argc,char **argv){
 
 
     for(i=0;i<4;i++){
-      printf("current: 0x%X, fw: 0x%X, header_crc: 0x%08X, crc: 0x%08X\n",current_location_array[i],fw_location_array[i], header_crc_array[i], crc_array[i]);
+      printf("current: 0x%06X, fw: 0x%06X, header_crc: 0x%08X, crc: 0x%08X\n",current_location_array[i],fw_location_array[i], header_crc_array[i], crc_array[i]);
+    }
+
+    for(i=0;i<4;i++){
+      printf("jump_size: 0x%08X, image_data_size: 0x%08X\n", jump_size_array[i], image_data_size_array[i+1]);
     }
   }
 
-  verify_only:
+ verify_only:
   if(verify){
     printf("start verifying initrd\n");
     verify_initrd();
     return(1);
   }
 
-  burn_only:
+ burn_only:
   printf("em_type: %i\n",em_type());
   if(burn){
     printf("start writing initrd\n");
@@ -344,6 +376,119 @@ int main(int argc,char **argv){
     return(1);
   }
 
+
+  
+  /*
+   * We only need to verify the header and data crc32 are ok
+   * to prevent the "Invalid OS checksum." message.
+   * how does the crc check know its ist finished reading the partition data,
+   * where/what is the EOF marker?
+   */
+
+  /*
+   * Below is what we should start with,
+   * find out where all the partition chunks are and
+   * know there md5 and crc32 values etc.
+   */
+  
+  /*
+   * The hpoa440.bin first 0xD5 bytes contain the pointer to the first three partitions,
+   * the one byte partition type at:
+   * 1 + (n*0x15),
+   * and the 4 byte offsets of the partitions at:
+   * 2 + (n*0x15),
+   * and the 16 byte long md5 checksum at:
+   * 6 + (n*0x15),
+   * where n the the mtd partition number, starting at 0 (kind of)
+   */
+
+ analyse_only:
+
+  if(analyse){
+    data=calloc(HEADER_SIZE,sizeof(char));
+    strcpy(file_name,argv[optind]);
+    fd=open(file_name,O_RDONLY);
+    ret=read(fd,data,HEADER_SIZE);
+    for(j=0;j<0x40;j++){
+      printf("%02X ", *(data+j));
+      if(((j+1)%0x10)==0)printf("\n");
+    }
+    printf("\n");
+
+    
+    uint32_t partition_offset=0xD5;
+    
+    partition p;
+    p= malloc(0x10*sizeof(partition));
+
+    int n=0;
+    /* offset is eigenlijk jumpsize vermoed ik */
+    do{
+      (p+n)->nr              = *(data + n*0x15 + 1);
+      (p+n)->jump_size       = *(uint32_t*)(data + n*0x15 + 2); 
+      if(!is_bigendian()) (p+n)->jump_size = __htobe32((p+n)->jump_size);
+      for(i=0;i<MD5_DIGEST_LENGTH;i++){
+	(p+n)->md5[i] = *(data + n*0x15 + 6 + i);  // gaat niet goed
+      }
+      (p+n)->header_crc32      = 0; 
+      (p+n)->data_crc32       = 0; 
+      n++;
+    }while(*(data + n*0x15 +1)>0);
+
+    for(i=0;i<n;i++){
+      printf("partition: %i: %s, offset: 0x%08X, ",
+	     (p+i)->nr,
+	     partition_selector(partition_nr_array[i]),
+	     partition_offset
+	     );
+      printf("md5: 0x");
+      for(j=0;j<MD5_DIGEST_LENGTH;j++)
+	printf("%02X", (p+i)->md5[j]);
+      printf("\n");
+      partition_offset+=(p+i)->jump_size;
+    }
+    //printf("last jump_size: 0x%08X\n",(p+i-1)->jump_size);
+    printf("next offset: 0x%08X\n",partition_offset);
+
+    lseek(fd,partition_offset,SEEK_SET);
+    ret=read(fd,data,HEADER_SIZE);
+    for(j=0;j<0x40;j++){
+      printf("%02X ", *(data+j));
+      if(((j+1)%0x10)==0)printf("\n");
+    }
+    printf("\n");
+    
+    printf("Partition header offset discrepency: 0x%08X\n", 0xCD7CFC - partition_offset);
+    printf("Partition data offset discrepency: 0x%08X\n", 0xCD7D3C - partition_offset);
+    n=0;
+    do{
+      partition_nr_array[n]              = *(data + n*0x15 + 1 + 13);
+      partition_jump_size_array[n]       = *(uint32_t*)(data + n*0x15 + 2 + 13); 
+      if(!is_bigendian()) partition_jump_size_array[n] = __htobe32(partition_jump_size_array[n]);
+      for(i=0;i<MD5_DIGEST_LENGTH;i++)
+	partition_md5_array[n*MD5_DIGEST_LENGTH+i] = *(data + n*0x15 + 6 + i + 13); 
+      partition_header_crc_array[n]      = 0; 
+      partition_data_crc_array[n]        = 0; 
+      n++;
+    }while(*(data + n*0x15 +1)>0);
+
+    for(i=0;i<n;i++){
+      printf("partition: %i: %s, offset: 0x%08X, ",
+	     partition_nr_array[i],
+	     partition_selector(partition_nr_array[i]),
+	     partition_offset
+	     );
+      printf("md5: 0x");
+      for(j=0;j<MD5_DIGEST_LENGTH;j++)
+	printf("%02X", partition_md5_array[i*MD5_DIGEST_LENGTH+j]);
+      printf("\n");
+      partition_offset+=partition_jump_size_array[i];
+    }
+
+    // 0x00CD7CD9 - 0x00CD7CFC == -35 is new hpoa bin file header size and offset to next partition
+    close(fd);
+
+  }
   return 0;
 }
 
@@ -1528,14 +1673,14 @@ int FUN_1000f7dc(unsigned int param_1,unsigned int param_2){
 
 
 
-size_t cpqem_find_tag_ex(char *param_1,char *param_2,char *param_3,size_t param_4,uint param_5)
-
+int cpqem_find_tag_ex(char *param_1,char *param_2,char *param_3,size_t param_4,uint param_5)
 {
-  size_t sVar1;
+  int sVar1;
   char *pcVar2;
   char *pbVar3;
   char *pbVar4;
-  
+
+
   sVar1 = strlen(param_2);
   pbVar3 = param_1;
   do {
@@ -1544,29 +1689,39 @@ size_t cpqem_find_tag_ex(char *param_1,char *param_2,char *param_3,size_t param_
     if (pcVar2 == (char *)0x0) {
       return 0;
     }
-  } while (((pbVar3 != param_1 + sVar1) && (pbVar3[-1 - sVar1] != 10)) || (*pbVar3 != param_5));
-  if (pbVar3[1] == 0x22) {
+  } while (
+	   ( (pbVar3 != param_1 + sVar1) && (pbVar3[-1 - sVar1] != 10) ) ||
+	   (*pbVar3 != param_5)
+	   );
+  
+  if (pbVar3[1] == '\"') {
     pbVar3 = pbVar3 + 2;
+  } else {
+    pbVar3 = pbVar3 + (pbVar3[1] == '\'') + 1;
   }
-  else {
-    pbVar3 = pbVar3 + (pbVar3[1] == 0x27) + 1;
-  }
+  
   pbVar4 = (char *)strpbrk((char *)pbVar3,"\'\"\n");
   if (pbVar4 == (char *)0x0) {
     pbVar4 = pbVar3;
   }
+  
   sVar1 = (int)*pbVar4 - (int)*pbVar3;
+
   if ((int)param_4 <( (int)*pbVar4 - (int)*pbVar3 ) ){
     sVar1 = param_4;
   }
-  strncpy(param_3,(char *)pbVar3,sVar1);
+  strncpy((char*)param_3,(char *)pbVar3,sVar1);
+  //  printf("%s, %s, %i\n",param_3,pbVar3,(int)sVar1);
+
   param_3[sVar1] = '\0';
-  return sVar1;
+  //  printf("%s, %s\n",param_3,pbVar3);
+  //printf("ret:: %i\n",*pbVar3-0x30);
+  return *pbVar3-0x30;
 }
 
 
 
-int find_tag_in_file(char *param_1, char *param_2, char *param_3, size_t param_4, unsigned int param_5){
+int find_tag_in_file(char *file_name, char *tag, char *param_3, size_t param_4, unsigned int param_5){
   FILE *__stream;
   int iVar1;
   __ssize_t _Var2;
@@ -1576,14 +1731,15 @@ int find_tag_in_file(char *param_1, char *param_2, char *param_3, size_t param_4
 
   iVar3 = 0;
   local_28 = (char *)0x0;
-  __stream = fopen(param_1,"r");
+  __stream = fopen(file_name,"r");
   iVar1 = 0;
   if (__stream != (FILE *)0x0) {
     do {
       _Var2 = getline(&local_28,asStack_24,__stream);
+
       iVar1 = iVar3;
       if (_Var2 < 1) break;
-      iVar3 = cpqem_find_tag_ex(local_28,param_2,param_3,param_4,param_5);
+      iVar3 = cpqem_find_tag_ex(local_28,tag,param_3,param_4,param_5);
       iVar1 = iVar3;
     } while (iVar3 == 0);
     if (local_28 != (char *)0x0) {
@@ -1597,14 +1753,12 @@ int find_tag_in_file(char *param_1, char *param_2, char *param_3, size_t param_4
 
 int em_type(void){  // not used right now
   char local_28 [32];
+  int emtype=0;
   if (DAT_000cbb58 == -1) {
     local_28[0] = '\0';
     //find_tag_in_file("/etc/gpio_states","OABOARDTYPE",local_28,0x10,0);
-    printf("before find_tag_in_file\n");
-    find_tag_in_file("gpio_states","OABOARDTYPE",&local_28[0],0x10,'=');
-    printf("after find_tag_in_file\n");
-    printf("em_type: %i\n",atoi(local_28));
-    DAT_000cbb58 = atoi(local_28);
+    emtype=find_tag_in_file("gpio_states","OABOARDTYPE",local_28,0x10,'=');
+    DAT_000cbb58 = emtype;
   }
   return DAT_000cbb58;
 }
@@ -1847,7 +2001,7 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd, partition_name);
   strcat(cmd, " 141208-0921 build\"\' -T ramdisk dev/mtd-");
   strcat(cmd, partition_name);
-  strcat(cmd, ".modified");
+  //strcat(cmd, ".modified");
   strcat(cmd," >& /dev/null");
   strcat(cmd, " ; ");
   strcat(cmd,"sync");  

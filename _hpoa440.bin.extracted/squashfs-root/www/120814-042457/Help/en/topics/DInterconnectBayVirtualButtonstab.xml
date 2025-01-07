@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DInterconnectBayVirtualButtonstab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Interconnect Bay Virtual Buttons tab</title>
+  <source>/120814-042457/Help/en/topics/DInterconnectBayVirtualButtonstab.xml</source>
+  <keywords />
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Button
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Power Off
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Clicking this button shuts the power off on the interconnect device
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Reset
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Clicking this button forces the interconnect device to shut down and then power back up again, performing a reset
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Toggle On/Off
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Clicking this button turns the UID on the interconnect device on (blue) or off (gray) for easy identification of the selected interconnect device
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  If an interconnect module is powered off, the module will be powered on after an Onboard Administrator restart or the module will failover if sufficient enclosure power is available.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+      </content>
+    </section>
+  </sections>
+</topic>

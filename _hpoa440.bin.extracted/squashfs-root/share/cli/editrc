@@ -1,0 +1,4 @@
+edit on
+bind "^[[1~" "ed-move-to-beg"
+bind "^[[4~" "ed-move-to-end"
+bind "^[[3~" "ed-delete-next-char"

@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- 	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+
+    Onboard Administrator Action Map file
+    
+    This map is used by the Call Analyzer module for determining how to handle
+    case-specific problems with soap calls. 
+    
+    Note: Only those problems that affect critical systems such as eventing, 
+    topology, and authentication should be handled by map file entries. Other
+    call problems can still be handled automatically by FormManager, or using 
+    inline error handling routines.
+    
+    The result types and action types are defined in EnvironContants.js, and 
+    the error types and numbers are in the strings.[lang].xml file.
+    
+    var ResultType = {
+      Null                : 'Null',
+      Empty               : 'Empty',
+      Normal              : 'Normal',
+      SoapFault           : 'SoapFault',
+      InternalError       : 'InternalError',
+      StandardError       : 'StandardError',
+      MaxAttempts         : 'MaxAttempts',
+      Failed              : 'Failed',
+      Unknown             : 'Unknown'
+    };
+
+    var ActionType = {
+      None                : 'None',
+      UpdateTopology      : 'UpdateTopology',
+      NotifyPipeLoss      : 'NotifyPipeLoss',
+      NotifyCommLoss      : 'NotifyCommLoss',
+      NotifyAuthFailed    : 'NotifyAuthFailed',
+      RetryRequest        : 'RetryRequest',
+      UseLocalOnly        : 'UseLocalOnly',
+      UseStandbyMode      : 'UseStandbyMode',
+      CreateApiResponse   : 'CreateApiResponse',
+      CreateEventResponse : 'CreateEventResponse',
+      CreateTimedOutError : 'CreateTimedOutError',
+      CreateSoapError     : 'CreateSoapError',
+      Ignore              : 'Ignore'
+    };
+    
+  -->
+<action-map>
+  <methods>
+    <method name="getAllEvents">
+      <!-- we abort this call when unloading or turning off events -->
+      <result type="Empty">
+        <action type="XHR_ERROR" error="Aborted">CreateSoapError</action>
+      </result>
+      <!-- if timed out, do a retry to prevent the default error response -->
+      <result type="Failed">
+        <action type="XHR_ERROR" error="TimedOut">RetryRequest</action>
+      </result>
+      <result type="Empty">
+        <action>RetryRequest</action>
+      </result>
+      <result type="Null">
+        <action>RetryRequest</action>
+      </result>
+      <result type="InternalError">
+        <action>RetryRequest</action>
+      </result>
+      <!-- event pipe killed (will happen when ACL changes) - no retry here -->
+      <result type="StandardError">
+        <action type="ONBOARD_ADMINISTRATOR" error="201">NotifyPipeLoss</action>
+        <action type="ONBOARD_ADMINISTRATOR" error="202">NotifyPipeLoss</action>
+        <action type="ONBOARD_ADMINISTRATOR" error="203">NotifyPipeLoss</action>
+        <action type="ONBOARD_ADMINISTRATOR" error="204">NotifyPipeLoss</action>
+        <action>RetryRequest</action>
+      </result>
+      <!-- soap faults -->
+      <result type="SoapFault">
+        <action type="AUTH_FAILED" error="400">NotifyAuthFailed</action>
+      </result>
+      <result type="MaxAttempts">
+        <!-- we can't reach this oa for some reason -->
+        <action>NotifyCommLoss</action>
+      </result>
+    </method>
+    <!-- Added for 2.20 -->
+    <method name="getAllEventsEx">
+      <!-- we abort this call when unloading or turning off events -->
+      <result type="Empty">
+        <action type="XHR_ERROR" error="Aborted">CreateSoapError</action>
+      </result>
+      <!-- if timed out, do a retry to prevent the default error response -->
+      <result type="Failed">
+        <action type="XHR_ERROR" error="TimedOut">RetryRequest</action>
+      </result>
+      <result type="Empty">
+        <action>RetryRequest</action>
+      </result>
+      <result type="Null">
+        <action>RetryRequest</action>
+      </result>
+      <result type="InternalError">
+        <action>RetryRequest</action>
+      </result>
+      <!-- event pipe killed (will happen when ACL changes) - no retry here -->
+      <result type="StandardError">
+        <action type="ONBOARD_ADMINISTRATOR" error="201">NotifyPipeLoss</action>
+        <action type="ONBOARD_ADMINISTRATOR" error="202">NotifyPipeLoss</action>
+        <action type="ONBOARD_ADMINISTRATOR" error="203">NotifyPipeLoss</action>
+        <action type="ONBOARD_ADMINISTRATOR" error="204">NotifyPipeLoss</action>
+        <action>RetryRequest</action>
+      </result>
+      <!-- soap faults -->
+      <result type="SoapFault">
+        <action type="AUTH_FAILED" error="400">NotifyAuthFailed</action>
+		  <action type="FORM_MANAGER" error="308">NotifyAuthFailed</action>
+      </result>
+      <result type="MaxAttempts">
+        <!-- we can't reach this oa for some reason -->
+        <action>NotifyCommLoss</action>
+      </result>
+    </method>
+    <method name="generateHeartbeat">
+      <!-- event pipe could be killed already -->
+      <result type="MaxAttempts">
+        <action>Ignore</action>
+      </result>
+      <action>RetryRequest</action>
+    </method>
+    <method name="getRackTopology2">
+      <result type="MaxAttempts">
+        <action>UseLocalOnly</action>
+      </result>
+      <!-- call stacks are cleared before signing in to stop topology polling -->
+      <result type="Empty">
+        <action type="XHR_ERROR" error="Aborted">Ignore</action>
+      </result>
+      <!-- mozilla failure -->
+      <result type="Failed">
+        <action type="XHR_ERROR" error="Incomplete">UseLocalOnly</action>
+      </result>
+      <!-- ie failure -->
+      <result type="Null">
+        <action type="FORM_MANAGER" error="306">UseLocalOnly</action>
+      </result> 
+      <!-- happens before the rack service is started -->
+      <result type="StandardError">
+        <action type="USER_REQUEST" error="31">RetryRequest</action>
+      </result>
+      <!-- call was made to a standby oa -->
+      <result type="StandardError">
+        <action type="ONBOARD_ADMINISTRATOR" error="139">UseStandbyMode</action>
+      </result>      
+      <action>RetryRequest</action>
+    </method>
+    <method name="userLogIn">
+      <!-- failed login -->
+      <result type="StandardError">
+        <action type="USER_REQUEST" error="150">Ignore</action>
+      </result>
+      <result type="Failed">
+        <action type="XHR_ERROR" error="TimedOut">CreateTimedOutError</action>
+      </result>
+      <action type="HTTP_ERROR" error="502">Ignore</action>
+      <action>Ignore</action>
+    </method>
+    <method name="userLogOut">
+      <!-- this happens during logout -->
+      <result type="Failed">
+        <action>Ignore</action>
+      </result>
+      <!-- failed authentication error -->
+      <result type="SoapFault">
+        <action>Ignore</action>
+      </result>
+      <action>Ignore</action>
+    </method>
+    <method name="unSubscribeForEvents">
+      <!-- this happens during logout -->
+      <result type="Failed">
+        <action>Ignore</action>
+      </result>
+      <action>Ignore</action>
+    </method>
+    <method name="subscribeForEvents">
+      <!-- this happens after reboot -->
+      <result type="SoapFault">
+        <action type="AUTH_FAILED" error="400">NotifyAuthFailed</action>
+      </result>
+      <!-- this happens when plug is pulled -->
+      <action type="HTTP_ERROR" error="502">NotifyCommLoss</action>
+      <action>Ignore</action>
+    </method>
+    <method name="getOaVcmMode">
+      <!-- this happens in a pre-1.10 gui because the call is not supported -->
+      <result type="SoapFault">
+        <action type="USER_REQUEST" error="400">CreateApiResponse</action>
+      </result>
+    </method>
+	<method name="getVcmIpv6UrlList">
+      <!-- this happens in a pre-1.10 gui because the call is not supported -->
+      <result type="SoapFault">
+        <action type="USER_REQUEST" error="400">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="getBladeThermalInfoArray">
+      <!-- this happens in a pre-1.20 gui because the call is not supported -->
+      <result type="SoapFault">
+        <action type="USER_REQUEST" error="400">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="getFanZoneArray">
+      <!-- this happens in a pre-1.30 gui because the call is not supported -->
+      <result type="SoapFault">
+        <action type="USER_REQUEST" error="400">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="isValidSession">
+      <!-- this happens in a pre-1.20 gui because the call is not supported -->
+      <result type="SoapFault">
+        <action type="USER_REQUEST" error="400">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="getBladeThermalInfoArray">
+      <!-- this happens in a pre-1.20 gui because the call is not supported -->
+      <result type="SoapFault">
+        <action type="USER_REQUEST" error="400">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="getVirtualMediaUrlList">
+      <!-- this happens in a pre-2.00 gui because the call is not supported -->
+      <result type="SoapFault">
+        <action type="USER_REQUEST" error="400">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="getVirtualMediaStatus">
+      <!-- this happens in a pre-2.00 gui because the call is not supported -->
+      <result type="SoapFault">
+        <action type="USER_REQUEST" error="400">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="getOaSessionArray">
+      <!-- this happens in a pre-2.00 gui because the call is not supported -->
+      <result type="SoapFault">
+        <action type="USER_REQUEST" error="400">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="removeOaSession">
+      <!-- this happens in a pre-2.00 gui because the call is not supported -->
+      <result type="SoapFault">
+        <action type="USER_REQUEST" error="400">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="getPowerCapConfig">
+      <!-- this happens in a pre-2.30 gui because the call is not supported -->
+      <result type="SoapFault">
+        <action type="USER_REQUEST" error="400">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="getPowerCapExtConfig">
+      <!-- this happens in a pre-3.80 gui because the call is not supported -->
+      <result type="SoapFault">
+        <action type="USER_REQUEST" error="400">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="setPowerCapConfig">
+      <!-- this happens in a pre-2.30 gui because the call is not supported -->
+      <result type="SoapFault">
+        <action type="USER_REQUEST" error="400">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="getPowerCapBladeStatus">
+      <!-- this happens in a pre-2.30 gui because the call is not supported -->
+      <result type="SoapFault">
+        <action type="USER_REQUEST" error="400">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="getEnclosureBladePowerSummary">
+      <!-- this happens in a pre-3.50 gui because the call is not supported -->
+      <result type="SoapFault">
+        <action type="USER_REQUEST" error="400">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="getLdapTestStatus">
+      <!-- this happens in a pre-2.25 gui because the call is not supported -->
+      <result type="SoapFault">
+        <action type="USER_REQUEST" error="400">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="getLanguages">
+      <!-- this happens in a pre-3.80 gui because the call is not supported -->
+      <result type="SoapFault">
+        <action type="USER_REQUEST" error="400">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="getSoapInterfaceInfo">
+      <action>Ignore</action>
+    </method>
+    <method name="pingUrl">
+      <action>Ignore</action>
+    </method>
+    <method name="flashOaRom">
+      <!-- on the primary, this call can get cut off even on success -->
+      <result type="Failed">
+        <action type="XHR_ERROR" error="Incomplete">CreateApiResponse</action>
+      </result>
+      <!-- we abort this call when a flash starts so it doesn't block in the call stack -->
+      <result type="Empty">
+        <action type="XHR_ERROR" error="Aborted">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="flashOaRomEnhanced">
+      <!-- on the primary, this call can get cut off even on success -->
+      <result type="Failed">
+        <action type="XHR_ERROR" error="Incomplete">CreateApiResponse</action>
+      </result>
+      <!-- we abort this call when a flash starts so it doesn't block in the call stack -->
+      <result type="Empty">
+        <action type="XHR_ERROR" error="Aborted">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="syncOaRomEnhanced">
+      <!-- on the primary, this call can get cut off even on success -->
+      <result type="Failed">
+        <action type="XHR_ERROR" error="Incomplete">CreateApiResponse</action>
+      </result>
+      <!-- we abort this call when the flash starts so it doesn't block in the call stack -->
+      <result type="Empty">
+        <action type="XHR_ERROR" error="Aborted">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="restoreFactoryDefaults">
+      <!-- we abort this call when the OA reboots so it doesn't block in the call stack -->
+      <result type="Empty">
+        <action type="XHR_ERROR" error="Aborted">CreateApiResponse</action>
+      </result>
+    </method>
+    <method name="oaManualFailover">
+      <!-- this call can get cut off when the OA reboots -->
+      <result type="Failed">
+        <action type="XHR_ERROR" error="Incomplete">Ignore</action>
+      </result>
+      
+    </method>    
+  </methods>
+</action-map>

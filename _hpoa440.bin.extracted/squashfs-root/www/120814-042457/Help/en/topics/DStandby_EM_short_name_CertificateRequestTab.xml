@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DStandby_EM_short_name_CertificateRequestTab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Standby Certificate Request tab</title>
+  <source>/120814-042457/Help/en/topics/DStandby_EM_short_name_CertificateRequestTab.xml</source>
+  <keywords>certificate requesting standby Onboard Administrator certificate request tab</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">The Standby Certificate Request tab enables you to enter the information needed to generate a self-signed certificate or a standardized certificate-signing request to a certificate authority.</p>
+        <p class="bodytext">
+          <b>Required Information</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Field
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Possible values
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Country (C)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Must be a two character country code. Acceptable characters are all alphanumeric, a space, and the following punctuation marks: ' ( ) + , - . / : = ?
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The two character country code that identifies the country where the Onboard Administrator is located.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">State or Province (ST)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Must be 1 to 30 characters in length.
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The state or province where the Onboard Administrator is located.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">City or Locality (L)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Must be 1 to 50 characters in length.
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The city or locality where the Onboard Administrator is located.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Organization Name (O)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Must be 1 to 60 characters in length.
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The organization that owns this Onboard Administrator. When this information is used to generate a certificate signing request, the issuing certificate authority can verify that the organization requesting the certificate is legally entitled to claim ownership of the given company name or organization.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Common Name (CN)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Must be 1 to 60 characters in length. To prevent security alerts, the value of this field must match exactly the host name as it is known by the web browser. The web browser compares the host name in the resolved web address to the name that appears in the certificate. For example, if the web address in the address field is https://oa-001635.xyz.com, then the value must be oa-001635.xyz.com.
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The Onboard Administrator name that appears in the browser web address field. This certificate attribute is generally referred to as the common name.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">To include a request for an Active Onboard Administrator certificate, select <b>Active OA Host Name</b>. Enter the information in the <b>Active Common Name (CN)</b> field, which must be 1 to 60 characters in length.</p>
+        <p class="bodytext">
+          <b>Optional information</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Field
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Possible values
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Alternative Name
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Must be 0 to 511 characters in length.
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">An alternate name for the Onboard Administrator. The name is used for creating the X509v3 Subject Alternative Name extension attribute. The field must either be empty or contain a list of keyword:value pairs separated by commas. The valid keyword:value entries include IP:&lt;ip address&gt; and DNS:&lt;domain name&gt;.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Contact Person
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Must be 0 to 60 characters in length.
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The person responsible for the Onboard Administrator.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Email Address
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Must be 0 to 60 characters in length.
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The email address of the contact person responsible for the Onboard Administrator.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Organizational Unit
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Must be 0 to 60 characters in length.
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The unit within the company or organization that owns the Onboard Administrator.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Surname
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Must be 0 to 60 characters in length.
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The surname of the person responsible for the Onboard Administrator.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Given Name
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Must be 0 to 60 characters in length.
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The given name of the person responsible for the Onboard Administrator.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Initials
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Must be 0 to 20 characters in length.
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The initials of the person responsible for the Onboard Administrator.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">DN Qualifier
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Must be 0 to 60 characters in length. Acceptable characters are all alphanumeric, the space, and the following punctuation marks: ' ( ) + , - . / : = ?
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The distinguished name qualifier of the Onboard Administrator.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">
+          <b>Certificate-signing request attributes</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Field
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Possible values
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Challenge Password
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Must be 0 to 30 characters in length
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The password for the certificate-signing request
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Confirm Password
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Must be 0 to 30 characters in length
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Confirm the Challenge Password
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Unstructured Name
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Must be 0 to 60 characters in length
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">This is for additional information (for example, an unstructured name that is assigned to the Onboard Administrator)
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">To generate a self-signed certificate or a standardized certificate-signing request, click <b>Apply</b>.</p>
+        <p class="bodytext">
+          <b>Standardized certificate-signing request</b>
+        </p>
+        <p class="bodytext">This screen displays a standardized certificate signing request generated by the Onboard Administrator. The content of the request in the text box may be sent to a certificate authority of your choice for signing. Once signed and returned from the certificate authority, the certificate can be uploaded under the "Certificate Upload" tab.</p>
+        <p class="bodytext">If a static IP address is configured for Onboard Administrator when this certificate request is generated, the certificate request will be issued to the static IP address. Otherwise, it is issued to the dynamic DNS name of the Onboard Administrator. The certificate, by default, requests a valid duration of 10 years (this value is currently not configurable).</p>
+        <p class="bodytext">When submitting the request to the certificate authority, be sure to:</p>
+        <ol class="listnumber">
+          <li class="listnumber">Use the Onboard Administrator URL for the server.</li>
+          <li class="listnumber">Request the certificate be generated in the RAW format.</li>
+          <li class="listnumber">Include the Begin and End certificate lines.</li>
+        </ol>
+      </content>
+    </section>
+  </sections>
+</topic>

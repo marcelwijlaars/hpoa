@@ -1,0 +1,14 @@
+if [ "$1" = "" ] ; then
+	echo "usage: allfan <RPM value [3000-18000]>"
+else
+	fanrpm 1 $1
+	fanrpm 2 $1
+	fanrpm 3 $1
+	fanrpm 4 $1
+	fanrpm 5 $1
+	fanrpm 6 $1
+	fanrpm 7 $1
+	fanrpm 8 $1
+	fanrpm 9 $1
+	fanrpm 10 $1
+fi

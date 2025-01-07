@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DManualDiscovery" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Manual discovery</title>
+  <source>/120814-042457/Help/en/topics/DManualDiscovery.xml</source>
+  <keywords>manual discovery manual update</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">Manual discovery of one or more servers can be initiated to simplify the collection of the existing firmware versions.</p>
+        <p class="bodytext">After initiating a manual firmware discovery, the Manual Discovery Device Bay Selection screen appears. Select one or more device bays on which to perform the discovery, or select the <b>Discover All Servers </b>check box to select all servers for the discovery. By default, all device bays and the Discover All Servers check box are selected.</p>
+        <p class="bodytext">If Secure Boot is configured on a server blade, you cannot select the associated bay (a padlock icon is displayed). Secure Boot mode restricts users from performing manual discovery from the Onboard Administrator GUI or CLI. Boot operations can be performed only from the boot device configured in BIOS by the Administrator.</p>
+        <p class="bodytext">To start the discovery process on the selected servers, click <b>Start Manual Discovery.</b></p>
+      </content>
+    </section>
+  </sections>
+</topic>

@@ -1,0 +1,241 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css"/>
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/tabManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+<script type="text/javascript" src="../js/domBuilder.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+
+<script type="text/javascript">
+var encNum;
+var hpem=null;
+function getCurrentTab(){
+return ourTabManager.getCurrentTab();
+}
+function loadContent(){
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+ourTabManager.toggleTabs('deviceDelay');
+setTabContent('deviceDelay');
+hpem.registerEventHandler(handleBladeEvents,['EVENT_BLADE_INFO','EVENT_BAY_CHANGED']);
+hpem.registerEventHandler(handleInterconnectEvents,['EVENT_INTERCONNECT_INFO']);
+reconcilePage();
+}else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);
+}
+}
+function handleBladeEvents(result){
+if(getCurrentTab()=='interconnectDelay')
+return;
+var bayNumber=getElementValueXpath(result,'//hpoa:bladeInfo/hpoa:bayNumber');
+var bayLabel=document.getElementById('bay'+bayNumber+'Label');
+if(bayLabel){
+var presence=getElementValueXpath(result,'//hpoa:bladeInfo/hpoa:presence');
+if(presence=='PRESENT'){
+bayLabel.innerHTML=getElementValueXpath(result,'//hpoa:bladeInfo/hpoa:name');
+}else if(presence=='SUBSUMED'){
+bayLabel.innerHTML=top.getString('subsumed');
+}else if(presence=='ABSENT'){
+bayLabel.innerHTML=top.getString('statusAbsent');
+}else{
+bayLabel.innerHTML=top.getString('statusUnknown');
+}
+}
+}
+function handleInterconnectEvents(result){
+if(getCurrentTab()!='interconnectDelay')
+return;
+var bayNumber=getElementValueXpath(result,'//hpoa:interconnectTrayInfo/hpoa:bayNumber');
+var bayLabel=document.getElementById('bay'+bayNumber+'Label');
+if(bayLabel){
+var netTrayStatus=hpem.getInterconnectTrayStatus(bayNumber);
+var presence=getElementValueXpath(netTrayStatus,'//hpoa:interconnectTrayStatus/hpoa:presence');
+if(presence=='PRESENT'){
+bayLabel.innerHTML=getElementValueXpath(result,'//hpoa:interconnectTrayInfo/hpoa:name');
+}else if(presence=='SUBSUMED'){
+bayLabel.innerHTML=top.getString('subsumed');
+}else if(presence=='ABSENT'){
+bayLabel.innerHTML=top.getString('statusAbsent');
+}else{
+bayLabel.innerHTML=top.getString('statusUnknown');
+}
+}
+}
+function setTabContent(tabId){
+var contentTab=document.getElementById(tabId);
+var contentLocation=contentTab.getAttribute('contentLocation');
+var contextHelpId=contentTab.getAttribute('contextId');
+var formMgr=new FormManager(function(success){
+var processor=new XsltProcessor(contentLocation);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+if(tabId.indexOf('deviceDelay')>-1){
+processor.addParameter('bladeInfoDoc',hpem.getBladeInfoDOM());
+if(tabId=='deviceDelayA'){
+processor.addParameter('side','1');
+}
+else if(tabId=='deviceDelayB'){
+processor.addParameter('side','2');
+}
+}
+else{
+processor.addParameter('interconnectStatusDoc',hpem.getInterconnectTrayStatusDOM());
+processor.addParameter('interconnectInfoDoc',hpem.getInterconnectTrayInfoDOM());
+}
+processor.addParameter('powerSequenceDoc',hpem.getPowerdelaySettings());
+processor.addParameter('serviceUserAcl',hpem.getUserAccessLevel());
+document.getElementById('tabContent').innerHTML=processor.getOutput();
+reconcilePage();
+},false,'errorDisplay','tabContent','waitContainer');
+formMgr.startBatch(true);
+formMgr.queueCall(hpem.getPowerdelaySettings);
+formMgr.endBatch();
+top.mainPage.getHelpLauncher().setCurrentTopic(contextHelpId);
+}
+function updateDelayInputs(select){
+if(select==null){
+return;
+}
+var val=select.options[select.selectedIndex].value;
+var bayNumber=select.getAttribute('bayNumber');
+var input=document.getElementById('delayInput'+bayNumber);
+if(input==null||bayNumber==null){
+return;
+}
+switch(val){
+case '0':
+setInputEnabled(input,false);
+input.value='0';
+break;
+case '-1':
+setInputEnabled(input,false);
+input.value='';
+break;
+case '1':
+setInputEnabled(input,true);
+input.value='';
+break;
+default:
+break;
+}
+}
+function setInputEnabled(input,enabled){
+if(input){
+if(enabled){
+input.className='stdInput';
+input.setAttribute('validate-me','true');
+input.removeAttribute('disabled');
+}else{
+input.className='stdInputDisabled';
+input.setAttribute('validate-me','false');
+input.setAttribute('disabled','true');
+}
+}
+}
+function setPowerDelaySettings(deviceType){
+var ourInputValidator=new InputValidator(null,'errorDisplay',true);
+if(!ourInputValidator.allInputsValidate()){
+ourInputValidator.updateFirstMessage(true);
+ourInputValidator.autoFocus();
+return;
+}else{
+ourInputValidator.clearMessages();
+}
+var formMgr=new FormManager(null,false,'errorDisplay','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString('applyingPwrDelaySettings'));
+var powerDelaySettings=getPowerSettingsDocument();
+formMgr.startBatch();
+if(deviceType=='device'){
+formMgr.queueCall(hpem.setPowerdelayServerSettings,[powerDelaySettings]);
+}
+else{
+formMgr.queueCall(hpem.setPowerdelayInterconnectSettings,[powerDelaySettings]);
+}
+formMgr.endBatch();
+}
+function getPowerSettingsDocument(){
+var tableContainer=document.getElementById('powerDelayContainer');
+if(!tableContainer){
+return;
+}
+var domBuilder=new DomBuilder();
+domBuilder.addDocument("hpoa:powerdelaySettings",['xmlns:'+OA_NAMESPACE(),OA_NAMESPACE_URI()]);
+var rowCollection=tableContainer.getElementsByTagName('tr');
+for(var i=0;i<rowCollection.length;i++){
+var rowInput=rowCollection[i].getElementsByTagName('input')[0];
+var rowMenu=rowCollection[i].getElementsByTagName('select')[0];
+if(!rowInput||!rowMenu){
+continue;
+}
+var bayNumber=rowInput.getAttribute('bayNumber');
+var enabledState=rowMenu.options[rowMenu.selectedIndex].value;
+var delay='';
+if(enabledState=='-1'||enabledState=='0'){
+delay=enabledState;
+}
+else{
+delay=rowInput.value;
+}
+var bays=domBuilder.appendChild('hpoa:bays');
+var doc=domBuilder.getDocument();
+var bayNumElement=doc.createElement('hpoa:bayNumber');
+var bayNumText=doc.createTextNode(''+bayNumber);
+bayNumElement.appendChild(bayNumText);
+var delayElement=doc.createElement('hpoa:delay');
+var delayText=doc.createTextNode(delay);
+delayElement.appendChild(delayText);
+bays.appendChild(bayNumElement);
+bays.appendChild(delayElement);
+}
+return domBuilder.getDocument().documentElement.cloneNode(true);
+}
+	</script>
+</head>
+<body style="margin:10px;" onload="loadContent();">
+    
+    <b>
+		<script type="text/javascript">document.write(top.getString('devicePowerSeq'));</script>
+    </b><br />
+    <span class="whiteSpacer">&#160;</span><br />
+    
+    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+		<tr>
+			<td valign="bottom">
+				<div class="tabSet" id="tabSet">
+					<div class="tabOff" tabId="deviceDelay" contextId="FORM_SVB_POWER_SEQUENCE" id="deviceDelay" contentLocation="../Forms/DevicePowerDelay.xsl"><script type="text/javascript">document.write(top.getString('serverBays'));</script></div>
+					<div class="tabOff" tabid="deviceDelayA" contextId="FORM_SVB_POWER_SEQUENCE" id="deviceDelayA" contentLocation="../Forms/DevicePowerDelay.xsl"><script type="text/javascript">document.write(top.getString('dblDenseSideA'));</script></div>
+					<div class="tabOff" tabid="deviceDelayB" contextId="FORM_SVB_POWER_SEQUENCE" id="deviceDelayB" contentLocation="../Forms/DevicePowerDelay.xsl"><script type="text/javascript">document.write(top.getString('dblDenseSideB'));</script></div>
+					<div class="tabOff" tabid="interconnectDelay" contextId="FORM_SWM_POWER_SEQUENCE" id="interconnectDelay" contentLocation="../Forms/InterconnectPowerDelay.xsl"><script type="text/javascript">document.write(top.getString('interconnectBays'));</script></div>
+					<div class="tabBottomLine"></div>
+			  </div> 				
+			</td>
+		</tr>
+		<tr>
+			<td style="padding-top:10px;">
+				<div id="tabContent"></div>
+				<div id="waitContainer" class="waitContainer"></div>
+			</td>
+		</tr>
+	</table>
+
+  <script type="text/javascript">
+if(typeof(TabManager)!="undefined"){
+ourTabManager.init();
+}
+  </script>
+
+</body>
+</html>

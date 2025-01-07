@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DTroubleshooting" parent-id="" author="slamasla" modified="10-8-2009" type="procedure">
+<source>/120814-042457/help/en/topics/gsoap-troubleshooting.xml</source>
+<title>Troubleshooting</title>  
+<keywords>support trouble error troubleshooting</keywords>
+<intro></intro>
+<sections>
+  <section>
+    <desc/>
+    <content>
+      <p>
+        <h5>Known Issues</h5>
+
+        <ul>
+          <li>
+            <b>WSDL import fails.</b> This is known to occur with valid OA WSDL text when there is extra white-space before the first line of the file. 
+            <br />
+            <br />
+            To rectify, delete the extra white-space before the first line of the file contents that were pasted into the import dialog and try the import again.
+            <br />
+            <br />
+          </li>
+          <li>
+            <b>Complex Type generator fails.</b> This is known to occur when a valid WSDL file has not been imported. This is
+            not a fatal issue for this utility, but prevents it from doing the following things:
+            <br />
+            <br />
+            <ol style="line-height:150%;">
+              <li style="line-height:100%;">Complex types cannot be generated.</li>
+              <li style="line-height:100%;">Enumerations cannot be generated.</li>
+            </ol>            
+          </li>
+          <li>
+            <b>Non-XML Responses.</b> The GUI soap library expects all responses from the soap service to be in xml format. Sometimes 
+            a non-xml response will be returned during development, and will be displayed as a parser error if the html is not in xhtml
+            format. This is expected behavior, and the actual response may still be viewed using the JavaScript Debugger utility described
+            in the next section (below).
+          </li>
+        </ul>
+
+        <h5>Unexpected Issues</h5>
+
+        To help debug unexpected issues, the gSoap Library Analyzer 2&#x2122; utility now supports the JavaScript Debugger. This can 
+        be valuable in detecting transport issues that are not handled properly. 
+        <br/>
+        <br/>
+        To launch the JavaScript Debugger, add <span style="font-family:monospace;font-size:11px;background:yellow;">/?debug=true</span> to the end of the URL and
+        reload the page. This will open a popup window that automatically displays any debug output that falls within the default severity 
+        level (6). 
+        <br/>
+        <br/>
+        To increase the debug level to the maximum, add <span style="font-family:monospace;font-size:11px;background:yellow;">&amp;level=10</span> to the end of the URL and 
+        reload the page. This will output all debug messages (verbose output).
+        
+        <h5>Advanced</h5>
+        
+        The Expression Evaluator may also be launched for executing scripts at run time. This tool allows you to talk to the main application window and query its libraries
+        and memory data. 
+        <br/>
+        <br/>
+        To launch the Expression Evaluator, add <span style="font-family:monospace;font-size:11px;background:yellow;">/?eval=true</span> to the end of the URL and
+        reload the page. This will open a popup window containing a script input textbox that can be used to execute JavaScript within the parent window's domain. A list of
+        common script statements will be available in the listbox below the input textbox.
+        <br />
+        <br />
+        <attention type="tip">
+          Only one <b>?</b> should be added to the URL to begin the query string, followed by a name/value pair of query arguments. All other name/value pairs added to
+          the query string should be separated by the <b>&amp;</b> symbol.
+        </attention>
+    </p>
+    </content>
+  </section>
+</sections>
+</topic>

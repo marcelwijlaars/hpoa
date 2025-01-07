@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DDevicebays" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Device bays</title>
+  <source>/120814-042457/Help/en/topics/DDevicebays.xml</source>
+  <keywords>device bay overview screen device bays DVD connection FQDN link support ISO image reset iLO Secure Boot firmware management restrictions server blade UID toggle server blade power reset USB key support</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>Device Bay Summary</b>
+        </p>
+        <p class="bodytext">In the Systems and Devices menu, the Device Bays category lists all blades in the enclosure. Selecting the Device Bays from the menu, the device list appears with a grid showing the status of each blade in the enclosure.</p>
+        <p class="bodytext">The check box in the first column on the top row toggles all check boxes for all blades in the enclosure, which can be used to cycle power to all server blades in the enclosure. Optionally, you can use individual check boxes to select a specific blade. After selecting blades, choose Virtual Power, UID State, One Time Boot, DVD, or Enclosure Firmware Management from the menus to perform the appropriate action. Virtual commands are not applicable to storage blades.</p>
+        <p class="bodytext">
+          <b>Device List</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Column
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Check box
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Select bays by selecting the check box for the blades you want to apply the Virtual Power, UID State, One Time Boot, DVD, or Firmware Management action.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Bay
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The device bay within the enclosure.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Status
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The overall status of the device. Possible values are OK and Enclosure Firmware Management.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">UID
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The status of the UID on the device. Possible values are On (blue), Off (gray) or Blink. When the UID light is in a blink state, a critical operation is being performed on the device and you must not interrupt the operation.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Power State
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The power state of the device. Possible values are On or Off.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">iLO IP Address
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>The IP address of the iLO within the server blade. Not applicable for storage blades.</p>
+                <p>To connect to the iLO, click the IP address link. To see all iLO IP address links available, click the down arrow button to the right of the iLO IP address. A popup displays the web address links that you can use to connect to the iLO. If FQDN link support is enabled and certain DNS configuration requirements are met, an FQDN-based web address is the default selection. For information about enabling FQDN link support, see the "<a href="DNetworkaccess.xml">Network Access</a>" page.</p>
+              </p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">iLO Name
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The DNS name of the iLO within the server blade. Not applicable for storage blades.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">iLO DVD Status
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The status of the DVD connection to the server blade. Possible values are Connected, Disconnected, or Unknown. A status of Incompatible Firmware indicates that the DVD feature is not supported with the iLO firmware installed on the device. A status of Unknown indicates there is an iLO connectivity problem.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">Information on this page is current as of the last download. To view updated information, click <b>Refresh.</b></p>
+        <p class="bodytext">
+          <b>UID State</b>
+        </p>
+        <p class="bodytext">The UID State dropdown menu is used to set the UID light on the blades. Turning on the UID light aids in locating a specific blade within an enclosure. The UID lights can be turned on or off one at a time or as groups, depending on the check boxes.</p>
+        <p class="bodytext">
+          <b>Virtual Power</b>
+        </p>
+        <p class="bodytext">Virtual power commands do not apply to partner blades.</p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Button
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Momentary Press
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">This button mimics a physical momentary press of the power button on the server blade. Clicking this button powers the server blade on or off gracefully.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Press and Hold
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">This button mimics a physical press and hold of the power button on the server blade. Clicking this button forces the server blade to shut power off without regard for first shutting down the OS before turning power off. This option is not available when the server blade is off.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Cold Boot
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Clicking this button immediately removes power from the system. This option is not available when the server blade is off.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Reset
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Clicking this button performs a system reset. This option is not available when the server blade is off.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">
+          <b>One Time Boot</b>
+        </p>
+        <p class="bodytext">If Secure Boot is in effect on the blade in a selected bay, this operation cannot be performed from the Onboard Administrator GUI or CLI. It can be performed only from the device configured in BIOS by the Administrator.</p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Option
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Diskette Drive (A:)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Forces the server blade to reboot to the diskette drive. Be sure the diskette drive is attached to the server blade before selecting this option.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">CD-ROM
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Forces the server blade to reboot to the CD-ROM drive. Be sure the CD-ROM drive is attached to the server blade before selecting this option.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Hard Drive C:
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Forces the server blade to reboot to the hard disk.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">RBSU
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Forces the server blade to boot to the ROM-Based Setup Utility.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">PXE NIC
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Forces the server blade to boot to PXE NIC.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">
+          <b>DVD</b>
+        </p>
+        <p class="bodytext">The DVD menu enables you to connect or disconnect the shared DVD drive by selecting <b>Connect to Enclosure DVD</b> or <b>Disconnect DVD Hardware.</b> You can connect the shared DVD drive to multiple server blades. After you connect the shared DVD, the Virtual Power menu can be used to reboot the selected server blades in the list. If multiple media disks are required for an installation, you might need to disconnect and reconnect for every server when the new media disk is inserted in the DVD drive.</p>
+        <p class="bodytext">When a USB key is detected in the Active Onboard Administrator USB port and ISO images are present, they appear on the DVD menu. Select the server blades you want to deploy an ISO image to, and then select the ISO image from the menu. The ISO image deploys.</p>
+        <p class="bodytext">
+          <b>Enclosure Firmware Management</b>
+        </p>
+        <p class="bodytext">Manual discovery of one or more servers can be initiated to simplify the collection of the existing firmware versions.</p>
+        <p class="bodytext">After initiating a manual firmware discovery, the Manual Discovery Device Bay Selection screen appears. Select one or more device bays on which to perform the discovery, or select the <b>Discover All Servers </b>check box to select all servers for the discovery. By default, all device bays and the Discover All Servers check box are selected.</p>
+        <p class="bodytext">If Secure Boot is configured on a server blade, you cannot select the associated bay (a padlock icon is displayed). Secure Boot mode restricts users from performing manual discovery from the Onboard Administrator GUI or CLI. Boot operations can be performed only from the boot device configured in BIOS by the Administrator.</p>
+        <p class="bodytext">To start the discovery process on the selected servers, click <b>Start Manual Discovery.</b></p>
+        <p class="bodytext">A manual update of one or more servers to the designated firmware image versions can be initiated. To initiate a firmware update on one or more servers, click <b>Manual Update.</b></p>
+        <p class="bodytext">After initiating a manual firmware update the Manual Update Device Bay Selection screen appears. Select one or more device bays on which to perform the update, or select the <b>Update All Servers </b>check box to select all servers for the update. By default, all device bays and the Discover All Servers check box are selected. </p>
+        <p class="bodytext">If Secure Boot is configured on a server blade, you cannot select the associated bay (a padlock icon is displayed). Secure Boot mode restricts users from performing a manual update from the Onboard Administrator GUI or CLI. Boot operations can be performed only from the boot device configured in BIOS by the Administrator.</p>
+        <p class="bodytext">To start the update process on the selected servers, click <b>Start Manual Update.</b></p>
+      </content>
+    </section>
+  </sections>
+</topic>

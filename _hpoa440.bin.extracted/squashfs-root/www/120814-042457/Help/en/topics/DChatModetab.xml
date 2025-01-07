@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DChatModetab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Chat Mode tab</title>
+  <source>/120814-042457/Help/en/topics/DChatModetab.xml</source>
+  <keywords>Chat Mode screen</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">Chat Mode enables direct communication between the Web interface and the Insight Display, which is useful when a remote administrator must communicate with a person at the enclosure. You can send a question or comment to the Insight Display from the Onboard Administrator GUI and also ask a question with up to four options from which the user at the enclosure can choose from.</p>
+        <p class="bodytext">When this tab is selected, a chat log text area appears next to the Insight Display. This text area displays a running list of the messages sent between the Onboard Administrator GUI and the Insight Display, with the most recent entries shown at the bottom. The log will be retained in memory until the user navigates away from the Insight Display page. To keep a copy of the chat log, select all the text in the chat log text area, and copy and paste it into a text file.</p>
+        <p class="bodytext">
+          <b>Message</b>
+        </p>
+        <p class="bodytext">This is the outgoing message to send to the Insight Display.</p>
+        <p class="bodytext">
+          <b>Responses</b>
+        </p>
+        <p class="bodytext">These are the response choices to be sent with the message. The user at the Insight Display can use one of the responses or send a custom response using the provided spin controls.</p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Field
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Possible value
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">User Name
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">1 to 15 characters, including all alphanumeric characters, the dash (-), and the underscore (_)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The user name that appears on the Insight Display title bar for the message. This field defaults to the current user name but can be replaced with a custom alias if desired.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Chat Text
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Four rows of 22 characters, including all printable characters. The ~ and ^ characters are reserved.
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The message that displays on the Insight Display Chat screen when sent from the Onboard Administrator GUI.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Responses (1-4)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">1 to 16 characters, including all printable characters. The ~ and ^ characters are reserved.
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The responses provided with the message, selectable at the enclosure using a spin control. The default responses can be replaced with custom responses.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">Select the check box for one or more responses to include with the message.</p>
+        <p class="bodytext">Click <b>Send</b> to forward the chat message to the Insight Display.</p>
+        <p class="bodytext">Click <b>Withdraw</b> to cancel a chat message that was sent but not returned. The Withdraw button is disabled until a message is sent.</p>
+        <p class="bodytext">
+          <b>Related topics</b>
+        </p>
+        <p class="bodytext">
+          <a href="DInsightDisplay.xml">Security tab</a>
+        </p>
+        <p class="bodytext">
+          <a href="DUserNotetab.xml">User Note tab</a>
+        </p>
+        <p class="bodytext">
+          <a href="DBackgroundtab.xml">Background tab</a>
+        </p>
+      </content>
+    </section>
+  </sections>
+</topic>

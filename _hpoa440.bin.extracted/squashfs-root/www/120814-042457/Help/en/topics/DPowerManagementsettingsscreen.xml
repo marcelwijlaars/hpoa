@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DPowerManagementsettingsscreen" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Power Management settings screen</title>
+  <source>/120814-042457/Help/en/topics/DPowerManagementsettingsscreen.xml</source>
+  <keywords>AC redundant lost AC redundant selecting managing power power cap power management power supply redundant selecting</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext">
+                <img src="/120814-042457/Help/images/35894.png" alt="" />
+              </p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">IMPORTANT:</b>  If redundancy mode is set to Redundant, AC Redundant, or Power Supply Redundant, and power redundancy is lost, then you must either add additional power supplies or change the redundancy mode setting in the Onboard Administrator to restore Power Subsystem status. See the Insight Display for corrective steps.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext">
+                <img src="/120814-042457/Help/images/35894.png" alt="" />
+              </p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">IMPORTANT:</b>  To change the power redundancy mode, you must disable EDPC. After changing the power redundancy mode, reset EDPC based on the new ranges.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="bodytext">The HP BladeSystem c3000 or c7000 Enclosure power management system enables you to configure the enclosure to meet your needs. You can choose from the different modes on the Onboard Administrator Power Management screen. The power modes are explained in the following table.</p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Mode
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Insight Display name
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Redundant
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Redundant
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">For DC power supplies only. In this configuration, <i>N</i> power supplies are used to provide power and <i>N</i> are used to provide redundancy (where <i>N</i> can equal 1, 2, or 3). Up to three power supplies can fail without causing the enclosure to fail. When correctly wired with redundant DC line feeds, this configuration also ensures that a DC line feed failure does not cause the enclosure to power off.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">AC Redundant
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">AC Redundant
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">For AC power supplies only. In this configuration, <i>N</i> power supplies are used to provide power, and <i>N</i> are used to provide redundancy (where <i>N</i> can equal 1, 2, or 3). Up to three power supplies can fail without causing the enclosure to fail. When correctly wired with redundant AC line feeds, this configuration also ensures that an AC line feed failure does not cause the enclosure to power off.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Power Supply Redundant
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Power Supply
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Up to six power supplies can be installed with one power supply always reserved to provide redundancy. In the event of a single power supply failure, the redundant power supply takes over the load. A line feed failure of more than one power supply causes the system to power off.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Not Redundant
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">None
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">There is no power redundancy and no power redundancy warnings are given. If all power supplies are needed to supply Present Power, then any power supply or line failure may cause the enclosure to brown-out.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Dynamic Power
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Dynamic Power
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">If enabled, Dynamic Power automatically places unused power supplies in standby mode to increase enclosure power supply efficiency, thereby minimizing enclosure power consumption during lower power demand. Increased power demands automatically return standby power supplies to full performance. More information about Dynamic Power follows this table.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Static Power Limit
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Power Limit
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>An optional setting to limit power. Whenever you attempt to power on a device, the total power demands of the new device and of the devices already on are compared against this Static Power Limit. If the total power demands exceed the limit, the new device is prevented from powering on.</p>
+                <p>See the Enclosure Dynamic Power Cap description for more information on the Static Power Limit and how it compares to the Enclosure Dynamic Power Cap.</p>
+              </p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">Dynamic Power—The default setting is Disabled. The following selections are valid:</p>
+        <ul class="listbullet">
+          <li class="listbullet">Enabled—Some power supplies can be automatically placed on standby to increase overall enclosure power subsystem efficiency.</li>
+          <li class="listbullet">Disabled—All power supplies share the load. The power subsystem efficiency varies based on load.<p class="alertspacerbefore" /><table width="90%" cellspacing="0" cellpadding="2" rowsep="0" colsep="0"><tr valign="top"><td style="border:0px;width:1%;" align="left"><p class="tablebodytext"></p></td><td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left"><p class="tablebodytext"><b style="color:#0066FF;">NOTE:</b>  Dynamic Power is supported with all c3000 power supplies. It is supported with all c7000 power supplies except those operating with low-line input voltage (nominal 100-120V AC).
+</p></td></tr></table><p class="alertspacerafter" /></li>
+        </ul>
+        <p class="bodytext">
+          <b>Power Limit</b>
+        </p>
+        <p class="bodytext">Do not set a Static Power Limit or Enclosure Dynamic Power Cap on an empty enclosure.</p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Mode
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Insight Display name
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Enclosure Dynamic Power Cap
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">None
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>An optional feature that enables you to cap the servers in an enclosure as a group. As the servers run, the demand for power varies for each server. A power cap for each server is automatically adjusted to provide the server with enough power to meet workload demands while still conforming to the Enclosure Dynamic Power Cap. A redundant OA board is required  for setting the Dynamic Power Cap feature. </p>
+                <p>The feature is enabled with three configuration parameters:</p>
+                <ul class="tablelistbullet">
+                  <li class="tablelistbullet">Dynamic Power Cap—Total enclosure average power will not exceed Dynamic Power Cap.</li>
+                  <li class="tablelistbullet">Derated Circuit Capacity—Average power on a single circuit will not exceed Derated Circuit Capacity.</li>
+                  <li class="tablelistbullet">Rated Circuit Capacity—Peak power on a single circuit will not exceed Rated Circuit Capacity.<p class="tablebodytext">When configuring these parameters, the Derated Circuit Capacity must be at least as large as the Dynamic Power Cap and no larger than the Rated Circuit Capacity.</p><p class="tablebodytext">The Dynamic Power Cap is used to limit the enclosure power consumption based on a cooling constraint that might be lower than the Derated Circuit Capacity. The Derated Circuit Capacity is used to limit the enclosure average power consumption on a circuit. The Rated Circuit Capacity is used to limit the enclosure peak power consumption on a circuit.</p><p class="tablebodytext">If you need to restrict an enclosure electrical load and thermal output, an Enclosure Dynamic Power Cap is better than a Static Power Limit. Enclosure Dynamic Power Cap enables more blades to power on than a Static Power Limit.</p><p class="tablebodytext">For a complete list of BladeSystem server blades supported by Enclosure Dynamic Power Capping, see the <a href="http://www.hp.com/go/dpc" target="ID0ESBAC">HP website</a>.</p></li>
+                </ul>
+              </p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Static Power Limit
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Power Limit
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>An optional setting to limit power. Whenever you attempt to power on a device, the total power demands of the new device and of the devices already on are compared against this Static Power Limit. If the total power demands exceed the limit, the new device is prevented from powering on.</p>
+                <p>A Static Power Limit is better when:</p>
+                <ul class="tablelistbullet">
+                  <li class="tablelistbullet">You do not want caps dynamically adjusted on your blades.</li>
+                  <li class="tablelistbullet">You prefer to not power on a server blade if it cannot be allocated full power (even if it typically consumes less).</li>
+                  <li class="tablelistbullet">More than 1/4 of the blades in the enclosure do not meet hardware or firmware requirements for the Enclosure Dynamic Power Cap.</li>
+                </ul>
+              </p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">None
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">None
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The enclosure power usage is not managed or capped.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="bodytext">
+          <b>Understanding Power Capping, Dynamic Power Capping, and Enclosure Dynamic Power Capping</b>
+        </p>
+        <p class="bodytext">HP delivers three varieties of power management that enable users to limit the server power consumption. All three power capping varieties work to limit your consumption to a specified Watt or Btu/hr goal. The three technologies are Power Capping, Dynamic Power Capping, and Enclosure Dynamic Power Capping.</p>
+        <p class="bodytext">
+          <b>Power Capping</b>
+        </p>
+        <p class="bodytext">In May 2007, HP launched Power Capping technology with iLO 2 version 1.30. This firmware-based technology limits the average power consumption of the server to a user-defined Watt or Btu/hr goal. Because this technology runs in firmware, it cannot limit power consumption rapidly enough to ensure protection of PDU-level circuit breakers. Power Capping does limit power consumption rapidly enough to protect cooling infrastructure, so it is an effective solution for data centers experiencing cooling capacity constraints. Power Capping is supported on any ProLiant server or blade that has an iLO management processor and power measurement capabilities. Using Power Capping requires iLO 2 version 1.30 (or later) firmware and an updated system ROM/BIOS.</p>
+        <p class="bodytext">
+          <b>Dynamic Power Capping</b>
+        </p>
+        <p class="bodytext">Dynamic Power Capping is a hardware-based technology that limits power consumption fast enough to protect circuit breakers and cooling infrastructure. HP launched Dynamic Power Capping in December of 2008 with iLO 2 version 1.70. Supported servers contain an internal hardware circuit that monitors server power consumption on a sub-second basis. If server power consumption approaches the power cap limit set in iLO, the internal hardware circuit limits power consumption rapidly enough to protect PDU-level circuits from over-subscription and prevent power-related server outages.</p>
+        <p class="bodytext">Dynamic Power Capping requires specific hardware on the system board. Dynamic Power Capping also requires iLO 2 version 1.70 (or later) firmware and a system ROM/BIOS dated 10/1/2008 (or later). iLO automatically updates firmware in the Dynamic Power Capping hardware power circuit.</p>
+        <p class="bodytext">Dynamic Power Capping is supported on the following BladeSystem server blades:</p>
+        <ul class="listbullet">
+          <li class="listbullet">BL260c G5 (Notes: 2)</li>
+          <li class="listbullet">BL2x220 G5 (Notes: 2)</li>
+          <li class="listbullet">BL460c G1 (Notes: 1 and 2)</li>
+          <li class="listbullet">BL460c G5 (Notes: 2)</li>
+          <li class="listbullet">BL465c G5 (Notes: 2)</li>
+          <li class="listbullet">BL495c G5 (Notes: 2)</li>
+          <li class="listbullet">BL685c G5 (Notes: 2) </li>
+          <li class="listbullet">All G6 server blades</li>
+          <li class="listbullet">All G7 server blades</li>
+          <li class="listbullet">All G8 server blades</li>
+        </ul>
+        <p class="bodytext">Additional information</p>
+        <ul class="listbullet">
+          <li class="listbullet">These systems require Quad-Core capable system boards to support Dynamic Power Capping.</li>
+          <li class="listbullet">When implementing power capping for HP BladeSystem, HP recommends using Enclosure Dynamic Power Capping set through the Onboard Administrator. To use Enclosure Dynamic Power Capping, you must upgrade iLO 2 firmware to version 1.70 or later and are encouraged to update system ROM to version 10/1/2008 or later. For some older BL460c Servers, the iLO firmware might not be able to automatically update the Dynamic Power Capping hardware circuit. In these instances, Onboard Administrator compensates for the absence of the internal hardware circuit and continues to guarantee circuit protection.</li>
+        </ul>
+        <p class="bodytext">
+          <b>Enclosure Dynamic Power Capping</b>
+        </p>
+        <p class="bodytext">Enclosure Dynamic Power Capping combines the power capping technology of the BladeSystem server with a power balancing control algorithm in the Onboard Administrator to maximize the aggregate performance of the enclosure. Enclosure Dynamic Power Capping protects your circuit breakers and maximizes your performance.</p>
+        <p class="bodytext">Using Enclosure Dynamic Power Capping, you set a power cap for the entire enclosure. The Onboard Administrator allocates individual limits to each participating server blade. The server blades manage consumption to that limit. The Onboard Administrator continuously monitors power consumption requirements for each server blade and continuously rebalances the individual limits to ensure that busy server blades receive more power than idle server blades. This power allocation improves aggregate enclosure performance.</p>
+        <p class="bodytext">BladeSystem server power caps are set in the Onboard Administrator. Enclosure Dynamic Power Capping protects both cooling and electrical infrastructures. Enclosure Dynamic Power Capping works with either firmware-based power capping technology on the server or with the fast, hardware-based technology. The Enclosure Dynamic Power Capping solution performs better if the server blades that support the fast, hardware-based capping technology are upgraded.</p>
+        <p class="bodytext">Enclosure Dynamic Power Capping requires Onboard Administrator 2.30 (or later), iLO 2 version 1.70 (or later), and System ROM/BIOS dated 10/1/2008 (or later).</p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  Power caps set for less than 50% of the difference between maximum power and idle power might become unreachable due to changes in the server. Power caps set for less than 20% are not recommended, and might cause the server to reboot or the server operating system to stop responding. 
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablebodytext" />
+      </content>
+    </section>
+  </sections>
+</topic>

@@ -1,0 +1,273 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css"/>
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+<link rel="stylesheet" type="text/css" href="../css/widgets.css" />
+<link rel="stylesheet" type="text/css" href="../Help/stylesheets/help.css"/>
+<script type="text/javascript" src="../js/helpTips.js"></script> 
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/tabManager.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/treeTableManager.js" ></script>
+<script type="text/javascript" src="../js/tableManager.js" ></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+
+<script type="text/javascript">
+var bayNum;
+var encNum;
+var hpem=null;
+var bladePostComplete=false;
+function initPage(tabId){
+if(!tabId)tabId='graphicalView';
+bayNum=parseInt(getSearchValue(location.search,'bayNum'));
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(bayNum)&&!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+hpem.registerEventHandler(portMapChanged,['EVENT_BLADE_PORTMAP','EVENT_INTERCONNECT_PORTMAP','EVENT_BLADE_POST_COMPLETE','EVENT_HEARTBEAT']);
+hpem.registerEventHandler(mezzInfoChanged,['EVENT_BLADE_PERSONALITY_CHANGED']);
+var formMgr=new FormManager(function(success){
+if(success){
+selectTab(tabId);
+}
+else{
+displayContentFailed('tabContent',formMgr.getErrorsArray());
+}
+},false,'','tabContent');
+formMgr.startBatch(true,true);
+formMgr.queueCall(hpem.getBladePortMap,[bayNum]);
+formMgr.queueCall(hpem.getInterconnectTrayPortMapArray,[getXmlBayArray(getAllArray(1,hpem.getNumTrays()))]);
+formMgr.queueCall(hpem.getBladeMezzInfoEx,[bayNum]);
+formMgr.endBatch();
+}else{
+displayContentFailed('tabContent',[top.getString('noOnboardAdmin')]);
+}
+}
+function selectTab(tabId){
+try{
+ourTabManager.toggleTabs(tabId);
+setTabContent(tabId);
+}
+catch(e){}
+}
+function getCurrentTab(){
+return ourTabManager.getCurrentTab();
+}
+function setTabContent(tabId){
+var contentTab=document.getElementById(tabId);
+var contentLocation=contentTab.getAttribute('contentLocation');
+var contextHelpId=contentTab.getAttribute('contextId');
+if(contextHelpId.indexOf("_GRAPHICAL")>-1&&hpem.getEnclosureType()==EnclosureTypes.c3000){
+contextHelpId+="_c3000";
+}
+if(contentLocation){
+try{
+var bladeInfo=hpem.getBladeInfo(bayNum);
+var bladePresence=getElementValueXpath(bladeInfo,'//hpoa:bladeInfo/hpoa:presence');
+if(bladePresence=='PRESENT'){
+var processor=new XsltProcessor(contentLocation);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('portMapInfoDoc',hpem.getBladePortMap(bayNum));
+processor.addParameter('bladeMezzInfoExDoc',hpem.getBladeMezzInfoEx(bayNum));
+processor.addParameter('bladeBayNumber',bayNum);
+processor.addParameter('bladeInfoDoc',hpem.getBladeInfo(bayNum));
+processor.addParameter('interconnectTrayInfoDoc',hpem.getInterconnectTrayInfoDOM());
+processor.addParameter('interconnectTrayStatusDoc',hpem.getInterconnectTrayStatusDOM());
+processor.addParameter('interconnectTrayPortMapDoc',hpem.getInterconnectTrayPortMapDOM());
+processor.addParameter('enclosureType',hpem.getEnclosureType());
+document.getElementById('tabContent').innerHTML=processor.getOutput();
+document.getElementById('tabSet').style.display='block';
+}
+else{
+document.getElementById('tabContent').innerHTML=top.getErrorString('181','USER_REQUEST');
+document.getElementById('tabSet').style.display='none';
+}
+top.mainPage.getHelpLauncher().setCurrentTopic(contextHelpId);
+}catch(e){
+displayContentFailed('tabContent',[e.message]);
+}
+reconcilePage();
+}
+}
+function selectDevice(bayNumber){
+top.mainPage.getHiddenFrame().selectDevice(bayNumber,PM_INTERCONNECT(),encNum,true);
+}
+function togglePort(checkbox,checked){
+try{
+var bayId=checkbox.getAttribute('bayId');
+var portId=checkbox.getAttribute('portId');
+var portToDisable=document.getElementById('bay'+bayId+'port'+portId);
+var mezzNumber=checkbox.getAttribute('mezzNumber');
+if(portToDisable){
+var portStatus=portToDisable.getAttribute('portStatus');
+var portType=portToDisable.getAttribute('portType');
+var className='portNumberCell ';
+if(portType=='internal'){
+if(checked){
+switch(portStatus){
+case INTERCONNECT_TRAY_PORT_STATUS_MISMATCH():
+className+='portMismatchInternal';
+break;
+default:
+className+='portLinkedInternal';
+break;
+}
+}else{
+className+='portCellInternal';
+}
+}
+else{
+if(checked){
+switch(portStatus){
+case INTERCONNECT_TRAY_PORT_STATUS_MISMATCH():
+className+='portMismatchExternal';
+break;
+default:
+className+='portLinkedExternal';
+break;
+}
+}else{
+className+='portCellExternal';
+}
+}
+}
+if(portToDisable.className!=className){
+portToDisable.className=className;
+}
+checkSelected(mezzNumber);
+}catch(e){}
+}
+function checkSelected(mezzNumber){
+var mezzContainer=document.getElementById('mezzContainer'+mezzNumber);
+var inputCollection=mezzContainer.getElementsByTagName('input');
+var checkedCount=0;
+var total=0;
+for(var i=0;i<inputCollection.length;i++){
+var input=inputCollection[i];
+if(input.getAttribute('type')=='checkbox'){
+if(!input.getAttribute('disabled')){
+total++;
+}
+if(input.checked){
+checkedCount++;
+}
+}
+}
+var mezzSelect=document.getElementById('mezzSelect'+mezzNumber);
+if((checkedCount==0)||(checkedCount!=total)){
+mezzSelect.checked=false;
+}
+else{
+mezzSelect.checked=true;
+}
+}
+function togglePortAll(checkbox,state){
+try{
+var mezzContainerId='mezzContainer'+checkbox.getAttribute('mezzNumber');
+var mezzContainer=document.getElementById(mezzContainerId);
+if(mezzContainer){
+var inputCollection=mezzContainer.getElementsByTagName('input');
+for(var i=0;i<inputCollection.length;i++){
+if(inputCollection[i].getAttribute('type')=='checkbox'&&inputCollection[i].disabled!=true){
+inputCollection[i].checked=state;
+togglePort(inputCollection[i],state);
+}
+}
+}
+}
+catch(e){
+}
+}
+function portMapChanged(result){
+var eventName=getElementValueXpath(result,'//hpoa:event');
+if(eventName=='EVENT_INTERCONNECT_PORTMAP'){
+hpem.getBladePortMap(bayNum,function(result){
+selectTab(getCurrentTab());
+},true);
+}
+else if(eventName=='EVENT_BLADE_PORTMAP'){
+hpem.getInterconnectTrayPortMapArray(getXmlBayArray(getAllArray(1,hpem.getNumTrays())),function(result){
+selectTab(getCurrentTab());
+},true);
+}
+else if(eventName=='EVENT_BLADE_POST_COMPLETE'){
+bladePostComplete=true;
+}
+else if(eventName=='EVENT_HEARTBEAT'){
+if(bladePostComplete){
+hpem.getBladePortMap(bayNum,function(result){
+selectTab(getCurrentTab());
+},true);
+hpem.getBladePortMap(bayNum,function(result){
+selectTab(getCurrentTab());
+},true);
+hpem.getBladePortMap(bayNum,function(result){
+selectTab(getCurrentTab());
+},true);
+hpem.getBladePortMap(bayNum,function(result){
+selectTab(getCurrentTab());
+},true);
+}
+bladePostComplete=false;
+}
+}
+function mezzInfoChanged(result){
+var bayNumber=getElementValueXpath(result,'//hpoa:numValue');
+if(bayNumber==bayNum){
+hpem.getBladeMezzInfoEx(bayNum,function(result){
+selectTab(getCurrentTab());
+},true);
+}
+}
+function deregisterEventHandlers(){
+hpem.removeRegisteredHandler(portMapChanged);
+hpem.removeRegisteredHandler(mezzInfoChanged);
+}
+function openPortLegend(){
+var winLegend=window.open('../html/legend-ports.html','LegendPorts','width=480,height=150,left=20,top=20,resizable=no,menubar=no,directories=no,scrollbars=no,toolbar=no,status=no');
+winLegend.focus();
+}
+</script>
+	
+</head>
+<body style="padding:0px; margin:10px;" onload="initPage();" onunload="deregisterEventHandlers();">
+	
+	<div id="bodyContent">
+	
+		<table cellpadding="0" cellspacing="0" border="0" width="100%">
+			<tr>
+				<td valign="bottom">
+					<div class="tabSet" id="tabSet">						
+						<div class="tabOff" tabid="graphicalView" contextId="FORM_SVB_PORT_MAPPING_GRAPHICAL" id="graphicalView" contentLocation="../Templates/bayPortMappingGraphical.xsl"><script type="text/javascript">document.write(top.getString('graphicalView'));</script></div>
+						<div class="tabOff" tabid="tableView" contextId="FORM_SVB_PORT_MAPPING_TABLE" id="tableView" contentLocation="../Templates/bayPortMapping.xsl"><script type="text/javascript">document.write(top.getString('tableView'));</script></div>
+						<div class="tabBottomLine"></div>
+					</div>
+					
+				</td>
+			</tr>
+			<tr>
+				<td style="padding-top:10px;">
+					<div id="tabContent"></div>
+				</td>
+			</tr>
+		</table>
+
+    <script type="text/javascript">
+if(typeof(TabManager)!="undefined"){
+ourTabManager.init();
+}
+    </script>
+		
+	</div>
+
+</body>
+</html>

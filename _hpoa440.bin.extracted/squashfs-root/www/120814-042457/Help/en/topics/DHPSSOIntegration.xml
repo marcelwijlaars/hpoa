@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DHPSSOIntegration" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>HP SSO Integration</title>
+  <source>/120814-042457/Help/en/topics/DHPSSOIntegration.xml</source>
+  <keywords>HP SSO Integration</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">HP BladeSystem Onboard Administrator supports SSO with trusted applications, such as HP OneView or HP SIM. The HP SSO feature enables you to log in to a trusted management application and then to access automatically any managed devices where the SSO certificate is installed.</p>
+        <p class="bodytext">
+          <b>Settings tab</b>
+        </p>
+        <p class="bodytext">
+          <b>HP SSO Trust Mode</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Trust mode
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Disabled
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">SSO validation is disabled
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Trust By Certificate
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Allow SSO using only HP management server certificates
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  When trust mode is disabled, the HP SSO single sign-on attempt fails. To log on, you must enter Onboard Administrator credentials.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="bodytext">Select a trust mode, then click <b>Apply.</b></p>
+      </content>
+    </section>
+  </sections>
+</topic>

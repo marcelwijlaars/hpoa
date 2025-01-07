@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DOnboardAdministratorNetworkWelcome" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Onboard Administrator Network Settings</title>
+  <source>/120814-042457/Help/en/topics/DOnboardAdministratorNetworkWelcome.xml</source>
+  <keywords>network access configuring network settings TCP/IP settings</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>Onboard Administrator Network Settings</b>
+        </p>
+        <p class="bodytext">To modify network settings for all the Onboard Administrator modules in the selected enclosures, use the Onboard Administrator Network Settings IPv4 or IPv6 screens. Each screen allows you to configure network settings for the Active Onboard Administrator and the Standby Onboard Administrator. Settings for Standby Onboard Administrator modules only appear if the modules are present.</p>
+        <p class="bodytext">Changing network settings on the Onboard Administrator that you are signed in to might disconnect you from the Onboard Administrator, in which case after applying the settings, you will have to sign in to the Onboard Administrator again.</p>
+        <p class="bodytext">To continue, click <b>Next</b>.</p>
+        <p class="bodytext">If you do not want to change network settings, click <b>Skip</b>.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

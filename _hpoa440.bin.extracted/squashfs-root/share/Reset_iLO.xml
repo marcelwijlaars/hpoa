@@ -1,0 +1,7 @@
+<RIBCL version="2.21">
+<LOGIN USER_LOGIN="adminname" PASSWORD="password">
+<RIB_INFO MODE="WRITE" >
+<RESET_RIB/>
+</RIB_INFO>
+</LOGIN>
+</RIBCL>

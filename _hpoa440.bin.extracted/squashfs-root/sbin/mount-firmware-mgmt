@@ -1,0 +1,142 @@
+#!/bin/sh
+
+tmpIsoUrl="$1"
+
+VARS=firmware-mgmt-vars
+
+if [ -f /ramdisk/$VARS ]; then 
+	. /ramdisk/$VARS
+else
+	. /usr/sbin/$VARS
+fi
+
+# Script used to mount/remount HTTPFS for firmware management.
+
+# Get lock
+while true;
+do
+	if mkdir $LOCKFILE 2> /dev/null; then
+		break;
+	else
+		sleep 1;
+	fi
+done
+
+#grep isoMountCount /etc/firmwaremgmt.conf >/dev/null 2>&1
+#if [ $? -ne 0 ]; then
+#	echo "isoMountCount=0" >> /etc/firmwaremgmt.conf
+#fi
+
+#. $FWMGMT_CONF
+FWMGMT_CONF_TEMP=`/usr/sbin/sanitize $FWMGMT_CONF`
+if [ -f "$FWMGMT_CONF_TEMP" ]; then
+	. $FWMGMT_CONF_TEMP
+	rm -f $FWMGMT_CONF_TEMP > /dev/null 2>&1
+fi
+
+# We need to source this file after the $FWMGMT_CONF so that
+# the isoUrl gets the latest value
+FWMGMT_FLASH_CONF_TEMP=`/usr/sbin/sanitize $FWMGMT_FLASH_CONF`
+if [ -f "$FWMGMT_FLASH_CONF_TEMP" ]; then
+	. $FWMGMT_FLASH_CONF_TEMP
+	rm -f $FWMGMT_FLASH_CONF_TEMP > /dev/null 2>&1
+fi
+
+if [ "z$isoMountCount" = "z" ]; then
+	isoMountCount=0
+	sed -i -e "\$a isoMountCount=$isoMountCount" $FWMGMT_CONF
+fi
+
+if [ "z$isoUrl" = "z" ] || [ $fwManagementEnabled -eq "0" ]; then
+	sed -i -e '/dvdStatus/c dvdStatus=1' $FWMGMT_CONF
+	rm -rf $LOCKFILE
+	exit 1
+fi
+
+RC=0
+
+if [ "z$tmpIsoUrl" != "z" ]; then
+	isoUrl=`/usr/sbin/addscope $tmpIsoUrl`
+else
+	isoUrl=`/usr/sbin/addscope $isoUrl`
+fi
+
+if [ $dvdStatus -ne 2 -a $isoMountCount -eq 0 ]; then
+
+	sed -i -e '/dvdStatus/c dvdStatus=3' $FWMGMT_CONF
+
+	# Try to make the directories. We don't care if they exist.
+	[ ! -d $FWDVD_HOME ] && mkdir -p $FWDVD_HOME
+	[ ! -d $FWDVD_ISO ] && mkdir -p $FWDVD_ISO
+	[ ! -d $FWDVD_FS ] && mkdir -p $FWDVD_FS
+	chmod -R 0777 $FWDVD_HOME
+
+	HTTPFS=/usr/sbin/httpfs
+	if [ -x /ramdisk/httpfs ]; then
+		HTTPFS=/ramdisk/httpfs
+	fi
+
+	N=0
+	MAX=3
+
+	while [ $N -lt $MAX ]
+	do
+		$HTTPFS $isoUrl $FWDVD_ISO
+		RC=$?
+		if [ $RC -eq 0 ]; then
+			break
+		fi
+		let N=$N+1
+	done
+
+	UMOUNT=/usr/sbin/umount-firmware-mgmt
+	if [ -x /ramdisk/umount-firmware-mgmt ]; then
+		UMOUNT=/ramdisk/umount-firmware-mgmt
+	fi
+
+	if [ $RC -ne 0 ]; then
+		$UMOUNT NOLOCK >/dev/null 2>&1
+		sed -i -e '/dvdStatus/c dvdStatus=3' $FWMGMT_CONF
+		rm -rf $LOCKFILE
+		exit 1
+	fi
+
+	MOUNT=/bin/mount
+
+	N=0
+	while [ $N -lt $MAX ]
+	do
+		filename=`ls $FWDVD_ISO`
+		$MOUNT $FWDVD_ISO/$filename $FWDVD_FS -o ro,loop,suid -t iso9660
+		RC=$?
+		if [ $RC -eq 0 ]; then
+			find $FWDVD_FS >/dev/null 2>&1
+			RC=$?
+			if [ $RC -eq 0 ]; then 
+				break
+			fi
+		fi
+		let N=$N+1
+	done
+
+	if [ $RC -ne 0 ]; then
+		$UMOUNT NOLOCK >/dev/null 2>&1
+		sed -i -e '/dvdStatus/c dvdStatus=3' $FWMGMT_CONF
+		rm -rf $LOCKFILE
+		exit 1
+	fi
+
+	sed -i -e '/dvdStatus/c dvdStatus=2' $FWMGMT_CONF
+	RC=0
+
+fi
+
+let isoMountCount=$isoMountCount+1
+sed -i -e "/isoMountCount/c isoMountCount=$isoMountCount" $FWMGMT_CONF
+
+#ln -sf $FWDVD_HTMLFILES $LOCAL_HTMLFILES
+#ln -sf $FWDVD_ISO/$filename /ramdisk/www/firmware.iso
+
+# Remove lock file
+rm -rf $LOCKFILE
+exit $RC

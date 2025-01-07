@@ -1,0 +1,134 @@
+#!/bin/sh
+# Script used to unmount HTTPFS
+
+VARS=firmware-mgmt-vars
+
+if [ -f /ramdisk/$VARS ]; then
+	. /ramdisk/$VARS
+else
+	. /usr/sbin/$VARS
+fi
+
+# Get lock
+if [ "z$1" != "zNOLOCK" ]; then
+	while true;
+	do
+		if mkdir $LOCKFILE 2> /dev/null; then
+			break;
+		else
+			sleep 1;
+		fi
+	done
+fi
+
+#rm -f $LOCAL_HTMLFILES >/dev/null
+
+#. $FWMGMT_CONF
+FWMGMT_CONF_TEMP=`/usr/sbin/sanitize $FWMGMT_CONF`
+if [ -f "$FWMGMT_CONF_TEMP" ]; then
+	. $FWMGMT_CONF_TEMP
+	rm -f $FWMGMT_CONF_TEMP > /dev/null 2>&1
+fi
+
+# We need to source this file after the $FWMGMT_CONF so that
+# the isoUrl gets the latest value
+FWMGMT_FLASH_CONF_TEMP=`/usr/sbin/sanitize $FWMGMT_FLASH_CONF`
+if [ -f "$FWMGMT_FLASH_CONF_TEMP" ]; then
+	. $FWMGMT_FLASH_CONF_TEMP
+	rm -f $FWMGMT_FLASH_CONF_TEMP > /dev/null 2>&1
+fi
+
+if [ "z$isoMountCount" = "z" ]; then
+	isoMountCount=0
+	sed -i -e "\$a isoMountCount=$isoMountCount" $FWMGMT_CONF
+fi
+
+if [ $dvdStatus -eq 3 ]; then
+	rm -rf $LOCKFILE
+	exit 1
+fi
+
+if [ $isoMountCount -le 1 ]; then
+
+	rc=0
+	N=0
+	MAX=10
+
+	while [ $N -lt $MAX ]
+	do
+		/bin/umount $FWDVD_FS >/dev/null 2>&1
+		rc=$?
+		/bin/mount | grep $FWDVD_FS	
+		rc=$?
+		if [ $rc -eq 1 ]; then
+			break
+		fi
+		let N=$N+1
+		sleep 1;
+	done
+
+	if [ $rc -ne 1 ]; then
+		if [ "z$1" != "zNOLOCK" ]; then
+			# Remove lock file
+			rm -rf $LOCKFILE
+		fi
+		exit 1
+	fi
+
+	N=0
+	while [ $N -lt $MAX ]
+	do
+		/usr/sbin/fusermount $FWDVD_ISO -u >/dev/null 2>&1
+		rc=$?
+		/bin/mount | grep $FWDVD_ISO	
+		rc=$?
+		if [ $rc -eq 1 ]; then
+			break
+		fi
+		let N=$N+1
+		sleep 1;
+	done
+
+	if [ $rc -ne 1 ]; then
+		if [ "z$1" != "zNOLOCK" ]; then
+			# Remove lock file
+			rm -rf $LOCKFILE
+		fi
+		exit 2
+	fi
+
+	# wait for all httpfs processes to be terminated
+	N=0
+	while : 
+	do
+		ps | grep -v grep | grep httpfs >/dev/null 2>&1
+		if [ $? -ne 0 ]; then
+			break
+		fi
+		let N=$N+1
+		if [ $N -gt 10 ]; then
+			killall -9 httpfs
+		fi
+		sleep 1
+	done
+
+	rm -rf $FWDVD_HOME >/dev/null 2>&1
+	sed -i -e '/dvdStatus/c dvdStatus=4' $FWMGMT_CONF
+
+fi
+
+
+if [ $isoMountCount -gt 0 ]; then 
+	let isoMountCount=$isoMountCount-1
+else
+	let isoMountCount=0
+fi
+
+sed -i -e "/isoMountCount/c isoMountCount=$isoMountCount" $FWMGMT_CONF
+
+if [ "z$1" != "zNOLOCK" ]; then
+	# Remove lock file
+	rm -rf $LOCKFILE
+fi
+
+exit 0

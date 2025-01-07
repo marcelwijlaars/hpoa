@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DVLANConfigurationDefinedVLANstab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Defined VLANs tab</title>
+  <source>/120814-042457/Help/en/topics/DVLANConfigurationDefinedVLANstab.xml</source>
+  <keywords>VLAN configuration</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>Defined VLANs</b>
+        </p>
+        <p class="bodytext">This screen displays the currently defined VLANs and enables you to add, edit, or delete VLANs.</p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Setting
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">VLAN ID
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The current VLAN ID number.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">VLAN Name
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The current VLAN ID name.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">VLAN Members
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The current members assigned to the VLAN.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <ul class="listbullet">
+          <li class="listbullet">
+            <b>Add</b>—To add a new VLAN, click <b>Add</b>. The Add VLAN screen appears. You can add a maximum of 25 VLANs.</li>
+          <li class="listbullet">
+            <b>Edit</b>—Select a VLAN to be edited by selecting the check box next to the VLAN ID number in the Defined VLANs list. To change the settings on the Edit VLAN screen, click <b>Edit</b>.</li>
+          <li class="listbullet">
+            <b>Delete</b>—Select the VLAN to be deleted by selecting the check box next to the VLAN ID number in the Defined VLANs list. The Default VLAN cannot be deleted. To remove the selected VLAN, click <b>Delete. </b>A warning screen appears. To continue the action, click <b>OK,</b> or to stop the action, click <b>Cancel</b>.</li>
+        </ul>
+      </content>
+    </section>
+  </sections>
+</topic>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<help-contents>
+  <category id="DgSoapHelp" src="/120814-042457/Help/en/topics/LogoPage.xml" title="gSoap Library Analyzer 2&#x2122; Help" reference-id="DgSoapHelp">    
+    <topic id="DMethods" src="/120814-042457/Help/en/topics/gsoap-methods.xml" title="Soap Methods" reference-id="DgSoapHelp">
+      <keywords>methods search</keywords>
+    </topic>
+    <topic id="DRequestResponse" src="/120814-042457/Help/en/topics/gsoap-request-response.xml" title="Requests and Responses" reference-id="DgSoapHelp">
+      <keywords>request response result</keywords>
+    </topic>
+    <topic id="DValidation" src="/120814-042457/Help/en/topics/gsoap-validation.xml" title="Arguments and Validation" reference-id="DgSoapHelp">
+      <keywords>input validation</keywords>
+    </topic>   
+    <topic id="DEventSupport" src="/120814-042457/Help/en/topics/gsoap-eventing.xml" title="Event Support" reference-id="DgSoapHelp">
+      <keywords>events eventing</keywords>
+    </topic>
+    <topic id="DTroubleshooting" src="/120814-042457/Help/en/topics/gsoap-troubleshooting.xml" title="Troubleshooting" type="procedure" reference-id="DgSoapHelp">
+      <keywords>support trouble error troubleshooting</keywords>
+    </topic>
+  </category>
+  <category id="DDummy" src="/120814-042457/Help/en/topics/topic-0059.xml" title="Popup Windows" reference-id="DDummy">
+    <topic id="DDummyTopic" src="/120814-042457/Help/en/topics/topic-0059.xml" title="Popup Windows" reference-id="DDummy">
+      <keywords>sample topic</keywords>
+    </topic>
+  </category>
+</help-contents>

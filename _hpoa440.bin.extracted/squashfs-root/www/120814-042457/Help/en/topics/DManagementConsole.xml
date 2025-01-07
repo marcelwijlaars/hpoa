@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DManagementConsole" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Management Console</title>
+  <source>/120814-042457/Help/en/topics/DManagementConsole.xml</source>
+  <keywords>Management Console I/O expansion blades</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>Management Processor Information</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Row
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Name
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The DNS name of the Management Processor.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Address
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The IP address of the  Management Processor.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">MAC Address
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The MAC address of the  Management Processor.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Model
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The common descriptor of the  Management Processor.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Firmware Version
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The installed firmware version of the  Management Processor.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">VLAN ID (Name)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The VLAN ID number and (VLAN Name) of the device bay when VLAN is enabled.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">iLO Federation Capable
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>Indicates whether the server blade is capable of iLO Federation.</p>
+                <p>This only indicates that the iLO is capable of being configured to participate in iLO Federation. It does not indicate that the iLO is currently configured for actual participation in iLO Federation. To fully enable iLO Federation, Enclosure iLO Federation Support must be enabled on the Onboard Administrator (for more information, see the <a href="DNetworkaccess.xml">Network Access page</a>) and each iLO must have the appropriate firmware and be configured to support iLO Federation (for more information, see the<i> HP iLO 4 User Guide</i> at the <a href="http://www.hp.com/go/ilo/docs" target="ID0ELD">HP website</a>).</p>
+              </p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">
+          <b>Remote Management</b>
+        </p>
+        <p class="bodytext">This section provides a link to the Management Console session.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

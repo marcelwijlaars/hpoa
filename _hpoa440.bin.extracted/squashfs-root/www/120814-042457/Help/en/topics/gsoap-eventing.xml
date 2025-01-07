@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DEventSupport" parent-id="" author="slamasla" modified="10-8-2009" type="reference">
+<source>/120814-042457/help/en/topics/gsoap-eventing.xml</source>
+<title>Event Support</title>  
+<keywords>events eventing</keywords>
+<intro></intro>
+<sections>
+  <section>
+    <desc/>
+    <content>
+      The gSoap Library Analyzer 2&#x2122; utility provides a basic eventing process to assist in testing. 
+      <p>
+        <attention type="information">
+          <p>
+            If you already have an open GUI session from the same IP address running within the same browser instance,
+            the gSoap Library Analyzer 2&#x2122; will use the same session cookies for authentication as
+            the original instance. 
+          </p>   
+          <p>
+            However, registering for events from the gSoap Library Analyzer 2&#x2122; will not cause 
+            conflicts because a new event queue with a unique PID is created for each client that 
+            successfully subscribes for events.
+          </p>
+        </attention>
+      </p>
+      <p>
+        If a session key is automatically set when you load the gSoap Library Analyzer 2&#x2122; page, then there is
+        already a session cookie resident in the browser instance. In order to preserve the original session cookie
+        when the gSoap Library Analyzer 2&#x2122; signs out, the user will be prompted for a decision about whether 
+        to delete the cookie or leave it intact.
+      </p>
+      <p>
+        <h5>Description</h5>
+        After a successful sign in, you may turn on events by clicking the start events button. This will invoke a 
+        'subscribeForEvents' soap call, and if it succeeds the eventing icon will turn green and a continuous polling
+        loop will begin to gather events.
+      </p>
+      <p>
+        Each time an event is retrieved, the green eventing icon will turn blue briefly to indicate an event has arrived. The
+        event manager will store a maximum of 100 events, after which it will drop the oldest event from its collection as each
+        new event arrives.
+      </p>
+      <p>
+        <h5>Eventing Options</h5>
+        <table cellpadding="5" border="0" cellspacing="0" margin="0" style="width:100%;border-collapse:collapse;vertical-align:top;">
+          <tr>
+            <th style="text-align:left;border:1px solid #010101;white-space:nowrap">Option or Button</th>
+            <th style="text-align:left;border:1px solid #010101;white-space:nowrap;">Description</th>
+          </tr>
+          <tr>
+            <td style="border:1px solid #010101;">Capture Heartbeats</td>
+            <td style="border:1px solid #010101;">Check this checkbox to add heartbeat events to the collection. Uncheck
+              this checkbox to ignore heartbeat events.
+              <br />
+              <br />
+              <b>Note:</b> Heartbeats can be helpful for verifying that the eventing service is running, especially when
+              there is no other activtiy that would cause an event to be generated.
+            </td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #010101;">show events</td>
+            <td style="border:1px solid #010101;">Click this button to display the collection of events in the results
+            window in descending order (last received events appear first).</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #010101;">reset events</td>
+            <td style="border:1px solid #010101;">Click this button to clear the event collection. This does not stop
+            eventing.</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #010101;">stop events</td>
+            <td style="border:1px solid #010101;">Click this button to completely stop the event polling process and unsubscribe. 
+            You do not have to do this before signing out because it will happen automatically during the sign out process.</td>
+          </tr>
+        </table>
+      </p>
+      <br />
+      <br />
+    </content>
+  </section>
+</sections>
+</topic>

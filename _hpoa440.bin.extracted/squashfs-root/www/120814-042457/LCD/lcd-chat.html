@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html>
+<head>
+<title>HP Insight Display Chat</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../css/default.css" />
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css" />
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css" />
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+
+ <!--
+  Include the init and xml javascript files from the jsolait library.
+  The xslt.js file requires that these two files be included before it.
+-->
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+<script type="text/javascript">
+var ourInputValidator;
+function getMgr(){
+return window.parent.getLcdMgr();
+}
+function myOnLoad(){
+loadContent();
+globalComponentInit();
+ourInputValidator=new InputValidator();
+ourInputValidator.init();
+getMgr().getChatSession().setWithdrawButtonMethod(toggleWithdrawButton);
+getMgr().getChatSession().setChatInputBox(document.getElementById('txtMessage'));
+focusLineOne();
+toggleChat(true);
+}
+function loadContent(){
+try{
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(encNum)&&
+(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+var processor=new XsltProcessor('lcd-chat.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('chatInfoDoc',getMgr().getChatInfo());
+processor.addParameter('accessLevel',hpem.getUserAccessLevel());
+processor.addParameter('oaAccess',hpem.getUserOaPermission());
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+}else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);}
+}catch(e){displayContentFailed('bodyContent',[e.message]);}
+}
+function toggleChat(toggleOn){
+window.parent.toggleChatMode(toggleOn);
+}
+function submitChatMessage(){
+getMgr().setCallback(chatResponse);
+if(ourInputValidator.allInputsValidate()){
+var user=document.getElementById("txtUser").value;
+var msg=getChatMessage();
+var menus=getChatMenus();
+getMgr().getChatSession().askChatQuestion(user,msg,menus);
+clearChatMessage();
+focusLineOne();
+}else{
+alert(ourInputValidator.getFirstRuleBroken(),AlertMsgTypes.Warning,60);
+ourInputValidator.autoFocus();
+}
+}
+function chatResponse(success){
+if(!success){
+myOnLoad();
+alert(getMgr().callManager.getErrorList(),AlertMsgTypes.Warning,60);
+}
+}
+function toggleWithdrawButton(enabled){
+if(enabled){
+ourButtonManager.enableButton(document.getElementById('btnWithdraw'));
+}else{
+ourButtonManager.disableButton(document.getElementById('btnWithdraw'));
+}
+}
+function withdrawChatMessage(){
+getMgr().getChatSession().withdrawChatQuestion();
+focusLineOne();
+}
+function focusLineOne(){
+try{
+document.getElementById("txtMessage").focus();
+document.getElementById("txtMessage").select();
+}catch(e){}
+}
+function getChatMessage(){
+return document.getElementById("txtMessage").value;
+}
+function clearChatMessage(){
+document.getElementById("txtMessage").value="";
+}
+function getChatMenus(){
+var menus=new Array();
+for(var index=1;index<5;index++){
+var menu=new Object();
+menu.selected=document.getElementById("chkMenu"+index).checked;
+menu.menuText=document.getElementById("txtMenu"+index).value;
+menus.push(menu);
+}
+return menus;
+}
+function setTabContent(tabId){
+window.parent.setTabContent(tabId);
+}
+function getCurrentTab(){
+return 'tabChatMode';
+}
+</script>
+</head>
+
+<body style="margin:10px;" onload="myOnLoad();" onunload="toggleChat(false);">
+<div id="bodyContent"></div>
+</body>
+</html>

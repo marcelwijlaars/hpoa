@@ -1,0 +1,14 @@
+#!/bin/sh
+# firmware management script variables
+
+LOCKFILE=/ramdisk/.mount-firmware-mgmt.lock
+
+FWMGMT_CONF=/etc/firmwaremgmt.conf
+FWMGMT_FLASH_CONF=/etc/fw_mgmt_flash.conf
+FWDVD_HOME=/ramdisk/fwcd
+FWDVD_ISO=$FWDVD_HOME/iso
+FWDVD_FS=$FWDVD_HOME/fs
+FWDVD_LOCAL=$FWDVD_HOME/local
+
+FWDVD_HTMLFILES=$FWDVD_FS/_autorun/HTMLFILES
+LOCAL_HTMLFILES=/ramdisk/www/HTMLFILES

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DVLANConfigurationVLANControltab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>VLAN Configuration</title>
+  <source>/120814-042457/Help/en/topics/DVLANConfigurationVLANControltab.xml</source>
+  <keywords>VLAN configuration</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>VLAN Control tab</b>
+        </p>
+        <p class="bodytext">VLAN enables you to completely isolate servers and interconnects when you create a VLAN on the enclosure management network. Devices that are not on the same VLAN domain network (VLAN IDs are different) are not able to communicate with each other. All multi-blade servers must be on the same VLAN.</p>
+        <p class="bodytext">The VLAN Control tab displays the active configuration that is currently in use on the Onboard Administrator.</p>
+        <p class="bodytext">If changes have been made to the VLAN configuration a Saved Configuration section is displayed. To permanently save the new settings, click <b>Save.</b> If you do not want to save the changed configuration, click <b>Revert.</b></p>
+        <p class="bodytext">
+          <b>Related topics:</b>
+        </p>
+        <p class="bodytext">
+          <a href="DVLANConfigurationVLANSetuptab.xml">VLAN Settings tab</a>
+        </p>
+        <p class="bodytext">
+          <a href="DVLANConfigurationDefinedVLANstab.xml">Defined VLANs tab</a>
+        </p>
+      </content>
+    </section>
+  </sections>
+</topic>

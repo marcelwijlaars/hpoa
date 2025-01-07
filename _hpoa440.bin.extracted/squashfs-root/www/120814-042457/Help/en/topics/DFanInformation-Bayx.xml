@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DFanInformation-Bayx" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Fan Information</title>
+  <source>/120814-042457/Help/en/topics/DFanInformation-Bayx.xml</source>
+  <keywords>fan status</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">Selecting a specific fan opens the Fan Information—Bay x page, where x is the bay of the selected fan. This screen provides status on the selected fan and a graphical display of the fan speed.</p>
+        <p class="bodytext">
+          <b>Fan information</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Row
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Status
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The overall status of the fan. Possible values are Unknown, OK, Degraded, Failed, and Other.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Name
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The common descriptive name of the fan.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Present Power
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The amount of power consumed by the fan.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Part Number
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The part number to be used when ordering an additional or replacement fan of this type.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Spare Part Number
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The spare part number to be used when ordering an additional or replacement fan.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Serial Number
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The unique serial number of the fan.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="bodytext">
+          <b>Diagnostic Information</b>
+        </p>
+        <p class="bodytext">Diagnostic information is gathered by polling a device microcontroller (resulting in a degraded status if a failure has occurred) or is sent by the device microcontroller, without being polled to report a failure.</p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Row
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Device Identification Data
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Information such as model name, part number, serial number, and other information used to identify the device is checked. This data is also referred to as FRU data. If the data is not present or not readable by the Onboard Administrator, a device identification data error displays. Possible values are OK or Error.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Device Location
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Incorrect fan location. Possible values are OK or Incorrect location for proper device cooling.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Device Operational
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Device has failed; status was not requested by the Onboard Administrator.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Device Degraded
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Device has failed; status was requested by the Onboard Administrator.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Fan Presence
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">This field indicates whether a fan is required to support the current fan rule.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Device Mismatch
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">This field indicates different fan models are installed in the same enclosure and you need to install the same fan models in each bay.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="bodytext">
+          <b>Fan speed </b>
+        </p>
+        <p class="bodytext">The fan speed is displayed in percentage of total capacity.</p>
+        <p class="bodytext">Click <b>Refresh</b> to update the fan information.</p>
+        <p class="bodytext">
+          <b>Related topics</b>
+        </p>
+        <p class="bodytext">
+          <a href="DFanlocationrulesc3000.xml">Fan location rules for HP BladeSystem c3000 Enclosure</a>
+        </p>
+        <p class="bodytext">
+          <a href="DFanlocationrules.xml">Fan location rules for HP BladeSystem c7000 Enclosure</a>
+        </p>
+      </content>
+    </section>
+  </sections>
+</topic>

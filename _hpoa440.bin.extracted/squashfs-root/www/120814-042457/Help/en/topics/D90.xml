@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="D90" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Acronyms and abbreviations</title>
+  <source>/120814-042457/Help/en/topics/D90.xml</source>
+  <keywords />
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <b>
+          <a name="DDNS" id="DDNS">DDNS</a>
+        </b>
+        <p class="bodytext">Dynamic Domain Name System</p>
+        <b>
+          <a name="DHCP" id="DHCP">DHCP</a>
+        </b>
+        <p class="bodytext">Dynamic Host Configuration Protocol</p>
+        <b>
+          <a name="DNS" id="DNS">DNS</a>
+        </b>
+        <p class="bodytext">domain name system</p>
+        <b>
+          <a name="EBIPA" id="EBIPA">EBIPA</a>
+        </b>
+        <p class="bodytext">Enclosure Bay IP Addressing</p>
+        <b>
+          <a name="FIPS" id="FIPS">FIPS</a>
+        </b>
+        <p class="bodytext">Federal Information Processing Standard</p>
+        <b>
+          <a name="FQDN" id="FQDN">FQDN</a>
+        </b>
+        <p class="bodytext">Fully Qualified Domain Name</p>
+        <b>
+          <a name="FRU" id="FRU">FRU</a>
+        </b>
+        <p class="bodytext">field replaceable unit</p>
+        <b>
+          <a name="GC" id="GC">GC</a>
+        </b>
+        <p class="bodytext">global catalog</p>
+        <b>
+          <a name="HP SUM" id="HP SUM">HP SUM</a>
+        </b>
+        <p class="bodytext">HP Smart Update Manager</p>
+        <b>
+          <a name="HPSC" id="HPSC">HPSC</a>
+        </b>
+        <p class="bodytext">HP Support Center</p>
+        <b>
+          <a name="HTTPS" id="HTTPS">HTTPS</a>
+        </b>
+        <p class="bodytext">hypertext transfer protocol secure sockets</p>
+        <b>
+          <a name="iLO" id="iLO">iLO</a>
+        </b>
+        <p class="bodytext">Integrated Lights-Out</p>
+        <b>
+          <a name="IML" id="IML">IML</a>
+        </b>
+        <p class="bodytext">Integrated Management Log</p>
+        <b>
+          <a name="IPv4" id="IPv4">IPv4</a>
+        </b>
+        <p class="bodytext">Internet Protocol version 4</p>
+        <b>
+          <a name="IPv6" id="IPv6">IPv6</a>
+        </b>
+        <p class="bodytext">Internet Protocol version 6</p>
+        <b>
+          <a name="KVM" id="KVM">KVM</a>
+        </b>
+        <p class="bodytext">keyboard, video, and mouse</p>
+        <b>
+          <a name="LDAP" id="LDAP">LDAP</a>
+        </b>
+        <p class="bodytext">Lightweight Directory Access Protocol</p>
+        <b>
+          <a name="LOM" id="LOM">LOM</a>
+        </b>
+        <p class="bodytext">LAN on Motherboard</p>
+        <b>
+          <a name="MAC" id="MAC">MAC</a>
+        </b>
+        <p class="bodytext">Media Access Control</p>
+        <b>
+          <a name="MIB" id="MIB">MIB</a>
+        </b>
+        <p class="bodytext">management information base</p>
+        <b>
+          <a name="PXE" id="PXE">PXE</a>
+        </b>
+        <p class="bodytext">preboot execution environment</p>
+        <b>
+          <a name="RBSU" id="RBSU">RBSU</a>
+        </b>
+        <p class="bodytext">ROM-Based Setup Utility</p>
+        <b>
+          <a name="RSA" id="RSA">RSA</a>
+        </b>
+        <p class="bodytext">Rivest, Shamir, and Adelman public encryption key</p>
+        <b>
+          <a name="SIM" id="SIM">SIM</a>
+        </b>
+        <p class="bodytext">Systems Insight Manager</p>
+        <b>
+          <a name="SLAAC" id="SLAAC">SLAAC</a>
+        </b>
+        <p class="bodytext">stateless address autoconfiguration</p>
+        <b>
+          <a name="SPP" id="SPP">SPP</a>
+        </b>
+        <p class="bodytext">HP Service Pack for ProLiant</p>
+        <b>
+          <a name="SSH" id="SSH">SSH</a>
+        </b>
+        <p class="bodytext">Secure Shell</p>
+        <b>
+          <a name="SSL" id="SSL">SSL</a>
+        </b>
+        <p class="bodytext">Secure Sockets Layer</p>
+        <b>
+          <a name="SSO" id="SSO">SSO</a>
+        </b>
+        <p class="bodytext">single sign-on</p>
+        <b>
+          <a name="TFA" id="TFA">TFA</a>
+        </b>
+        <p class="bodytext">Two-Factor Authentication</p>
+        <b>
+          <a name="UDP" id="UDP">UDP</a>
+        </b>
+        <p class="bodytext">User Datagram Protocol</p>
+        <b>
+          <a name="UEFI" id="UEFI">UEFI</a>
+        </b>
+        <p class="bodytext">Unified Extensible Firmware Interface</p>
+        <b>
+          <a name="UID" id="UID">UID</a>
+        </b>
+        <p class="bodytext">unit identification</p>
+        <b>
+          <a name="USB" id="USB">USB</a>
+        </b>
+        <p class="bodytext">universal serial bus</p>
+        <b>
+          <a name="VC" id="VC">VC</a>
+        </b>
+        <p class="bodytext">Virtual Connect</p>
+        <b>
+          <a name="VLAN" id="VLAN">VLAN</a>
+        </b>
+        <p class="bodytext">virtual local-area network</p>
+        <b>
+          <a name="VSP" id="VSP">VSP</a>
+        </b>
+        <p class="bodytext">virtual serial port</p>
+      </content>
+    </section>
+  </sections>
+</topic>

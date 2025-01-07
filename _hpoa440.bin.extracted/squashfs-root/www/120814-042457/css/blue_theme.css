@@ -1,0 +1,189 @@
+/** (C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P. */
+div.tabOff {
+background-color:#7591AC;
+background-image:url(/120814-042457/images/themes/blue/tab_right.gif);
+background-position:top right;
+background-repeat:no-repeat;
+}
+div.secondaryTabSet div.tabOff {
+background-color:#7591AC;
+background-image:url(/120814-042457/images/themes/blue/tab_secondary_right.gif);
+background-position:top right;
+background-repeat:no-repeat;
+}
+button.hpButtonIcon,
+input.hpButtonIcon
+{
+border:1px solid #ccc;
+background-color: #fff;
+color:#000;
+}
+button.hpButton,
+button.hpButtonSmall,
+button.hpButtonVerySmall,
+input.hpButton,
+input.hpButtonSmall,
+input.hpButtonVerySmall {
+background-color: #7591AC;
+}
+div.bEmphasized button,
+div.bEmphasized input,
+div.bEmphasized submit{
+background-color:#335C85;
+color:#fff;
+}
+div.bEmphasized button.hpButtonIcon,
+div.bEmphasized input.hpButtonIcon
+{
+border:1px solid #666;
+background-color:#99CCFF;
+color:#000;
+}
+div.bWrapperUp,
+div.bWrapperUp div{
+background-color:#3F658C;
+}
+div.bWrapperDown,
+div.bWrapperDown div{
+background-color:#003366;
+}
+div.bEmphasized,
+div.bEmphasized div {
+background-color:#003366;
+}
+div.bWrapperDisabled,
+div.bWrapperDisabled div{
+background-color:#ADADAD;
+cursor:default;
+}
+div.bWrapperOver,
+div.bWrapperOver div{
+background-color:#1164BA;
+}
+div.bWrapperUpIcon,
+div.bWrapperUpIcon div{
+background-color:#ccc;
+}
+div.bWrapperDownIcon,
+div.bWrapperDownIcon div{
+background-color:#69c;
+}
+div.bEmphasizedIcon,
+div.bEmphasizedIcon div{
+background-color:#69c;
+}
+div.bWrapperDisabledIcon,
+div.bWrapperDisabledIcon div{
+background-color:#ADADAD;
+}
+div.bWrapperOverIcon,
+div.bWrapperOverIcon div{
+background-color:#69c;
+}
+div.bWrapperOver button,
+div.bWrapperOver input,
+div.bWrapperOver submit {
+background-color:#5391CD;
+color:#fff;
+}
+div.bWrapperOverIcon button.hpButtonIcon,
+div.bWrapperOverIcon input.hpButtonIcon
+{
+border:1px solid #69c;
+background-color:#99CCFF;
+color:#000;
+}
+div.bWrapperDown button,
+div.bWrapperDown input,
+div.bWrapperDown submit {
+background-color:#335C85;
+color:#fff;
+}
+div.bWrapperDownIcon button.hpButtonIcon,
+div.bWrapperDownIcon input.hpButtonIcon
+{
+border:1px solid #69c;
+background-color:#99CCFF;
+color:#000;
+}
+div.bWrapperDisabled button,
+div.bWrapperDisabled input,
+div.bWrapperDisabled submit {
+background-color:#c1c1c1;
+color:#fff;
+cursor:default;
+}
+div.treeOpen div.treeDisclosure,
+div.treeOpenSelected div.treeDisclosure {
+background-image:url(/120814-042457/images/themes/blue/button_tree_contract.gif);
+}
+div.treeClosed div.treeDisclosure,
+div.treeClosedSelected div.treeDisclosure {
+background-image:url(/120814-042457/images/themes/blue/button_tree_expand.gif);
+}
+div.treeDisclosure{
+background-repeat:no-repeat;
+}
+td.dropdownNavMainCell {
+background-color:#7591AC;
+width:100%;
+}
+td.dropdownNavRightBorder {
+background-color:#003366;
+vertical-align:top;
+}
+td.dropdownNavBottomBorder {
+background-color:#003366;
+}
+ul.dropdownMenu {
+border:1px solid #036;
+}
+div.dropdownMenuItemChecked {
+background-image:url(/120814-042457/images/themes/blue/navbar_checkbox.gif);
+}
+div.globalNavTrigger {
+background-color:#7591AC;
+}
+li.subMenuTrigger {
+background-image:url(/120814-042457/images/themes/blue/navbar_parent_bg.gif);
+background-position:right;
+background-repeat:no-repeat;
+}
+li.subMenuTriggerOver {
+background-image:url(/120814-042457/images/themes/blue/navbar_parent_bg_over.gif);
+background-position:right;
+background-repeat:no-repeat;
+}
+div.globalNavTrigger {
+background-image:url(/120814-042457/images/themes/blue/navbar_global_trigger_bg.gif);
+background-position:right;
+background-repeat:no-repeat;
+}
+div.globalNavTriggerOver {
+background-image:url(/120814-042457/images/themes/blue/navbar_global_trigger_over_bg.gif);
+background-position:right;
+background-repeat:no-repeat;
+cursor:default;
+cursor:pointer;
+}
+tr.treeTableTitleRowOpen div.treeControl {
+background:transparent;
+background-image:url(/120814-042457/images/themes/blue/button_tree_contract.gif);
+background-position: 0px 1px;
+background-repeat:no-repeat;
+}
+tr.treeTableTitleRowClosed div.treeControl {
+background:transparent;
+background-image:url(/120814-042457/images/themes/blue/button_tree_expand.gif);
+background-position: 0px 1px;
+background-repeat:no-repeat;
+}
+table.applicationMastheadSmall,
+table.applicationMastheadSmall td,
+table.applicationMastheadLarge,
+table.applicationMastheadLarge td {
+background-color:#036;
+}
+table.signInTable td {
+background: #036;
+}

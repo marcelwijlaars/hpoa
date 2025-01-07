@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DRemote_Support_Service_Events" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Insight Remote Support Service Events</title>
+  <source>/120814-042457/Help/en/topics/DRemote_Support_Service_Events.xml</source>
+  <keywords>event logs Insight Remote Support service events log files service events Insight Remote Support</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">Use the Remote Support Service Events page to monitor service events, send test events, or set maintenance mode.</p>
+        <p class="bodytext">A service event is a hardware failure, for example, a problem with an enclosure power supply module or enclosure fan module. When the BladeSystem Enclosure is registered with Insight Remote Support, service events are logged and sent to HP. When HP receives a service event, a support case is opened and details are displayed in the Service Event Log.</p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  To receive email alerts about system events, configure AlertMail on the <b>Enclosure Information&gt;Enclosure Settings&gt;AlertMail</b> page.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="bodytext">
+          <b>Using Maintenance Mode</b>
+        </p>
+        <p class="bodytext">Use Maintenance Mode when performing maintenance on a system. During this time, if a service event is generated, the event will indicate that the system is in maintenance mode. This service event helps HP to determine whether to open a service case. If maintenance mode is not turned off by the user explicitly during this time, it is turned off automatically by Onboard Administrator after the selected amount of time has passed.</p>
+        <p class="procedurelead-in">To use Maintenance Mode:</p>
+        <ol class="listnumber">
+          <li class="listnumber">Select the <b>Enable Maintenance Mode</b> check box.</li>
+          <li class="listnumber">Select a time in the <b>Expires in </b>menu.</li>
+          <li class="listnumber">Click <b>Apply.</b></li>
+        </ol>
+        <p class="bodytext">Maintenance mode ends automatically when the selected amount of time has passed.</p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext">
+                <img src="/120814-042457/Help/images/35893.png" alt="" />
+              </p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">TIP:</b>  To end maintenance mode early, clear the <b>Enable Maintenance Mode </b>check box, and then click <b>Apply.</b></p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="bodytext">
+          <b>Sending a test service event</b>
+        </p>
+        <p class="bodytext">To verify that your Insight Remote Support configuration is correct, click <b>Send Test Event</b> to send a test event.</p>
+        <p class="bodytext">When the transmission is finished, the test event is listed in the Service Event Log.</p>
+        <p class="bodytext">
+          <b>Viewing the Service Event Log</b>
+        </p>
+        <p class="bodytext">The Service Event Log displays the following details for each service event.</p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Row
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">ID Number
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">A unique string that identifies the service event
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Time Generated
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The time the service event was generated
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Event Type
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Each event is classified with a type of either System or Test
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Device Type
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">A string that identifies the source of the event. Possible values are Fan, Power Supply, Onboard Administrator, Interconnect, or Enclosure.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Serial Number
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">A string that provides the serial number of the device that generated the event.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Bay
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The bay number of the device that generated the event.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Perceived Severity
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">A string that indicates the severity of the event. The possible values are Critical Error, Degraded, or Informational.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Submission Status
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The status of the event submission. Possible values are OK or ERROR.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">
+          <b>Clearing the Service Event Log</b>
+        </p>
+        <p class="bodytext">To clear the Service Event Log, click <b>Clear Event Log</b>.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

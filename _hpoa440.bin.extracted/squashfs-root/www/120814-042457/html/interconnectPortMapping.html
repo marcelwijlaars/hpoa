@@ -1,0 +1,134 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css">
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css">
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css">
+<link rel="stylesheet" type="text/css" href="../css/widgets.css" />
+<link rel="stylesheet" type="text/css" href="../Help/stylesheets/help.css"/>
+<script type="text/javascript" src="../js/helpTips.js"></script> 
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+
+<script type="text/javascript">
+var encNum;
+var bayNum;
+var hpem=null;
+var formMgr=null;
+function loadContent(){
+try{
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+bayNum=parseInt(getSearchValue(location.search,'bayNum'));
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+formMgr=new FormManager(function(success){
+if(success){
+var processor=new XsltProcessor('../Templates/interconnectPortMapping.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('encNum',encNum);
+processor.addParameter('interconnectTrayPortMapDoc',formMgr.getDataByCallIndex(0));
+processor.addParameter('interconnectTrayInfoDoc',formMgr.getDataByCallIndex(1));
+processor.addParameter('bladePortMapDoc',formMgr.getDataByCallIndex(2));
+processor.addParameter('bladeMezzInfoExDoc',hpem.getBladeMezzInfoExArray());
+processor.addParameter('bladeInfoDoc',hpem.getBladeInfoDOM());
+processor.addParameter('isTower',hpem.getIsTower()+"");
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+reconcilePage();
+hpem.registerEventHandler(portMapChanged,['EVENT_INTERCONNECT_PORTMAP','EVENT_BLADE_PORTMAP']);
+hpem.registerEventHandler(netTrayRemoved,['EVENT_INTERCONNECT_REMOVED']);
+hpem.registerEventHandler(mezzInfoChanged,['EVENT_BLADE_PERSONALITY_CHANGED']);
+}else{
+displayContentFailed('bodyContent',formMgr.getErrorsArray());
+}
+});
+formMgr.startBatch(true);
+formMgr.queueCall(hpem.getInterconnectTrayPortMap,[bayNum]);
+formMgr.queueCall(hpem.getInterconnectTrayInfo,[bayNum]);
+formMgr.queueCall(hpem.getBladePortMapArray,[getXmlBayArray(getAllArray(1,hpem.getNumBlades()))]);
+formMgr.queueCall(hpem.getBladeMezzInfoExArray,[getXmlBayArray(getAllArray(1,hpem.getNumBlades()))]);
+formMgr.endBatch();
+top.mainPage.getHelpLauncher().setCurrentTopic("FORM_SWM_PORT_MAPPING");
+}
+else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);
+}
+}
+catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+}
+function portMapChanged(result){
+var eventName=getElementValueXpath(result,'//hpoa:event');
+if(eventName=='EVENT_BLADE_PORTMAP'){
+hpem.getInterconnectTrayPortMapArray(getXmlBayArray(getAllArray(1,hpem.getNumBlades())),function(result){
+var interconnectStatusDoc=hpem.getInterconnectTrayStatus(bayNum);
+var interconnectPresence=getElementValueXpath(interconnectStatusDoc,'//hpoa:presence');
+if(interconnectPresence=='PRESENT'){
+transformPage();
+}
+else{
+document.getElementById('bodyContent').innerHTML=top.getString('interconnectWasRemoved');
+}
+},true);
+}
+else if(eventName=='EVENT_INTERCONNECT_PORTMAP'){
+hpem.getBladePortMapArray(getXmlBayArray(getAllArray(1,hpem.getNumBlades())),function(result){
+var interconnectStatusDoc=hpem.getInterconnectTrayStatus(bayNum);
+var interconnectPresence=getElementValueXpath(interconnectStatusDoc,'//hpoa:presence');
+if(interconnectPresence=='PRESENT'){
+transformPage();
+}
+else{
+document.getElementById('bodyContent').innerHTML=top.getString('interconnectWasRemoved');
+}
+},true);
+}
+}
+function netTrayRemoved(result){
+var bayNumber=getElementValueXpath(result,'//hpoa:interconnectTrayStatus/hpoa:bayNumber');
+if(bayNumber==bayNum){
+document.getElementById('bodyContent').innerHTML=top.getString('interconnectWasRemoved');
+}
+}
+function transformPage(){
+var processor=new XsltProcessor('../Templates/interconnectPortMapping.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('encNum',encNum);
+processor.addParameter('interconnectTrayPortMapDoc',hpem.getInterconnectTrayPortMap(bayNum));
+processor.addParameter('interconnectTrayInfoDoc',hpem.getInterconnectTrayInfo(bayNum));
+processor.addParameter('bladePortMapDoc',hpem.getBladePortMapDOM(true));
+processor.addParameter('bladeInfoDoc',hpem.getBladeInfoDOM());
+processor.addParameter('bladeMezzInfoExDoc',hpem.getBladeMezzInfoExArray());
+processor.addParameter('isTower',hpem.getIsTower()+"");
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+}
+function mezzInfoChanged(result){
+hpem.getBladeMezzInfoExArray(getXmlBayArray(getAllArray(1,hpem.getNumBlades())),function(result){
+transformPage();
+},true)
+}
+function deregisterEventHandlers(){
+if(hpem!=null){
+hpem.removeRegisteredHandler(portMapChanged);
+}
+}
+function openPortLegend(){
+var winLegend=window.open('../html/legend-ports.html','LegendPorts','width=480,height=150,left=20,top=20,resizable=no,menubar=no,directories=no,scrollbars=no,toolbar=no,status=no');
+winLegend.focus();
+}
+	</script>
+</head>
+<body style="margin:10px;" onload="loadContent();" onunload="deregisterEventHandlers();">
+    <div id="bodyContent"></div>
+	<div id="waitContainer" class="waitContainer"></div>
+</body>
+</html>

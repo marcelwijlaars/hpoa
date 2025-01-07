@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DNavigating" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Navigation</title>
+  <source>/120814-042457/Help/en/topics/DNavigating.xml</source>
+  <keywords>device security graphical navigation graphical view locked bay tree navigation</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">The main HP BladeSystem Onboard Administrator navigation system consists of a tree view which lists all of the system's devices on the left side of the main page and remains visible at all times, and a graphical view which displays a physical picture of the enclosure. You can navigate through an enclosure's devices and functions through either of these views.</p>
+        <p class="bodytext">
+          <b>Tree navigation</b>
+        </p>
+        <p class="bodytext">The tree view aids in navigating through enclosure devices and functions for multiple enclosures in a hierarchal manner. The way in which the tree view is rendered depends on several factors including user permissions, device availability, and device status. If a user is configured to be an operator or user, some options might not be visible in the tree view.</p>
+        <p class="bodytext">The tree view enables navigation using categories based on the major systems within the enclosure. When a category is expanded, an icon next to the category name can indicate a degraded status of the affected system. When multiple components report status, the status icon indicates a cumulative worst-case status of all the devices in the same category.</p>
+        <p class="bodytext">
+          <b>Individual device pages</b>
+        </p>
+        <p class="bodytext">Clicking the link for an individual device selects the device, opens the device detail page, and selects the device in the graphical view in the GUI right frame. Individual device pages contain detailed information about the selected device and any other functions related to that device.</p>
+        <p class="bodytext">
+          <b>Category summary pages</b>
+        </p>
+        <p class="bodytext">Category summary pages contain summary information for each of the devices listed below them. For example, clicking the Device Bays link opens a bay summary page. Each parent element in the tree works in this manner. A summary link leads to an aggregate summary of all of the child links below it. When you click a category summary link, no devices are selected in the graphical view navigation.</p>
+        <p class="bodytext">
+          <b>System forms pages</b>
+        </p>
+        <p class="bodytext">Some devices, particularly HP Onboard Administrator, can have links to various system forms pages listed beneath their main links in the left tree navigation view. Form pages are those pages that contain input text boxes, radio buttons, and other HTML input element and are used to administer settings related to the device to which they belong. For example, you can use the HP Onboard Administrator system forms page to change IP address settings or updated firmware. These forms are all linked under the HP Onboard Administrator parent element. When you click a system forms link, the device to which the form page belongs is selected in the graphical view. For example, clicking the Firmware Update link for the Active HP Onboard Administrator selects the Active HP Onboard Administrator device in the graphical view. Links to system forms do not display status icons.</p>
+        <p class="bodytext">
+          <b>Graphical navigation</b>
+        </p>
+        <p class="bodytext">The second component of the HP BladeSystem Onboard Administrator GUI navigation system is a graphical representation of the physical enclosure, called the graphical view. The graphical view consists of two subcomponents: a front view and a rear view.</p>
+        <p class="bodytext">
+          <b>Selecting a device</b>
+        </p>
+        <p class="bodytext">To select a device, click the graphical representation of the device in the front or rear graphical view. When you select a device, the surrounding border changes from gray to light blue to indicate it is the currently selected device. Selecting a device in the graphical view selects the corresponding device in the left navigation tree view. Every time you select a device from any part of the navigation system, the rest of the navigation reflects that device selection event and updates accordingly.</p>
+        <p class="bodytext">
+          <b>Status reporting</b>
+        </p>
+        <p class="bodytext">The graphical view reports the status of every device in the enclosure. The status of each device is indicated on the device by a small status icon. No status icon appears for a device that is working properly and has an OK status. However, any other status codes appear as status icons on the device.</p>
+        <p class="bodytext">The graphical view does not report the presence or absence of hard drives in the server blade or storage blade.</p>
+        <p class="bodytext">
+          <b>Device security</b>
+        </p>
+        <p class="bodytext">Although the front and rear graphical views are both affected by user permissions, security on the graphical view is handled differently from the left tree view. If the user does not have permission to access a device, a blank bay appears regardless of whether a device is present in that bay, and a padlock icon in the bay table cell appears, indicating that the bay is locked to the current user.</p>
+        <p class="bodytext">
+          <b>Minimizing the graphical view</b>
+        </p>
+        <p class="bodytext">To minimize the graphical view from the main display, click the small box that contains an arrow located directly to the left of the name of the enclosure in the Graphical View box. This option minimizes the Graphical View and gives more room for the main section of the display. This is useful when viewing the Onboard Administrator on a small monitor or on a monitor using low resolution.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

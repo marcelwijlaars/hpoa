@@ -1,0 +1,162 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css"/>
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+<script type="text/javascript" src="../js/ipv4.js"></script>
+
+<script type="text/javascript">
+var encNum;
+var hpem=null;
+var formMgr=null;
+var ourInputValidator=null;
+var ipMgr=new IPv4Manager();
+var senderDomainVal='';
+var senderEmailVal='';
+function getNameSupported(){
+return(hpem.getActiveFirmwareVersion()>=3.80);
+}
+function loadContent(){
+try{
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+formMgr=new FormManager(function(success){
+var processor=new XsltProcessor('../Forms/AlertMailPage.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('alertMailInfoDoc',hpem.getAlertmailInfo());
+processor.addParameter('networkInfoDoc',hpem.getEnclosureNetworkInfo());
+processor.addParameter('serviceUserAcl',hpem.getUserAccessLevel());
+processor.addParameter('testSupported',(hpem.getActiveFirmwareVersion()>=2.10));
+processor.addParameter('nameSupported',getNameSupported());
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+reconcilePage();
+senderEmailVal=getInputValue('senderEmail');
+senderDomainVal=getInputValue('domain');
+});
+formMgr.startBatch(true);
+formMgr.queueCall(hpem.getEnclosureNetworkInfo);
+formMgr.queueCall(hpem.getAlertmailInfo);
+formMgr.endBatch();
+top.mainPage.getHelpLauncher().setCurrentTopic("FORM_OA_ALERT_MAIL");
+}else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);
+}
+}
+catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+}
+function setAlertMail(){
+var activeOaNetowrkInfo=hpem.getOaNetworkInfoByMode(ACTIVE(),null,false);
+var ipv6Enabled=(getElementValueXpath(activeOaNetowrkInfo,'//hpoa:oaNetworkInfo/hpoa:extraData[@hpoa:name="Ipv6Enabled"]')=='true');
+var alertMailEnabled=document.getElementById('alertMailEnabled').checked;
+ourInputValidator=new InputValidator(null,'errorDisplay',true);
+if((alertMailEnabled&&ourInputValidator.allInputsValidate())||!alertMailEnabled){
+var mailBox=document.getElementById('mailBox').value;
+var domain=document.getElementById('domain').value;
+var smtp=document.getElementById('smtp').value;
+var isIpv6=false;
+var senderName='';
+var senderEmail='';
+if(getNameSupported()){
+senderName=document.getElementById('senderName').value;
+senderEmail=document.getElementById('senderEmail').value;
+}
+if(smtp.indexOf(":")!=-1){
+isIpv6=_isValidIPv6Address(smtp,'OP');
+}
+if((!ipv6Enabled)&&alertMailEnabled&&isIpv6){
+alert(top.getString('warningAlertMailIpv6Disabled'));
+}
+var waitPhrase=top.getString('completingAlertMail');
+var formMgr=new FormManager(null,false,'errorDisplay','bodyContent','waitContainer');
+formMgr.createWaitContainer(waitPhrase);
+formMgr.startBatch();
+if(alertMailEnabled){
+formMgr.queueCall(hpem.setAlertmailReceiver,[mailBox],['lblEmail']);
+formMgr.queueCall(hpem.setAlertmailServer,[smtp],['lblServer']);
+if(getNameSupported()){
+formMgr.queueCall(hpem.setAlertmailSenderEmail,[senderEmail],['lblSenderEmail']);
+formMgr.queueCall(hpem.setAlertmailSenderName,[senderName],['lblSenderName']);
+formMgr.queueCall(hpem.setAlertmailDomain,[domain],['lblDomain']);
+}else{
+formMgr.queueCall(hpem.setAlertmailDomain,[domain],['lblDomain']);
+}
+}
+formMgr.queueCall(hpem.setNetworkProtocol,[NET_PROTO_ALERTMAIL(),alertMailEnabled],[],['999','83','84']);
+formMgr.endBatch();
+}
+else{
+ourInputValidator.updateMessages(true);
+ourInputValidator.autoFocus();
+}
+}
+function testAlertmail(){
+var alertmailInfo=hpem.getAlertmailInfo();
+var mailbox=getElementValueXpath(alertmailInfo,'//hpoa:receiver');
+var formMgr=new FormManager(function(success){
+if(success){
+alert(top.getString('testAlertmailSendTo')+mailbox+'.');
+}
+},false,'errorDisplay','bodyContent','waitContainer');
+formMgr.createWaitContainer(top.getString('testingAlertmail'));
+formMgr.makeCall(hpem.testAlertmail);
+}
+function toggleTestButtonEnabled(state){
+if(state){
+ourButtonManager.enableButtonById('btnTestSettings');
+}
+else{
+ourButtonManager.disableButtonById('btnTestSettings');
+}
+}
+function toggleSenderOption(radio){
+var option=radio.getAttribute('value');
+if(option=='domain'){
+senderEmailVal=getInputValue('senderEmail');
+setInputValue('domain',senderDomainVal);
+setInputValue('senderEmail','');
+toggleFormEnabled('senderDomainForm',true);
+toggleFormEnabled('senderEmailForm',false);
+}else{
+senderDomainVal=getInputValue('domain');
+setInputValue('senderEmail',senderEmailVal);
+setInputValue('domain','');
+toggleFormEnabled('senderEmailForm',true);
+toggleFormEnabled('senderDomainForm',false);
+}
+}
+function toggleAlertMailEnabled(checkbox){
+toggleFormEnabled('alertMailForm',checkbox.checked);
+toggleTestButtonEnabled(checkbox.checked);
+if(checkbox.checked){
+if(senderEmailVal!=''){
+toggleFormEnabled('senderEmailForm',true);
+toggleFormEnabled('senderDomainForm',false);
+}else{
+toggleFormEnabled('senderEmailForm',false);
+toggleFormEnabled('senderDomainForm',true);
+}
+}
+}
+	</script>
+</head>
+<body style="margin:10px;" onload="loadContent();">
+    <div id="bodyContent"></div>
+	<div id="waitContainer" class="waitContainer"></div>
+</body>
+</html>

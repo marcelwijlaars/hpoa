@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DTwo-FactorAuthentication" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Two-Factor Authentication</title>
+  <source>/120814-042457/Help/en/topics/DTwo-FactorAuthentication.xml</source>
+  <keywords>LDAP+TFA Authentication TFA+LDAP Authentication Two-Factor Authentication Two-Factor Authentication user certificates Two-Factor Authentication with LDAP</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>Two-Factor Authentication Settings tab</b>
+        </p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext">
+                <img src="/120814-042457/Help/images/35894.png" alt="" />
+              </p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">IMPORTANT:</b>  Onboard Administrator must be configured in Virtual Connect mode before enabling Two-Factor Authentication when using Virtual Connect Manager and Two-Factor Authentication.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="bodytext">When Two-Factor Authentication is enabled, only users with a valid user certificate are allowed to sign in to Onboard Administrator. A valid user certificate is signed by a trusted Certificate Authority and is mapped to the respective user on the Onboard Administrator.</p>
+        <p class="bodytext">To enable Two-Factor Authentication for user authentication during sign in, select <b>Enable Two-Factor Authentication</b>. When Two-Factor Authentication is enabled, SSH and Telnet access is disabled by default. Disabling Two-Factor Authentication does not automatically re-enable SSH and Telnet. You must go to the Network Access screen, and then select <b>Enable Secure Shell</b> and <b>Enable Telnet.</b></p>
+        <p class="bodytext">To enable the Onboard Administrator to verify with the Certifying Authority that the certificate being used has been added to the certificate revocation list (CRL), select <b>Check for Certificate Revocation.</b> If the certificate is on the CRL, the sign in is denied.</p>
+        <p class="bodytext">
+          <b>Certificate Owner Field</b>
+        </p>
+        <p class="bodytext">You can configure the Onboard Administrator to use the user principle name in the SAN by selecting SAN or to use the certificate subject name by selecting Subject when authenticating directory users with a directory server.</p>
+        <p class="bodytext">To save settings, click <b>Apply</b>.</p>
+        <p class="bodytext">For information about configuring Two-Factor Authentication for local user and LDAP group accounts, see the <i>HP BladeSystem Onboard Administrator User Guide</i>.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

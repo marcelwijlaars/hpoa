@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DDVDDrive" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>DVD drive</title>
+  <source>/120814-042457/Help/en/topics/DDVDDrive.xml</source>
+  <keywords>CD-ROM drive DVD drive ISO image USB key support</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">This screen enables you to connect multiple server blades in the enclosure to the shared DVD resource, launch the iLO Remote Console, and use virtual power commands on the selected server blades. Information on this page is current as of the last download. To view updated information, click <b>Refresh</b>.</p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Column
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description or action
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Check box
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">To apply the Virtual Power, One Time Boot, or DVD features, select the bays.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Bay
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">This field displays the device bay number of the blade within the enclosure.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Power State
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The power state of the server blade. Possible values are On or Off.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Remote Console
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">To launch the iLO Remote Console, select <b>Integrated Remote Console (IE)</b> or <b>Remote Console Applet (Java)</b>, and then click <b>Launch</b>.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">iLO DVD Status
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">This field indicates whether the server blade has a Virtual Media connection. Possible values are Connected, Disconnected, or Unknown. A status of Incompatible Firmware indicates that the DVD feature is not supported with the iLO firmware installed on the device. A status of Unknown indicates an iLO connectivity issue exists.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Device or Image URL
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>This field displays the current Virtual Media connection of the blade. Possible values are:</p>
+                <ul class="tablelistbullet">
+                  <li class="tablelistbullet">Standby OA DVD</li>
+                  <li class="tablelistbullet">Enclosure Firmware Management</li>
+                  <li class="tablelistbullet">Virtual Media Applet is connected</li>
+                  <li class="tablelistbullet">Feature not supported on Integrity iLO version x.xx</li>
+                  <li class="tablelistbullet">SSH is disabled on this blade's iLO processor</li>
+                  <li class="tablelistbullet">Upgrade ProLiant iLO 2 version x.xx to 1.30 or higher</li>
+                  <li class="tablelistbullet">Enclosure DVD</li>
+                  <li class="tablelistbullet">Tray Open or No Media</li>
+                  <li class="tablelistbullet">iLO has no IP address<p class="tablespacerafter" /></li>
+                </ul>
+              </p>
+            </td>
+          </tr>
+        </table>
+        <p class="bodytext">
+          <b>Virtual Power</b>
+        </p>
+        <p class="bodytext">The Virtual Power menu enables a Momentary Press or a Press and Hold of the power button, or a Cold Boot of the selected server blades.</p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Button
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Momentary Press
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">This button mimics a physical momentary press of the power button on the server blade. Clicking this button powers the server blade on or off gracefully.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Press and Hold
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">This button mimics a physical press and hold of the power button on the server blade. Clicking this button forces the server blade to shut power off without first shutting down the OS. This option is not available when the server blade is off.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Cold Boot
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Clicking this button immediately removes power from the system. This command applies only to server blades that are powered on. Issuing a Cold Boot command to a powered off server blade acts to power on the server blade.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">
+          <b>One Time Boot</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Option
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Diskette Drive (A:)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Forces the server blade to reboot to the diskette drive. Be sure the diskette drive is attached to the server blade before selecting this option.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">CD-ROM
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Forces the server blade to reboot to the CD-ROM drive. Be sure the CD-ROM drive is attached to the server blade before selecting this option.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Hard Drive C:
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Forces the server blade to reboot to the hard disk.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">RBSU
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Forces the server blade to boot to the ROM-Based Setup Utility.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">PXE NIC
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Forces the server blade to boot to PXE NIC.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">
+          <b>DVD</b>
+        </p>
+        <p class="bodytext">The DVD menu enables you to connect or disconnect the shared DVD drive by selecting Connect to Enclosure DVD or Disconnect DVD Hardware. You can connect the shared DVD drive to multiple server blades. After the shared DVD drive is connected, the Virtual Power menu can be used to reboot the selected server blades in the list. If multiple media disks are required for an installation, then you might have to disconnect and reconnect for every server when the new media disk is inserted in the DVD.</p>
+        <p class="bodytext">When a USB key is detected in the Active Onboard Administrator USB port and ISO images are present, they appear on the DVD menu. Select the server blades to which you want to deploy an ISO image, and then select the ISO image from the menu. The ISO image deploys.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

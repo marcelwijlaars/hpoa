@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DDeviceBayPortMappingforc3000enclosure" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Device Bay Port Mapping for c3000 Enclosure</title>
+  <source>/120814-042457/Help/en/topics/DDeviceBayPortMappingforc3000enclosure.xml</source>
+  <keywords>port mapping</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="figure">
+          <b>Half-height server blade</b>
+        </p>
+        <p class="figure">
+          <img src="/120814-042457/Help/images/74627.png" alt="Half-height server blade" />
+        </p>
+        <p class="bodytext">
+          <b>Full-height server blade</b>
+        </p>
+        <p class="figure">
+          <img src="/120814-042457/Help/images/74628.png" alt="Full-height server blade" />
+        </p>
+        <p class="bodytext">
+          <b>Double dense server blade</b>
+        </p>
+        <p class="figure">
+          <img src="/120814-042457/Help/images/106895.png" alt="Double dense server blade" />
+        </p>
+        <p class="bodytext">
+          <b>Related topics</b>
+        </p>
+        <p class="bodytext">
+          <a href="DDeviceBayPortMappingGraphicalViewforc3000enclosure.xml">Device Bay Port Mapping Graphical View for c3000 Enclosure</a>
+        </p>
+        <p class="bodytext">
+          <a href="DServerBayPortMappingTableView.xml">Device Bay Port Mapping Table View</a>
+        </p>
+        <p class="bodytext">
+          <a href="DInterconnectBayPortMapping.xml">Interconnect Bay Port Mapping</a>
+        </p>
+      </content>
+    </section>
+  </sections>
+</topic>

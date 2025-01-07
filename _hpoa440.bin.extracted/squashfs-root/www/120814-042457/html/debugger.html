@@ -1,0 +1,443 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<!--
+  (C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+  
+  @author  : michael.slama@hp.com
+  @created : 07-24-2006
+  @usage   : this page is controlled by the Debugger class found
+             in debugger.js.
+  @notes   : the Debugger class opens this file in a popup window,
+             then sends html elements to it for appending to the 
+             logWrapperDiv div (see 'addEntry' method).
+  @mods     : 08-06-2006 mds: added a log buffer and logState events 
+             so large query fills would not be interrupted by new
+             log entries. Also abandoned the xpath query parser
+             concept in favor of caching 'QueryItems' in a class
+             for maximum response speed in both browsers.
+-->
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+<link rel="stylesheet" type="text/css" href="../css/default.css" />
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css" />
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css" />
+<style type="text/css">
+  #lblFilter{
+    height:16px;
+    margin-bottom:0px;
+    cursor:default;
+    background:#dddddd;
+    padding:0px 2px 0px 2px;
+    width:100px;border:1px solid #7F9D89;
+  }
+  * html #lblFilter{
+    height:16px;
+    margin-bottom:2px;
+    cursor:default;
+    background:#dddddd;
+    padding:0px 2px 0px 2px;
+    width:100px;border:1px solid #7F9D89;
+  }
+  a{
+    font-size:10px;
+    text-decoration:none;
+  }
+  button{
+    width:50px;
+  } 
+  label{
+    padding:0px 4px 5px 2px;
+  } 
+</style>
+<script type="text/javascript" src="../js/global.js" ></script>
+<script type="text/javascript">
+function getKeyValue(qrystring,key,raw){
+var qry=qrystring.split("?")[1];
+var value="";
+if(qry){
+var pairs=qry.split('&');
+for(i=0;i<pairs.length;i++){
+var keyval=pairs[i].split('=');
+if(keyval[0].toLowerCase()==key.toLowerCase()){
+value=(raw?keyval[1]:unescape(keyval[1]));
+break;
+}
+}
+}
+return value;
+};
+var title=getKeyValue(window.location.search,'title');
+if(title!=""){
+document.writeln("<title>HP JavaScript Debugger ("+title+")</title>");
+}else{
+document.writeln("<title>HP JavaScript Debugger</title>");
+}
+</script>
+<script type="text/javascript">
+var LogStates={
+Ready:'Ready',
+Busy:'Busy'
+};
+var MAST_HEIGHT=39;
+var logWrapper=null;
+var hitWrapper=null
+var controlRow=null;
+var scrollInput=null;
+var queryItems=null;
+var entryBuffer=new Array();
+var medColor="inherit";
+var currentFilter=-1;
+var logState=LogStates.Ready;
+var filterOn=false;
+function QueryItems(totalItems){
+this.numItems=totalItems;
+this.items=new Object();
+this.stats=new Object();
+this.init();
+};
+QueryItems.prototype.init=function(){
+for(var i=0;i<=this.numItems;i++){
+this.items[i]=document.createElement("div");
+this.stats[i]=new Number();
+}
+};
+QueryItems.prototype.addItem=function(item){
+var severity=item.getAttribute("severity");
+this.items[severity].appendChild(item.cloneNode(true));
+switch(severity){
+case 7:
+case 6:
+this.stats[6]++;
+document.getElementById("lblSeverity6").innerHTML=this.stats[6];
+break;
+default:
+this.stats[severity]++;
+try{
+document.getElementById("lblSeverity"+severity).innerHTML=this.stats[severity];
+}catch(e){}
+break;
+}
+};
+QueryItems.prototype.getItem=function(severity){
+return this.items[severity].innerHTML;
+};
+function getQueryItems(){
+if(queryItems==null){
+queryItems=new QueryItems(8);
+}
+return queryItems;
+};
+function getVisibleWrapper(){
+if(getLogWrapper().style.display=="block"){
+return getLogWrapper();
+}else{
+return getHitWrapper();
+}
+};
+function getLogWrapper(){
+if(logWrapper==null){
+logWrapper=document.getElementById("logWrapperDiv");
+}
+return logWrapper;
+};
+function getHitWrapper(){
+if(hitWrapper==null){
+hitWrapper=document.getElementById("hitWrapperDiv");
+}
+return hitWrapper;
+};
+function getMastheadHeight(){
+if(controlRow==null){
+controlRow=document.getElementById("controlRow");
+}
+return MAST_HEIGHT+controlRow.offsetHeight+(document.all?6:10);
+};
+function getScroller(){
+if(scrollInput==null){
+scrollInput=document.getElementById("scroll");
+}
+return scrollInput;
+};
+function toggleScroll(toggleOn){
+var toggleValue=getScroller().value;
+if(exists(toggleOn)){
+toggleValue=(toggleOn==true?"1":"-1");
+}else{
+toggleValue*=-1;
+}
+if(getScroller().value!=toggleValue){
+getScroller().value=toggleValue;
+if(getScroller().value==1){
+document.getElementById("imgAutoScroll").src="/120814-042457/images/led_blue_anim.gif";
+}else{
+document.getElementById("imgAutoScroll").src="/120814-042457/images/led_blue_off.gif";
+}
+}
+};
+function exists(obj){
+return(typeof(obj)!='undefined');
+};
+function adjustSize(wrapper){
+if(!exists(wrapper)){
+wrapper=getVisibleWrapper();
+}
+var page=getDocumentCoords(wrapper);
+if(page.height>=getMastheadHeight()){
+wrapper.style.height=(page.height-getMastheadHeight())+"px";
+}
+try{
+wrapper.style.width=(document.all?page.width-4:page.width+12)+"px";
+}catch(e){}
+};
+function toggleDisplay(normal){
+var logDiv=getLogWrapper();
+var hitDiv=getHitWrapper();
+if(normal){
+hitDiv.style.display="none";
+logDiv.style.display="block";
+adjustSize(logDiv);
+}else{
+logDiv.style.display="none";
+hitDiv.style.display="block";
+adjustSize(hitDiv);
+}
+};
+function toggleFilter(){
+filterOn=!filterOn;
+document.getElementById("imgFilter").src=
+(filterOn?"/120814-042457/images/uid_green_on.gif":
+"/120814-042457/images/uid_blue_off.gif");
+if(filterOn){
+applyFilter();
+}else{
+toggleDisplay(true);
+}
+};
+function repairExpanderLinks(wrapper){
+var anchors=wrapper.getElementsByTagName("a");
+for(var i=0;i<anchors.length;i++){
+var anchor=anchors[i];
+if(medColor=="inherit"){
+medColor=anchor.style.color;
+}
+try{
+anchor.onmouseover=function(){
+this.nextSibling.nextSibling.style.display='none';
+this.innerHTML='More ...';}
+anchor.onclick=function(){
+this.nextSibling.nextSibling.style.display='block';
+this.innerHTML='Less ...';}
+}catch(e){alert(e.message);}
+}
+};
+function applyFilter(){
+var resultWindow=getHitWrapper();
+var cboFilter=document.getElementById("cboFilter");
+currentSeverity=parseInt(cboFilter.options[cboFilter.selectedIndex].value);
+var total=getQueryItems().stats[currentSeverity];
+toggleDisplay(false);
+resultWindow.innerHTML="";
+if(total>0){
+if(total>2500){
+if(!confirm("Really load all "+total+" results?")){
+return;
+}
+}
+logStateEvent(LogStates.Busy);
+resultWindow.innerHTML=getQueryItems().getItem(currentSeverity);
+repairExpanderLinks(resultWindow);
+adjustSize(resultWindow);
+logStateEvent(LogStates.Ready);
+}else{
+resultWindow.innerHTML="<br />&nbsp;<em>No results were found "+
+"for this query:</em><p style='padding-left:30px;font-size:12px;"+
+"font-family:monospace,verdana,arial;color:"+medColor+";"+
+"font-weight:bold;'><span>"+getImageHTML(currentSeverity)+
+"&nbsp;&nbsp;Severity = "+currentSeverity+"</span></p>";
+}
+};
+function setContainerStyle(style){
+var styleSet=style.split(";");
+var index=0;
+for(index in styleSet){
+var valuePair=styleSet[index].split(":");
+if(valuePair[0]){
+getLogWrapper().style[valuePair[0]]=valuePair[1];
+getHitWrapper().style[valuePair[0]]=valuePair[1];
+}
+}
+};
+function getImageHTML(severity){
+var src="";
+switch(severity){
+case 7:
+case 6:
+src=document.getElementById("img6").src;
+break;
+default:
+src=document.getElementById("img"+severity).src;
+break;
+}
+return "<img style='margin-bottom:-2px;' src='"+src+"' alt=''/>";
+};
+function changeDisplay(expand){
+var divs=getVisibleWrapper().getElementsByTagName("div");
+var index=0;
+logStateEvent(LogStates.Busy);
+if(divs.length>5000){
+if(!confirm("Really "+(expand==true?"expand":"collapse")+" all entries? (Not Recommended)")){
+return;
+}
+}
+var style=(expand==true?"block":"none");
+var linkText=(expand==true?"Less ...":"More ...");
+for(index=0;index<divs.length;index++){
+try{
+var extra=divs[index].getAttribute("extra");
+}catch(e){
+continue;
+}
+if(extra){
+if(divs[index].style.display!=style){
+divs[index].style.display=style;
+divs[index].previousSibling.previousSibling.innerHTML=linkText;
+}
+}
+}
+logStateEvent(LogStates.Ready);
+};
+function getLoadState(){
+if(document.getElementById("scroll")==null){
+throw "none";
+}else{
+return("initialized");
+}
+};
+function setFilter(severity){
+var cboFilter=document.getElementById("cboFilter");
+var lblFilter=document.getElementById("lblFilter");
+switch(severity){
+case 7:
+case 6:
+cboFilter.value=(cboFilter.value==6?7:6);
+break;
+default:
+cboFilter.value=severity;
+break;
+}
+lblFilter.value=cboFilter.options[cboFilter.value].innerHTML;
+if(filterOn==true){
+applyFilter();
+}
+};
+function emptyTheBuffer(){
+while(entryBuffer.length>0&&logState==LogStates.Ready){
+addEntry(entryBuffer.shift());
+}
+};
+function addEntryToBuffer(entry){
+entryBuffer.push(entry);
+};
+function logStateEvent(newState){
+var previousState=logState;
+switch(newState){
+case LogStates.Busy:
+logState=newState;
+break;
+case LogStates.Ready:
+logState=newState;
+if(previousState==LogStates.Busy){
+emptyTheBuffer();
+}
+break;
+}
+};
+function addEntry(entryNode){
+if(logState==LogStates.Ready){
+var wrapper=getLogWrapper();
+wrapper.appendChild(entryNode);
+getQueryItems().addItem(entryNode);
+if(getScroller().value==1){
+wrapper.scrollTop=wrapper.scrollHeight;
+}
+}else{
+addEntryToBuffer(entryNode);
+}
+};
+</script>
+</head>
+<body class="body-flush-fit" style='overflow:hidden;position:relative;' bgColor='#eeeeee' onload="adjustSize();" onresize="adjustSize();">
+  <table class="applicationMastheadSmall" border="0" style="width: 100%;" cellpadding="0"
+    cellspacing="0">
+    <tr>
+      <td class="mastheadIcon">
+        <img border="0" hspace="7" src="/120814-042457/images/themes/blue/logo_hp_smallmasthead.gif"
+          alt="" width="30" height="19" />
+      </td>
+      <td class="mastheadTitle" width="50%">
+        <h1 id='mastheadTitle' style="color: white;">JavaScript Debugger</h1>
+      </td>
+      <td>
+        <div class="mastheadPhoto">
+          <img border="0" src="/120814-042457/images/masthead_photo_small.jpg" alt="" width="310" height="39" /></div>
+      </td>
+      <td class="mastheadLinks" style="white-space: nowrap; width: 15%;text-align:center; vertical-align: middle;
+        padding-left: 2px;">        
+          <a href="#" style="text-decoration:none;font-family:Tahoma;font-size:10px;" onclick="toggleScroll();" >Auto-Scroll:&nbsp;<img id="imgAutoScroll" style="position:absolute;top:15px;" src="/120814-042457/images/led_blue_anim.gif" border="0" alt="" /></a><br />     
+      </td>
+    </tr>
+  </table>
+  <table style='width: 100%; height: 100%; border: 0px; padding: 0px;' onmouseover="try{toggleScroll(false)}catch(e){};" onmouseout="try{toggleScroll(true)}catch(e){};">
+    <tr id="controlRow">
+      <td style="width: 10%; height: 30px; padding-left: 5px; padding-right: 5px; white-space: nowrap;">
+        <button onclick="changeDisplay(true);">+ +</button>&nbsp;
+        <button onclick="changeDisplay(false);">- -</button>&nbsp;
+        <span style="height:16px;">Severity:</span><select onclick="return true;" id="cboFilter" style="display:none;">
+            <option value="0">0 - Unknown</option>
+            <option value="1">1 - Information</option>
+            <option value="2">2 - Normal</option>
+            <option value="3">3 - Warning</option>
+            <option value="4">4 - Warning Minor</option>
+            <option value="5">5 - Warning Major</option>
+            <option value="6">6 - Critical</option>
+            <option value="7">7 - Fatal</option>
+            <option value="8">8 - Verbose</option>
+        </select>
+        <input title="Click Icons to Change" type="text" readonly="readonly" id="lblFilter" value="0 - Unknown"/>&nbsp;
+        <button onclick="toggleFilter()" style="width: 100px;">Toggle Filter</button>
+      </td>
+      <td valign="middle" style="width: 18px;">
+        <img id="imgFilter" src="/120814-042457/images/uid_blue_off.gif" alt="" />
+      </td>
+      <td style="white-space:nowrap;vertical-align:middle;">
+        <table style="border: 0px; margin: 0px; padding: 0px;">
+          <tr>
+            <td style="text-align:center;">
+              <img id="img0" alt="" style="cursor:pointer;" onclick="setFilter(0);" src="/120814-042457/images/icon_status_unknown.gif" title="Unknown" /><label id="lblSeverity0">0</label></td>
+            <td style="text-align:center;">
+              <img id="img1" alt="" style="cursor:pointer;" onclick="setFilter(1);" src="/120814-042457/images/icon_status_informational.gif" title="Information" /><label id="lblSeverity1">0</label></td>
+            <td style="text-align:center;">
+              <img id="img2" alt="" style="cursor:pointer;" onclick="setFilter(2);" src="/120814-042457/images/icon_status_normal.gif" title="Normal" /><label id="lblSeverity2">0</label></td>
+            <td style="text-align:center;">
+              <img id="img3" alt="" style="cursor:pointer;" onclick="setFilter(3);" src="/120814-042457/images/icon_status_warning.gif" title="Warning" /><label id="lblSeverity3">0</label></td>
+            <td style="text-align:center;">
+              <img id="img4" alt="" style="cursor:pointer;" onclick="setFilter(4);" src="/120814-042457/images/icon_status_minor.gif" title="Warning Minor" /><label id="lblSeverity4">0</label></td>
+            <td style="text-align:center;">
+              <img id="img5" alt="" style="cursor:pointer;" onclick="setFilter(5);" src="/120814-042457/images/icon_status_major.gif" title="Warning Major" /><label id="lblSeverity5">0</label></td>
+            <td style="text-align:center;">
+              <img id="img6" alt="" style="cursor:pointer;" onclick="setFilter(6);" src="/120814-042457/images/icon_status_critical.gif" title="Critical and Fatal" /><label id="lblSeverity6">0</label></td>
+            <td style="text-align:center;">
+              <img id="img8" alt="" style="cursor:pointer;" onclick="setFilter(8);" src="../Help/images/topic.gif" title="Verbose Information" /><label id="lblSeverity8">0</label></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="9" style="padding: 0px; vertical-align: top;">
+        <div id="logWrapperDiv" style="display:block; overflow: auto; width: 100%; border: 1px solid #dddddd;"></div>
+        <div id="hitWrapperDiv" style="display:none; overflow: auto; width: 100%; border: 1px solid #dddddd;"></div>
+      </td>
+    </tr>
+  </table>
+  <input type="hidden" id="scroll" value="1" />
+</body>
+</html>

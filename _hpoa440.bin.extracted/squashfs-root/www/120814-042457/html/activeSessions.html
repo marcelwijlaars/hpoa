@@ -1,0 +1,333 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css">
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css">
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css">
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/tableManager.js"></script>
+<script type="text/javascript" src="../js/tabManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+
+ <!--
+	Include the init and xml javascript files from the jsolait library.
+	The xslt.js file requires that these two files be included before it.
+-->
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+
+<script type="text/javascript">
+var encNum;
+var emNum;
+var otherEmNum;
+function SessionInfo(){
+this.sessionId='';
+this.username='';
+this.userType=-1;
+this.bayNumber=0;
+}
+function loadContent(){
+top.mainPage.setMainTitle(top.getString('signedInUsers'));
+try{
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+emNum=parseInt(getSearchValue(location.search,'emNum'));
+if(!isNaN(encNum)&&!isNaN(emNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+otherEmNum=(emNum==1)?2:1;
+selectTab('currentSessions');
+}
+else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);
+}
+}
+catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+}
+function selectTab(tabId){
+ourTabManager.toggleTabs(tabId);
+setTabContent(tabId);
+}
+function getCurrentTab(){
+return ourTabManager.getCurrentTab();
+}
+function setTabContent(tabId){
+var contentTab=document.getElementById(tabId);
+var contentLocation=contentTab.getAttribute('contentLocation');
+var contextId=contentTab.getAttribute('contextId');
+top.mainPage.getHelpLauncher().setCurrentTopic(contextId);
+if(contentLocation){
+transformPage(contentLocation);
+}
+}
+function transformPage(contentLocation){
+if(contentLocation.indexOf('sessionOptions')>-1&&hpem.getActiveFirmwareVersion()<2.30){
+displayContentFailed('tabContent',[top.getString('sessionTimeoutNotSupported')]);
+reconcilePage();
+return;
+}
+var formMgr=new FormManager(function(success){
+if(success){
+var processor=new XsltProcessor(contentLocation);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+if(contentLocation.indexOf('activeSessions')>-1){
+processor.addParameter('activeSessionsDoc',formMgr.getDataByCallIndex(0));
+processor.addParameter('standbySessionsDoc',formMgr.getDataByCallIndex(1));
+processor.addParameter('activeBayNumber',emNum);
+processor.addParameter('standbyBayNumber',otherEmNum);
+}else{
+var timeout=formMgr.getDataByCallIndex(0,'//hpoa:timeout');
+processor.addParameter('sessionTimeout',timeout);
+}
+var sessionKey=hpem.getSessionKey();
+var sessionCompare=sessionKey.substring(sessionKey.length-4);
+processor.addParameter('currentSessionCompare',sessionCompare);
+document.getElementById('tabContent').innerHTML=processor.getOutput();
+reconcilePage();
+}
+else{
+displayContentFailed('bodyContent',formMgr.getErrorsArray());
+}
+},false,'','tabContent');
+formMgr.startBatch(true,true);
+if(contentLocation.indexOf('activeSessions')>-1){
+formMgr.queueCall(hpem.getOaSessionArray,[emNum]);
+formMgr.queueCall(hpem.getOaSessionArray,[otherEmNum],[],['146','31']);
+}else{
+formMgr.queueCall(hpem.getOaSessionTimeout);
+}
+formMgr.endBatch();
+}
+function terminateSessions(){
+var sessions=getSelectedSessions();
+if(sessions!=null){
+if(sessions.length>0){
+var confirmString=top.getString('areYouSureTerminateSelSession');
+if(confirm(confirmString)){
+var formMgr=new FormManager(function(success){
+if(success){
+hpem.generateHeartbeat(function(){});
+selectTab('currentSessions');
+}
+},false,'sessionErrorDisplay','tabContent');
+formMgr.createWaitContainer(top.getString('terminatingSessions'));
+formMgr.startBatch();
+for(var i=0;i<sessions.length;i++){
+if(sessions[i]&&sessions[i].sessionId!=''){
+formMgr.queueCall(hpem.removeOaSession,[sessions[i].bayNumber,sessions[i].sessionId]);
+}
+}
+formMgr.endBatch();
+}
+}
+else{
+var msg=top.getString('pleaseSelOneMoreSessionTerminate')+'\n';
+msg+=top.getString('noteCannotTerminateOwnSession');
+alert(msg);
+}
+}
+else{
+alert(top.getString('bayErrorGatheringData'));
+}
+}
+function doUserAction(action){
+var actionText='';
+var waitText='';
+if(action=='disableUsers'){
+actionText=top.getString('disableText');
+waitText=top.getString('disablingUsers');
+}
+else if(action=='deleteUsers'){
+actionText=top.getString('deleteText');
+waitText=top.getString('deletingUsersText');
+}
+var sessions=getSelectedSessions();
+var noSelectionMessage=top.getString('plsSelectOneOrMoreUserDesc')+actionText+'.';
+noSelectionMessage+='\n\n'+top.getString('plsSelectOneOrMoreUserNote1');
+noSelectionMessage+=top.getString('plsSelectOneOrMoreUserNote2');
+if(sessions!=null){
+if(sessions.length>0){
+var usersToDisable=new Array();
+for(var i=0;i<sessions.length;i++){
+if(sessions[i]){
+var userType=sessions[i].userType;
+if(parseInt(userType)==UserTypes.Local){
+var username=sessions[i].username;
+var currentUser=hpem.getCurrentServiceUser();
+var userExists=false;
+for(j=0;j<usersToDisable.length;j++){
+if(usersToDisable[j]==username){
+userExists=true;
+}
+}
+if(!userExists&&username!='Administrator'&&username!=currentUser){
+usersToDisable.push(username);
+}
+}
+}
+}
+if(usersToDisable.length>0){
+var confirmString=top.getString('areYouSureWantToDesc1')+actionText+top.getString('areYouSureWantToDesc2');
+confirmString+='\n'+top.getString('noteThisActionAppliedLocalUser1');
+confirmString+='\n'+top.getString('noteThisActionAppliedLocalUser2');
+if(confirm(confirmString)){
+var formMgr=new FormManager(function(success){
+if(success){
+selectTab('currentSessions');
+}
+},false,'sessionErrorDisplay','tabContent');
+formMgr.createWaitContainer(waitText);
+formMgr.startBatch();
+for(var i=0;i<usersToDisable.length;i++){
+if(action=='disableUsers'){
+formMgr.queueCall(hpem.disableUser,[usersToDisable[i]]);
+}
+else if(action=='deleteUsers'){
+formMgr.queueCall(hpem.removeUser,[usersToDisable[i]]);
+}
+}
+formMgr.endBatch();
+}
+}
+else{
+alert(noSelectionMessage);
+}
+}
+else{
+alert(noSelectionMessage);
+}
+}
+else{
+alert(top.getString('bayErrorGatheringData'));
+}
+}
+function getSelectedSessions(){
+var selectedSessions=null;
+var activeSessionsTable=document.getElementById('activeSessionsTable');
+if(activeSessionsTable){
+selectedSessions=new Array();
+var inputCollection=activeSessionsTable.getElementsByTagName('input');
+for(var i=0;i<inputCollection.length;i++){
+var input=inputCollection[i];
+if(input.getAttribute('type')=='checkbox'&&input.checked){
+var info=new SessionInfo();
+var id=input.getAttribute('sessionId');
+var username=input.getAttribute('username');
+var userType=input.getAttribute('userType');
+var bayNumber=input.getAttribute('bayNumber');
+var isLocal=input.getAttribute('local');
+if(isLocal&&isLocal!='true'){
+if(id){
+info.sessionId=id;
+}
+if(username){
+info.username=username;
+}
+if(userType){
+info.userType=userType;
+}
+if(bayNumber){
+info.bayNumber=bayNumber;
+}
+selectedSessions.push(info);
+}
+}
+}
+}
+return selectedSessions;
+}
+function sessionSelected(){
+var checkedCount=0;
+var overviewTable=document.getElementById('activeSessionsTable');
+if(overviewTable){
+var inputCollection=overviewTable.getElementsByTagName('input');
+for(var i=0;i<inputCollection.length;i++){
+if(inputCollection[i].checked){
+checkedCount++;
+}
+}
+if(checkedCount==0){
+ourButtonManager.disableButtonById('btnTerminate');
+ourButtonManager.disableButtonById('btnDisable');
+ourButtonManager.disableButtonById('btnDelete');
+}
+else{
+var listHasModifiable=false;
+for(var i=0;i<inputCollection.length;i++){
+var username=inputCollection[i].getAttribute('username');
+var userType=inputCollection[i].getAttribute('userType');
+if((username&&userType)&&inputCollection[i].checked){
+if(parseInt(userType)==UserTypes.Local&&username!='Administrator'){
+listHasModifiable=true;
+break;
+}
+}
+}
+if(listHasModifiable){
+ourButtonManager.enableButtonById('btnTerminate');
+ourButtonManager.enableButtonById('btnDisable');
+ourButtonManager.enableButtonById('btnDelete');
+}
+else{
+ourButtonManager.enableButtonById('btnTerminate');
+ourButtonManager.disableButtonById('btnDisable');
+ourButtonManager.disableButtonById('btnDelete');
+}
+}
+}
+else{
+alert(top.getString('activeSessionTableNotFound'));
+}
+}
+function setSessionTimeout(){
+ourInputValidator=new InputValidator(null,'errorDisplay',true);
+if(!ourInputValidator.allInputsValidate()){
+ourInputValidator.updateMessages(true);
+ourInputValidator.autoFocus();
+return;
+}
+var timeout=document.getElementById('sessionTimeout').value;
+var formMgr=new FormManager(null,false,'errorDisplay','tabContent');
+formMgr.createWaitContainer(top.getString('applyingTimeoutSettings'));
+formMgr.startBatch();
+formMgr.queueCall(hpem.setOaSessionTimeout,[timeout]);
+formMgr.endBatch();
+}
+	</script>
+</head>
+<body style="margin:10px;" onload="loadContent();">
+    
+  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+		<tr>
+			<td valign="bottom">
+				<div class="tabSet" id="tabSet">
+					<div class="tabOff" tabid="currentSessions" contextId="FORM_USER_SESSIONS" id="currentSessions" contentLocation="../Templates/activeSessions.xsl"><script type="text/javascript">document.write(top.getString('signedInUsers'));</script></div>
+					<div class="tabOff" tabid="sessionSettings" contextId="FORM_USER_SESSION_OPTIONS" id="sessionSettings" contentLocation="../Templates/sessionOptions.xsl"><script type="text/javascript">document.write(top.getString('sessionOptions'));</script></div>
+					<div class="tabBottomLine"></div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td style="padding-top:10px;">
+				<div id="tabContent"></div>
+				<div id="waitContainer"></div>
+			</td>
+		</tr>
+	</table>
+
+  <script type="text/javascript">
+if(typeof(TabManager)!="undefined"){
+ourTabManager.init();
+}
+  </script>
+    
+</body>
+</html>

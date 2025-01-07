@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DEBIPAforIPv6DeviceBaystab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>EBIPA for IPv6 Device Bays tab</title>
+  <source>/120814-042457/Help/en/topics/DEBIPAforIPv6DeviceBaystab.xml</source>
+  <keywords>EBIPA configuration guidelines EBIPA for IPv6 gateway address</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">This EBIPA screen allows you to configure IPv6 fixed addresses for Onboard Administrator enclosure bays. The Onboard Administrator EBIPA feature helps you provision a fixed IP address based on bay number, which preserves the IP address for a particular bay even if a device is replaced.</p>
+        <p class="bodytext">The server blade iLO bays and interconnect module management bays can obtain IP addresses on the management network in several ways: dynamic IP addressing using an external DHCP server, static IP addressing, SLAAC via router advertisements (IPv6 only), or EBIPA. If your network has a DHCP service or if you want to manually assign static IP addresses one by one to the server blades iLO and interconnect modules, bypass configuring Enclosure Bay IP Addressing. </p>
+        <p class="bodytext">EBIPA only assigns fixed DHCP IP addresses to the management interface for server iLOs and interconnect modules on the management network internal to the enclosure. EBIPA does not assign IPv6 addresses for any other devices on the management network external to the enclosure and cannot be used as a DHCP server on the production network.</p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  The Onboard Administrator documentation refers to EBIPA IP addresses as "fixed IP addresses" or "fixed DHCP addresses," meaning that each of these addresses is an IP address permanently associated with a specific bay number independent of the actual device currently attached to the bay.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  EBIPA enforces unique IP addresses for all bays, even if bays are on a different VLAN.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="bodytext">The server blade iLO defaults to DHCPv6 addressing, which is obtained through the network connector of the Active Onboard Administrator. Interconnect modules that have an internal management network connection to the Onboard Administrator might also default to DHCPv6 addressing.</p>
+        <p class="bodytext">The Onboard Administrator GUI lists the IPv6 address for the server blade iLO bay and the interconnect module management bay.</p>
+        <p class="bodytext">
+          <b>Configuring fixed IP addresses for server blade and interconnect bays</b>
+        </p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <p>
+                  <b style="color:#0066FF;">NOTE:</b>  For EBIPA IPv6 fixed addresses to be successfully configured, the <b>Enable IPv6</b> setting must be enabled. To enable this setting, use the First Time Setup Wizard Network IPv6 Settings screen or the Enclosure Settings IPv6 Settings tab.</p>
+                <p>The <b>Enable SLAAC</b> and <b>Enable DHCPv6</b> settings have no effect on EBIPA IPv6 functionality.</p>
+              </p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="bodytext">If your facility prefers fixed IP address assignment, you can specify unique fixed addresses individually for each of the server blade iLO bays and interconnect module management bays, or you can use EBIPA to assign a range of fixed IP addresses to individual server blade and interconnect module bays. If you specify fixed addresses individually, the gateway, DNS servers, and domain name can be the same or different for each bay. If you use EBIPA to assign a range of fixed addresses, you must specify the first IP address in a range; when you click the <b>Autofill </b>down arrow button for that bay, the bays listed below that bay are automatically assigned consecutive IP addresses. The gateway, DNS servers, and domain name are also copied to each of the consecutive bays in the list.</p>
+        <p class="bodytext">For example, if you specify IPv6 address 12002:1064:fa85::1064:fa85/64 for EBIPA bay 1, then using the Autofill<b></b>feature, bays 1 through 16 are assigned consecutive IP addresses in the range 2002:1064:fa85::1064:fa85/64 to 2002:1064:fa85::1064:fa94/64. If you specify 2002:1064:fa85::1064:fa95/64  for interconnect bay 3 and use the feature, interconnect bays 3 through 8 are assigned consecutive IP addresses in the range 2002:1064:fa85::1064:fa95/64 to 2002:1064:fa85::1064:fa9a/64.</p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext">
+                <img src="/120814-042457/Help/images/35894.png" alt="" />
+              </p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">IMPORTANT:</b>  Do not use the fe80::/10 prefix when configuring EBIPA-assigned addresses, as this network prefix is reserved for link local SLAAC addresses.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <p>
+                  <b style="color:#0066FF;">NOTE:</b>  The <b>Autofill</b> button only fills all address fields if the associated address field with the first address in the list is clicked. For example, Autofill for address 1 will fill addresses 1-16, Autofill for address 2 will fill 2-16, and so on.</p>
+                <p>When using Autofill, specify a subnet prefix that allows for enough available addresses on the associated subnet to fill all address fields corresponding to the total number of bays selected. If you specify a prefix that does not meet that requirement, "Invalid IP Address" displays in the address field of each bay for which an address could not be generated.</p>
+              </p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="bodytext">If you have double dense server blades, do not configure EBIPA settings for the base bays. You must configure EBIPA settings in the <b>Device Bay Double Dense Side A </b>and <b>Device Bay Double Dense Side B </b>tabs, using the double dense convention (for example, assigning addresses to 1A, 2A, and so on; 1B, 2B, and so on). Using the Autofill feature in either of these tabs assigns consecutive IP addresses to the bays listed below the bay where you specify the first IP address in the range (for example, if you specify the IP address for bay 1A and use the Autofill feature, bays 2A, 3A, and so on are assigned consecutive addresses).</p>
+        <p class="bodytext">To specify EBIPA settings for interconnect module management bays, use the <b>Interconnect Bays</b> tab.</p>
+        <p class="bodytext">To apply all settings, click <b>Apply</b>.</p>
+        <p class="bodytext">Servers in the device bays automatically acquire the device bay EBIPA addresses within a few minutes. However, to activate the newly-configured EBIPA address for an interconnect, you must manually restart interconnect switch modules by clicking the <b>Virtual Power </b>button on each Onboard Administrator Interconnect Module information page.</p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext">
+                <img src="/120814-042457/Help/images/35928.png" alt="" />
+              </p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <p>
+                  <b style="color:#0066FF;">CAUTION: </b> EBIPA configuration changes on a server bay that is already using EBIPA addressing causes a reset of the EBIPA-configured iLO. The iLO then attempts to obtain an IP address, which might result in loss of connectivity for clients currently accessing the iLO using the previously configured address. For an interconnect bay, an automatic reset does not occur but configuration changes might result in loss of connectivity for clients currently accessing the interconnect using the previously configured address.</p>
+                <p>Disabling EBIPA-configured addressing causes the affected devices to lose their current EBIPA-configured address. Any clients accessing the devices via that address will lose connectivity. To ensure client access, the devices should be configured with an address, such as through an external DHCP service or assigning a static IP address.</p>
+              </p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Column
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Bay
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The bay in the enclosure of the device.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Enabled
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Enables EBIPA settings for the device bay. EBIPA settings for all device bays can be enabled by selecting the check box next to Enabled in the heading row or individual device bays can be selected by clicking the check box for that particular device bay.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">EBIPA Address
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The fixed IPv6 address you want to assign to the device bay. Possible values are ####:####:####:####:####:####:####:####/###, where #### ranges from 0 to FFFF. A compressed version of the same IPv6 address is also supported. The prefix /### ranges from 1 to 128; the prefix length is mandatory. 
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Gateway
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>The fixed IPv6 gateway address you want to assign for the device bays. Possible values are ####:####:####:####:####:####:####:#### where #### ranges from 0 to FFFF. A compressed version of the same IPv6 address is also supported. Do not specify a prefix. The gateway is assumed reachable from within the network.</p>
+                <p>If this gateway is specified as a Link-Local address, the gateway will always be configured on the enclosure device using this address. If the gateway is specified with any other type of IPv6 address, the Onboard Administrator sends neighbor solicitation requests to identify the Link-Local address of the gateway device for use in configuring the enclosure device. If the gateway does not exist or does not respond to neighbor solicitation requests, no gateway is configured.</p>
+              </p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Domain 
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Domain name for the device bays. Possible values are a character string with a maximum of 64 characters, including all alphanumeric characters, the dash (-), and the period (.).
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">DNS Servers
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">IPv6 addresses for primary, secondary, and tertiary DNS servers. Possible values are ####:####:####:####:####:####:####:#### where #### ranges from 0 to FFFF. A compressed version of the same IPv6 address is also supported.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Autofill
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">
+                <p>Assigns consecutive IPv6 addresses for the selected device bays below in the device list. To assign the IP addresses, click the <b>Autofill</b> down arrow.</p>
+                <p>The Autofill button only fills all address fields if the associated address field with the first address in the list is clicked. For example, Autofill for address 1 will fill addresses 1-16, Autofill for address 2 will fill 2-16, and so on.</p>
+                <p>When using Autofill, specify an IPv6 subnet prefix that allows for enough available addresses on the associated subnet to fill all address fields corresponding to the total number of bays selected. If you specify a prefix that does not meet that requirement, "Invalid IP Address" displays in the address field of each bay for which an address could not be generated.</p>
+              </p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Current Address
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The current IPv6 address of the device bay.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="tablespacerafter" />
+        <p class="bodytext">To save the EBIPA for IPv6 settings for the device bays, click <b>Apply.</b></p>
+      </content>
+    </section>
+  </sections>
+</topic>

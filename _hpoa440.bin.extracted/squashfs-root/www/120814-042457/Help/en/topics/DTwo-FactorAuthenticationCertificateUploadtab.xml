@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DTwo-FactorAuthenticationCertificateUploadtab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Two-Factor Authentication Certificate Upload tab</title>
+  <source>/120814-042457/Help/en/topics/DTwo-FactorAuthenticationCertificateUploadtab.xml</source>
+  <keywords>Two-Factor Authentication user certificates</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">To enable Two-Factor Authentication, upload at least one valid certificate belonging to a CA to the Onboard Administrator.</p>
+        <p class="bodytext">There are two methods for uploading certificates for use in HP BladeSystem Onboard Administrator:</p>
+        <ul class="listbullet">
+          <li class="listbullet">Paste certificate contents into the text field and click <b>Upload.</b></li>
+          <li class="listbullet">Paste the URL of the certificate into the URL field and click <b>Apply.</b></li>
+        </ul>
+      </content>
+    </section>
+  </sections>
+</topic>

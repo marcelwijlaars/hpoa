@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- 	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+
+    Onboard Administrator Action Map file
+    
+    This map is used by the Call Analyzer module for determining how to handle
+    case-specific problems with soap calls. 
+    
+    Note: this map is only used by the gsoap and makeCall pages to allow the 
+    call analyzer to function.
+    
+  -->
+<action-map>
+  <methods />
+</action-map>

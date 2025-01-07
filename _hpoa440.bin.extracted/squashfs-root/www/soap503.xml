@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="/120814-042457/Templates/customErrors.xsl" type="text/xsl"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope">
+	<SOAP-ENV:Body>
+		<SOAP-ENV:Fault>
+			<SOAP-ENV:Code>
+				<SOAP-ENV:Value>SOAP-ENV:Sender</SOAP-ENV:Value>
+			</SOAP-ENV:Code>
+			<SOAP-ENV:Reason>
+				<SOAP-ENV:Text>Onboard Administrator Error</SOAP-ENV:Text>
+			</SOAP-ENV:Reason>
+			<SOAP-ENV:Detail>
+				<hpoa:faultInfo xmlns:hpoa="hpoa.xsd">
+					<hpoa:errorType>ONBOARD_ADMINISTRATOR</hpoa:errorType>
+					<hpoa:errorCode>503</hpoa:errorCode>
+					<hpoa:errorText>Service Temporarily Unavailable</hpoa:errorText>
+				</hpoa:faultInfo>
+			</SOAP-ENV:Detail>
+		</SOAP-ENV:Fault>
+	</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

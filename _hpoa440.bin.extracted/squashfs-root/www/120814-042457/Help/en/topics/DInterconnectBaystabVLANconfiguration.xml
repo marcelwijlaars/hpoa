@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DInterconnectBaystabVLANconfiguration" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Interconnect Bays tab</title>
+  <source>/120814-042457/Help/en/topics/DInterconnectBaystabVLANconfiguration.xml</source>
+  <keywords>VLAN memebership interconnect bays</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">This screen displays the VLAN membership of each interconnect bay in the enclosure and enables you to change the membership.</p>
+        <p class="bodytext">To change the membership of an interconnect bay, select a defined VLAN from the menu under the VLAN column, and click <b>Apply.</b></p>
+        <p class="bodytext">
+          <b>Related topic:</b>
+        </p>
+        <p class="bodytext">
+          <a href="DVLANConfigurationVLANControltab.xml">VLAN Configuration</a>
+        </p>
+      </content>
+    </section>
+  </sections>
+</topic>

@@ -1,0 +1,14 @@
+if [ "$1" = "" ] ; then
+	echo "usage: allfan <PWM value [0-255]>"
+else
+	fan 1 $1
+	fan 2 $1
+	fan 3 $1
+	fan 4 $1
+	fan 5 $1
+	fan 6 $1
+	fan 7 $1
+	fan 8 $1
+	fan 9 $1
+	fan 10 $1
+fi

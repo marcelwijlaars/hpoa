@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DUserNotetab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>User Note tab</title>
+  <source>/120814-042457/Help/en/topics/DUserNotetab.xml</source>
+  <keywords>User Note screen</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">This tab enables you to add a custom message to the User Note screen. The Insight Display automatically navigates to the User Note screen if the default User Note has been replaced with a custom User Note and there are no Alerts. If there are Alerts, then the Insight Display navigates to the Health Summary screen. The Insight Display hibernates after 3 to 4 minutes of inactivity even though the User Note screen is active and it will not be visible after the screen blanks.</p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Field
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Possible value
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Line (1-6)
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">0 to 25 characters including all printable characters except the single quote (') and the double quote ("). The ~ and ^ characters are reserved.
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Text to be displayed on the Insight Display User Note screen. One or all lines can be blank.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="bodytext">Click <b>Default</b> to restore the original User Note.</p>
+        <p class="bodytext">Click <b>View User Note</b> to display the current User Note screen.</p>
+        <p class="bodytext">Click <b>Apply</b> to add a custom User Note.</p>
+        <p class="bodytext">
+          <b>Related topics</b>
+        </p>
+        <p class="bodytext">
+          <a href="DInsightDisplay.xml">Security tab</a>
+        </p>
+        <p class="bodytext">
+          <a href="DBackgroundtab.xml">Background tab</a>
+        </p>
+        <p class="bodytext">
+          <a href="DChatModetab.xml">Chat Mode tab</a>
+        </p>
+      </content>
+    </section>
+  </sections>
+</topic>

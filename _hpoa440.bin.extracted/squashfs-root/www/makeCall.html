@@ -1,0 +1,224 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" ><head>
+	<title>HP BladeSystem Onboard Administrator</title>
+	<link rel="stylesheet" type="text/css" href="/120814-042457/css/default.css" />
+	<link rel="stylesheet" type="text/css" href="/120814-042457/css/blue_theme.css" />
+	<link rel="stylesheet" type="text/css" href="/120814-042457/css/MxPortalEx.css" />
+
+	<script type="text/javascript" src="/120814-042457/js/EnvironConstants.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/browser.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/global.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/descriptor.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/globalVars.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/debugger.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/listeners.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/domBuilder.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/init.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/urllib.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/xml.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/xslt.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/hpem.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/events.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/topology.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/http.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/callAnalyzer.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/globalSoap.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/transport.js"></script>
+	<script type="text/javascript" src="/120814-042457/js/globalModules.js"></script>
+	<script type="text/javascript">
+var transport=null;
+var foundActiveSession=false;
+function getTransport(){
+return transport;
+}
+var SERVICE_URL='/hpoa';
+transport=importModule("Transport");
+transport.getCallAnalyzer().toggleEnabled(false);
+var hpemObj=new hpem();
+hpemObj.setEnclosureNumber('1');
+var user='';
+var pass='';
+function startSession(){
+hpemObj.setSoapUrl(document.getElementById('serviceUrl').value);
+hpemObj.userLogIn(user,pass,function(result){
+if(result.xml!=''&&result.xml.indexOf(SOAP_FAULT_TEST())==-1){
+var key=hpemObj.getSessionKey();
+document.getElementById('keyText').value=key;
+document.getElementById('result').value='';
+document.getElementById('soapRequest').value='';
+}
+else{
+document.getElementById('result').value=result.xml;
+}
+});
+}
+function killSession(){
+hpemObj.userLogOut(true,function(result){
+if(getCallSuccess(result)==true){
+document.getElementById('keyText').value='';
+}
+else if(result.xml==''||result.xml.indexOf(SOAP_FAULT_TEST())>-1){
+alert('Logout failed');
+}
+});
+}
+function makeCall(){
+hpemObj.setSoapUrl(document.getElementById('serviceUrl').value);
+document.getElementById('result').value='';
+document.getElementById('soapRequest').value='';
+var methodName=document.getElementById('methodName')[document.getElementById('methodName').selectedIndex].value;
+var paramsString=document.getElementById('paramValues').value;
+var paramArray=new Array();
+if((""+document.getElementById('params').innerHTML).indexOf("bayArray:x")>-1){
+var bayArrayString=paramsString.substring(paramsString.indexOf('['),paramsString.indexOf(']')+1);
+var bayArrayList=eval(""+bayArrayString);
+var bayArray=toXmlBayArray(bayArrayList);
+paramArray.push(bayArray);
+if(paramsString.indexOf('],')>-1){
+paramsString=paramsString.substring(paramsString.indexOf('],')+2);
+var temp=eval("["+paramsString+"]");
+for(var i=0;i<temp.length;i++){
+paramArray.push(temp[i]);
+}
+}
+}
+else{
+paramArray=eval("["+paramsString+"]");
+}
+eval('hpemObj.callMethod(methodName, paramArray, callBack);');
+}
+function callBack(result,fname){
+var resultText='';
+var resultTextBox=document.getElementById('result');
+if(result.xml==''){
+resultText+='\n\nCall returned no payload.';
+}
+else{
+resultText+=result.xml;
+}
+resultTextBox.value=resultText;
+}
+function initServiceUrl(){
+var soapUrl=window.location.protocol+'//'+window.location.hostname+SERVICE_URL;
+document.getElementById('serviceUrl').value=soapUrl;
+var descriptorList=new Array();
+for(var prop in descriptor){
+descriptorList.push(prop);
+}
+descriptorList.sort();
+for(var i=0;i<descriptorList.length;i++){
+var methodList=document.getElementById('methodName')
+var option=new Option(descriptorList[i],descriptorList[i]);
+var optionIndex=methodList.options.length;
+methodList.options[optionIndex]=option;
+}
+if(getCookieValue(LOCAL_ENC_COOKIE_NAME())!=''){
+hasActiveSession=true;
+startSessionInProgress();
+}
+else{
+user=prompt('Username: ','');
+pass=prompt('Password: ','');
+}
+}
+function methodNameChanged(){
+var methodName=document.getElementById('methodName')[document.getElementById('methodName').selectedIndex].value;
+var params=eval("descriptor."+methodName+".params");
+document.getElementById('params').innerHTML=params;
+}
+function startSessionInProgress(){
+hpemObj.setSoapUrl(document.getElementById('serviceUrl').value);
+hpemObj.userLoginSSO(getCookieValue(LOCAL_ENC_COOKIE_NAME()));
+document.getElementById('keyText').value=getCookieValue(LOCAL_ENC_COOKIE_NAME());
+try{
+document.getElementById('btnStartSession').setAttribute('disabled','true');
+document.getElementById('btnKillSession').setAttribute('disabled','true');
+document.getElementById('btnReLogin').setAttribute('disabled','true');
+document.getElementById('keyText').setAttribute('disabled','true');
+}
+catch(e){}
+}
+function reLogin(){
+user=prompt('Username: ','');
+pass=prompt('Password: ','');
+startSession();
+}
+	</script>
+
+</head>
+<body onload="initServiceUrl();">
+	<table>
+		<tr>
+			<td>
+				<table>
+					<tr>
+						<td>
+							Service URL:</td>
+						<td style="width:10px;">
+							&nbsp;</td>
+						<td>
+							<input id="serviceUrl" type="text" size="50" /></td>
+					</tr>
+					<tr>
+						<td>
+							Method:</td>
+						<td style="width:10px;">
+							&nbsp;</td>
+						<td>
+							<select id="methodName" name="methodName" onchange="methodNameChanged();">
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Parameters:</td>
+						<td style="width:10px;">
+							&nbsp;</td>
+						<td>
+							<span id="params"></span>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Params:</td>
+						<td style="width:10px;">
+							&nbsp;</td>
+						<td>
+							<input id="paramValues" type="text" size="50" /></td>
+					</tr>
+				</table>
+			</td>
+			<td valign="top">
+				<table>
+					<tr>
+						<td>
+							Session Key:&nbsp;<!--<span id="keyText">--><input type="text" id="keyText" /></td>
+						<td align="left">
+							&nbsp;</td>
+					</tr>
+					<tr>
+						<td>
+							<input type="button" onclick="startSession();" value="start session" id="btnStartSession"/><input type="button"
+								onclick="killSession();" value="kill session" id="btnKillSession"/>
+							<input type="button" onclick="reLogin();" value="re-login" id="btnReLogin" />
+						</td>
+						<td>
+							&nbsp;</td>
+					</tr>
+					<tr>
+						<td>
+							<input type="button" id="makeCallButton" onclick="makeCall();" value="make call" />
+						</td>
+						<td>
+							&nbsp;</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+	<hr />
+	<span>Request:</span><br />
+	<textarea id="soapRequest" cols="120" rows="14"></textarea><br />
+	<span>Response:</span><br />
+	<textarea id="result" cols="120" rows="14"></textarea>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css"/>
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+<script type="text/javascript" src="../js/ipv4.js"></script>
+
+<script type="text/javascript">
+var encNum;
+var hpem=null;
+var formMgr=null;
+function loadContent(){
+try{
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+formMgr=new FormManager(function(success){
+var processor=new XsltProcessor('../Forms/LinkLossFailoverPage.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('networkInfoDoc',hpem.getEnclosureNetworkInfo());
+processor.addParameter('serviceUserAcl',hpem.getUserAccessLevel());
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+top.mainPage.getHelpLauncher().setCurrentTopic("FORM_OA_LINK_LOSS_FAILOVER");
+reconcilePage();
+});
+formMgr.startBatch(true);
+formMgr.queueCall(hpem.getEnclosureNetworkInfo);
+formMgr.endBatch();
+}else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);
+}
+}
+catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+}
+function setLlfSettings(){
+var llfEnabled=document.getElementById('llfEnabled').checked;
+var llfInterval=document.getElementById('llfInterval').value;
+if(llfEnabled){
+var ourInputValidator=new InputValidator(null,'errorDisplay',true);
+if(!ourInputValidator.allInputsValidate()){
+ourInputValidator.updateMessages(true);
+ourInputValidator.autoFocus();
+return;
+}
+}
+var formMgr=new FormManager(null,false);
+formMgr.createWaitContainer(top.getString('llfWait'));
+formMgr.startBatch();
+if(llfEnabled){
+formMgr.queueCall(hpem.setLinkFailoverInterval,[llfInterval]);
+}
+formMgr.queueCall(hpem.setLinkFailoverEnabled,[llfEnabled],[],['83','84']);
+formMgr.endBatch();
+}
+	</script>
+</head>
+<body style="margin:10px;" onload="loadContent();">
+    <div id="bodyContent"></div>
+	<div id="waitContainer" class="waitContainer"></div>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DIOexpansionbladevirtualdevicestab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>I/O expansion blade virtual devices tab</title>
+  <source>/120814-042457/Help/en/topics/DIOexpansionbladevirtualdevicestab.xml</source>
+  <keywords>virtual buttons</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>UID Light</b>
+        </p>
+        <p class="bodytext">Clicking <b>Toggle On/Off</b> turns the UID light on the I/O expansion blade on (blue) or off (gray) for easy identification of the selected I/O expansion blade.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

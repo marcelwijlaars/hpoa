@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DIPSettingsfromStandby_GUI" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>TCP/IP settings at Standby Onboard Administrator</title>
+  <source>/120814-042457/Help/en/topics/DIPSettingsfromStandby_GUI.xml</source>
+  <keywords>default gateway DNS server dynamic DNS gateway address Onboard Administrator name settings NIC subnet mask TCP/IP settings TCP/IP settings accessed from Standby Onboard Administrator Transmission Control Protocol/Internet Protocol (TCP/IP)</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">The Standby Onboard Administrator GUI's TCP/IP Settings screen includes four tabs:</p>
+        <ul class="listbullet">
+          <li class="listbullet">IPv4 Settings</li>
+          <li class="listbullet">IPv6 Settings</li>
+          <li class="listbullet">NIC Options</li>
+          <li class="listbullet">Advanced Settings</li>
+        </ul>
+        <p class="bodytext">
+          <b>IPv4 Settings</b>
+        </p>
+        <p class="bodytext">View and modify most settings that can be viewed and modified from the Active Onboard Administrator GUI's Enclosure TCP/IP Settings IPv4 tab. The exception is the <b>Enclosure IP Mode</b> setting. You can view this setting, but you must modify it from the Active Onboard Administrator GUI's Enclosure TCP/IP Settings <a href="DIPSettingsunderenclosuresettings.xml">IPv4 Settings tab</a>.</p>
+        <p class="bodytext">
+          <b>IPv6 Settings</b>
+        </p>
+        <p class="bodytext">View and modify most settings that can be modified from the Active Onboard Administrator GUI's Enclosure TCP/IP Settings IPv6 Settings tab, except for the following:</p>
+        <ul class="listbullet">
+          <li class="listbullet">
+            <b>Enclosure IP Mode</b>
+          </li>
+          <li class="listbullet">
+            <b>Enable IPv6</b>
+          </li>
+          <li class="listbullet">
+            <b>Enable Router Advertisements</b>
+          </li>
+          <li class="listbullet">
+            <b>Enable SLAAC</b>
+          </li>
+          <li class="listbullet">
+            <b>Enable DHCPv6</b>
+          </li>
+        </ul>
+        <p class="bodytext">You can view these settings, but you must modify them from the Active Onboard Administrator GUI's Enclosure TCP/IP Settings <a href="DIPv6Settingstab.xml">IPv6 Settings tab</a>.</p>
+        <p class="bodytext">
+          <b>NIC Options</b>
+        </p>
+        <p class="bodytext">View and modify the same parameters provided by the Active Onboard Administrator GUI's Enclosure TCP/IP Settings <a href="DNICOptionstab.xml">NIC Options tab</a>.</p>
+        <p class="bodytext">
+          <b>Advanced Settings</b>
+        </p>
+        <p class="bodytext">View and modify the same parameters provided by the Active Onboard Administrator GUI's Enclosure TCP/IP Settings <a href="DAdvancedSettingstab.xml">Advanced Settings tab</a>.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

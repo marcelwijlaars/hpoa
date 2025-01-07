@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DLocalUserAccounts" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Local User Accounts</title>
+  <source>/120814-042457/Help/en/topics/DLocalUserAccounts.xml</source>
+  <keywords>adding user deleting a user account user account adding user account deleting user account modifying</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>New</b>—To add a new user to the selected enclosure, click <b>New</b>. The Add Local User screen appears.</p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  A maximum of 30 user accounts can be configured in FIPS Mode OFF, while a maximum of 21 user accounts can be configured in FIPS Mode ON or DEBUG. The maximum user account limit includes reserved accounts such as the Administrator and Virtual Connect accounts.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="bodytext">
+          <b>Edit</b>—Select a user (only one can be selected) by selecting the check box next to the name of the user. To change the settings on the Edit Local User screen, click <b>Edit</b>.</p>
+        <p class="bodytext">
+          <b>Delete</b>—Select a user or users to be deleted by selecting the check box next to the name of each user. To remove the accounts, click <b>Delete</b>. If an attempt is made to delete the last remaining Administrator account, you will receive an alert warning that one Administrator account must remain and the delete action will be canceled.</p>
+        <p class="bodytext">
+          <b>Related topics</b>
+        </p>
+        <p class="bodytext">
+          <a href="DAdministratoraccountsetup.xml">Administrator account setup</a>
+        </p>
+        <p class="bodytext">
+          <a href="DUsersettingsforNewandEdit.xml">User settings</a>
+        </p>
+      </content>
+    </section>
+  </sections>
+</topic>

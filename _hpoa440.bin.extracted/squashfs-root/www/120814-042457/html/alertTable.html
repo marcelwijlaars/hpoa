@@ -1,0 +1,133 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>HP BladeSystem Onboard Administrator</title>
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <link rel="stylesheet" type="text/css" href="../css/blue_theme.css">
+    <link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css">
+    <link rel="stylesheet" type="text/css" href="../css/widgets.css" />
+
+    <script src="../js/EnvironConstants.js" type="text/javascript"></script>
+    <script type="text/javascript" src="../js/tabManager.js"></script>
+    <script type="text/javascript" src="../js/buttonManager.js"></script>
+    <script type="text/javascript" src="../js/global.js"></script>
+    <script type="text/javascript" src="../js/browser.js"></script>
+
+    <!--
+	    Include the init and xml javascript files from the jsolait library.
+	    The xslt.js file requires that these two files be included before it.
+    -->
+    <script type="text/javascript" src="../js/init.js"></script>
+    <script type="text/javascript" src="../js/xml.js"></script>
+    <script type="text/javascript" src="../js/xslt.js"></script>
+    
+    <script>
+var currentCriteria='';
+var sortAsc=true;
+var hpems=top.mainPage.getHiddenFrame().getProxies();
+function beginLoadTable(){
+var severityFilter=getSearchValue(location.search,'severity');
+loadAlertTable(severityFilter);
+var systemStatusEvents=[
+'EVENT_ENC_STATUS',
+'EVENT_ENC_UID',
+'EVENT_ENC_SHUTDOWN',
+'EVENT_BLADE_STATUS',
+'EVENT_BLADE_INFO',
+'EVENT_BLADE_UID',
+'EVENT_BLADE_POWER_STATE',
+'EVENT_BLADE_INSERTED',
+'EVENT_BLADE_INSERT_COMPLETED',
+'EVENT_BLADE_REMOVED',
+'EVENT_BLADE_POWER_MGMT',
+'EVENT_BLADE_SHUTDOWN',
+'EVENT_BLADE_THERMAL',
+'EVENT_BLADE_FAULT',
+'EVENT_BLADE_CONNECT',
+'EVENT_BLADE_DISCONNECT',
+'EVENT_BLADE_GRP_CAP_TIMEOUT',
+'EVENT_FAN_STATUS',
+'EVENT_FAN_INSERTED',
+'EVENT_FAN_REMOVED',
+'EVENT_FAN_ZONE_STATUS',
+'EVENT_INTERCONNECT_STATUS',
+'EVENT_INTERCONNECT_UID',
+'EVENT_INTERCONNECT_RESET',
+'EVENT_INTERCONNECT_REMOVED',
+'EVENT_INTERCONNECT_INSERTED',
+'EVENT_SWITCH_CONNECT',
+'EVENT_SWITCH_DISCONNECT',
+'EVENT_INTERCONNECT_HEALTH_LED',
+'EVENT_INTERCONNECT_THERMAL',
+'EVENT_INTERCONNECT_CPUFAULT',
+'EVENT_INTERCONNECT_POWER',
+'EVENT_PS_STATUS',
+'EVENT_PS_INSERTED',
+'EVENT_PS_REMOVED',
+'EVENT_PS_REDUNDANT',
+'EVENT_PS_SUBSYSTEM_STATUS',
+'EVENT_PS_OVERLOAD',
+'EVENT_AC_FAILURE',
+'EVENT_OA_ERS_CONFIG_CHANGED',
+'EVENT_OA_ERS_MAINTENANCE_SET',
+'EVENT_OA_ERS_MAINTENANCE_ENABLED',
+'EVENT_OA_ERS_MAINTENANCE_CLEARED',
+'EVENT_OA_ERS_TEST',
+'EVENT_OA_ERS_TEST_MANUAL',
+'EVENT_OA_ERS_DATACOLLECTION_MANUAL',
+'EVENT_OA_ERS_DATACOLLECTION_FAILURE',
+'EVENT_OA_ERS_DATACOLLECTION_SUCCESS'
+];
+for(var i=0;i<hpems.length;i++){
+hpems[i].registerEventHandler(handleStatusEvent,systemStatusEvents);
+}
+}
+function handleStatusEvent(){
+var severityFilter=getSearchValue(location.search,'severity');
+top.mainPage.getHiddenFrame().loadSystemStatusDocument(true);
+loadAlertTable(severityFilter);
+}
+function loadAlertTable(severityFilter){
+try{
+var systemStatusDoc=top.mainPage.getHiddenFrame().getSystemStatusDocument(true);
+if(systemStatusDoc!=null){
+var processor=new XsltProcessor('../Templates/alertTable.xsl');
+processor.setSourceDocument(systemStatusDoc);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('firmwareMgmtSupported',(top.getTopology().getEnclosureCountByProperty("getFirmwareManagementSupported",true)>0)+"");
+processor.addParameter('sortCriteria',currentCriteria);
+processor.addParameter('filter',severityFilter);
+processor.addParameter('sortAscending',sortAsc);
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+top.mainPage.getHelpLauncher().setCurrentTopic("FORM_ENC_ALERT_TABLE");
+}else{
+displayContentFailed('bodyContent',['The status document was null.']);
+}
+}catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+}
+function sortAlerts(criteria){
+document.getElementById('bodyContent').innerHTML='';
+if(currentCriteria==criteria){
+sortAsc=!sortAsc;
+}else{
+sortAsc=true;
+}
+currentCriteria=criteria;
+loadAlertTable();
+}
+function deregisterEventHandlers(){
+for(var i=0;i<hpems.length;i++){
+hpems[i].removeRegisteredHandler(handleStatusEvent);
+}
+}
+    </script>
+    
+</head>
+<body onload="beginLoadTable();" onunload="deregisterEventHandlers();">
+    <div id="bodyContent"></div>
+</body>
+</html>

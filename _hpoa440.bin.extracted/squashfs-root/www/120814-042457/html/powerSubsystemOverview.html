@@ -1,0 +1,115 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css">
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css">
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css">
+<link rel="stylesheet" type="text/css" href="../css/widgets.css">
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/tabManager.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+
+<script type="text/javascript">
+var encNum='';
+var hpem=null;
+function initPage(){
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+try{
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+var powerEvents=[
+'EVENT_PS_STATUS',
+'EVENT_PS_INSERTED',
+'EVENT_PS_REMOVED',
+'EVENT_PS_INFO',
+'EVENT_PS_REDUNDANT',
+'EVENT_PS_SUBSYSTEM_STATUS',
+'EVENT_PS_OVERLOAD',
+'EVENT_AC_FAILURE',
+'EVENT_POWER_INFO'
+];
+hpem.registerEventHandler(handlePowerEvent,powerEvents);
+transformPage(false);
+try{
+top.mainPage.getHelpLauncher().setCurrentTopic('FORM_POWER_SUBSYSTEM_OVERVIEW');
+}catch(e){}
+}else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);
+}
+}catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+}
+function transformPage(fresh){
+var formMgr=new FormManager(function(success){
+if(success){
+var psInfoDom=hpem.getPsInfoDOM(true);
+var psStatusDom=hpem.getPsStatusDOM(true);
+var maxSupplies=hpem.getNumPowerSupplies();
+var totalActualOutput=0;
+var totalCapacity=0;
+for(var i=1;i<=maxSupplies;i++){
+var psInfo=hpem.getPsInfo(i);
+var presence=getElementValueXpath(psInfo,'//hpoa:presence');
+if(presence=='PRESENT'){
+var actual=parseInt(getElementValueXpath(psInfo,'//hpoa:actualOutput'));
+var capacity=parseInt(getElementValueXpath(psInfo,'//hpoa:capacity'));
+if(!isNaN(actual)){
+totalActualOutput+=actual;
+}
+if(!isNaN(capacity)){
+totalCapacity+=capacity;
+}
+}
+}
+var processor=new XsltProcessor('../Templates/powerSubsystemOverview.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('powerSupplyStatusDoc',psStatusDom);
+processor.addParameter('powerSupplyInfoDoc',psInfoDom);
+processor.addParameter('powerSubsystemInfoDoc',hpem.getPowerSubsystemInfo());
+processor.addParameter('powerConfigInfoDoc',hpem.getPowerConfigInfo());
+processor.addParameter('totalActualOutput',totalActualOutput);
+processor.addParameter('totalCapacity',totalCapacity);
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+reconcilePage();
+}
+else{
+displayContentFailed('bodyContent',[formMgr.getErrorsArray()]);
+}
+},false);
+formMgr.startBatch(true,fresh);
+if(fresh){
+formMgr.queueCall(hpem.getPowerSupplyInfoArray,[getXmlBayArray(getAllArray(1,hpem.getNumPowerSupplies()))]);
+formMgr.queueCall(hpem.getPowerSupplyStatusArray,[getXmlBayArray(getAllArray(1,hpem.getNumPowerSupplies()))]);
+}
+formMgr.queueCall(hpem.getPowerSubsystemInfo);
+formMgr.queueCall(hpem.getPowerConfigInfo);
+formMgr.endBatch();
+}
+function refreshSummary(){
+transformPage(true);
+}
+function selectDevice(number){
+top.mainPage.getHiddenFrame().selectDevice(number,POWER_SUPPLY(),encNum,true);
+}
+function handlePowerEvent(result){
+transformPage(false);
+}
+function deRegisterEventHandlers(){
+hpem.removeRegisteredHandler(handlePowerEvent);
+}
+	</script>
+</head>
+<body style="margin:10px;" onload="initPage();" onunload="deRegisterEventHandlers();">
+	<div id="bodyContent"></div>
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!--  (C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css"/>
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+<link rel="stylesheet" type="text/css" href="../css/calendar.css" />
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/tabManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/batchManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+<script type="text/javascript" src="../js/domBuilder.js"></script>
+<script type="text/javascript" src="../js/ipv4.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+<script type="text/javascript" src="../js/calendar_us.js"></script>
+<script type="text/javascript" src="../js/firmwareManagement.js"></script>
+
+<script type="text/javascript">
+var encNum;
+var hpem=null;
+var hpemHW={
+activeBoard:-1,
+standbyBoard:-1,
+standbyPresent:false,
+minSupported:2
+}
+function loadContent(){
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+updateHWdata();
+ourTabManager.toggleTabs('settingsTab');
+selectTab('settingsTab',true);
+hpem.registerEventHandler(firmwareLogCleared,['EVENT_FW_MGMT_LOG_CLEARED','EVENT_FW_MGMT_ALL_LOGS_CLEARED']);
+hpem.registerEventHandler(urlStatus,['EVENT_FW_MGMT_ISO_STATUS','EVENT_FW_MGMT_SETTINGS_CHANGED']);
+hpem.registerEventHandler(oaStatusChanged,['EVENT_OA_STATUS','EVENT_OA_INSERTED','EVENT_OA_REMOVED','EVENT_OA_UID']);
+}else{
+displayContentFailed('tabContent',[top.getString('noOnboardAdmin')]);
+}
+pageResize();
+}
+function clearAllLogs(){
+if(!confirm(top.getString('clearAllLogsConfirm'))){
+return;
+}
+var formMgr=new FormManager(function(success){
+},false,"","tabContent","waitContainer");
+formMgr.createWaitContainer(top.getString('clearAllLogsWait'));
+formMgr.startBatch();
+formMgr.queueCall(hpem.clearFirmwareManagementAllLogs);
+formMgr.endBatch();
+}
+function updateHWdata(){
+if(hpem){
+hpemHW.activeBoard=hpem.getProperty("ActiveBoardType");
+hpemHW.standbyBoard=hpem.getProperty("StandbyBoardType");
+hpemHW.standbyPresent=hpem.getProperty("HasStandby");
+}
+}
+function showTabs(show){
+var tabSet=document.getElementById("tabSet");
+if(tabSet){
+tabSet.style.display=(show?"block":"none");
+}
+}
+function updateDisplay(){
+if(hpemHW.activeBoard<hpemHW.minSupported){
+showTabs(false);
+}else if(getCurrentTab()=="settingsTab"){
+var stdbyMsgDiv=document.getElementById("standbyWarningMessage");
+if(stdbyMsgDiv){
+stdbyMsgDiv.style.display=(hpemHW.standbyPresent&&(hpemHW.standbyBoard<hpemHW.minSupported)?"block":"none");
+}
+}
+}
+function getCurrentTab(){
+return ourTabManager.getCurrentTab();
+}
+function selectTab(tabId,init){
+ourTabManager.toggleTabs(tabId);
+setTabContent(tabId,init);
+}
+function setTabContent(tabId,init){
+var contentTab=document.getElementById(tabId);
+var contentLocation=contentTab.getAttribute('contentLocation');
+var contextHelpId=contentTab.getAttribute('contextId');
+if(tabId!='firmwareLogTab'){
+var formMgr=new FormManager(function(success){
+var processor=new XsltProcessor(contentLocation);
+if(tabId=='settingsTab'){
+var activeSupported=(hpemHW.activeBoard>=hpemHW.minSupported);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('enclosureType',hpem.getEnclosureType());
+processor.addParameter('isTower',hpem.getIsTower()+"");
+processor.addParameter('numDeviceBays',hpem.getNumBlades());
+processor.addParameter('numIoBays',hpem.getNumTrays());
+processor.addParameter('encNum',encNum);
+processor.addParameter('fwManagementSettings',hpem.getFirmwareManagementSettings());
+processor.addParameter('virtualMediaUrlListDoc',hpem.getVirtualMediaUrlList('VM_DEV_CDROM'));
+processor.addParameter("activeSupported",""+activeSupported);
+document.getElementById('tabContent').innerHTML=processor.getOutput();
+reconcilePage();
+if(activeSupported){
+var enabled=getInputValue("fwManagementEnabled");
+toggleFormEnabled('fwmgmtSettingsForm',enabled);
+new tcal({
+'formname':'scheduleForm',
+'controlname':'scheduleDate'
+});
+}
+updateDisplay();
+}else{
+var action=(tabId=='manualDiscoveryTab')?'discovery':'update';
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('enclosureType',hpem.getEnclosureType());
+processor.addParameter('isTower',hpem.getIsTower()+"");
+processor.addParameter('numDeviceBays',hpem.getNumBlades());
+processor.addParameter('numIoBays',hpem.getNumTrays());
+processor.addParameter('action',action);
+processor.addParameter('encNum',encNum);
+processor.addParameter('fwManagementSettings',hpem.getFirmwareManagementSettings());
+processor.addParameter('serviceUserAcl',hpem.getUserAccessLevel());
+processor.addParameter('bladeInfoDoc',hpem.getBladeInfoDOM());
+document.getElementById('tabContent').innerHTML=processor.getOutput();
+}
+reconcilePage();
+top.mainPage.getHelpLauncher().setCurrentTopic(contextHelpId);
+},false,null,'tabContent',null);
+if(init){
+formMgr.createWaitContainer(top.getString('loading...'),top.getString('loadingFirmwareManagement'));
+formMgr.startBatch(false,init);
+}else{
+formMgr.startBatch(true);
+}
+formMgr.queueCall(hpem.getFirmwareManagementSettings);
+if(tabId=='settingsTab'){
+formMgr.queueCall(hpem.getVirtualMediaUrlList,['VM_DEV_CDROM']);
+}
+formMgr.endBatch();
+}else{
+var acl=hpem.getUserAccessLevel();
+var processor=new XsltProcessor('../Forms/SysLogPage.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('serviceUserAcl',acl);
+processor.addParameter('logTitle',top.getString('fwMgmtLog'));
+processor.addParameter('logType','FIRMWARE_MGMT');
+processor.addParameter('clearAllSupported',""+(hpem.getActiveFirmwareVersion()>=4.30));
+document.getElementById('tabContent').innerHTML=processor.getOutput();
+var syslogText=document.getElementById('sysLogText');
+if(syslogText){
+syslogText.innerHTML=top.getString('loading...');
+}
+hpem.getFirmwareManagementLog(sysLogLoaded);
+top.mainPage.getHelpLauncher().setCurrentTopic(contextHelpId);
+}
+reconcilePage();
+}
+function sysLogLoaded(result){
+var logText='';
+if(result.xml.indexOf(SOAP_FAULT_TEST())==-1&&!(result.xml.indexOf('<hpoa:logContents/>')>-1)){
+logText=getElementValueFromString(result.xml,'hpoa:logContents');
+}else if(result.xml.indexOf(SOAP_FAULT_TEST())>-1){
+logText='The firmware management log does not exist.';
+}
+if(document.getElementById('sysLogText')){
+document.getElementById('sysLogText').value=logText;
+}
+}
+function pageResize(){
+var settingsContainer=document.getElementById('settingsContainer');
+if(!settingsContainer){
+return;
+}
+settingsContainer.style.width=document.body.offsetWidth;
+}
+function deRegisterEventHandlers(){
+if(hpem){
+try{
+hpem.removeRegisteredHandler(firmwareLogCleared);
+hpem.removeRegisteredHandler(oaStatusChanged);
+hpem.removeRegisteredHandler(urlStatus);
+}catch(e){}
+}
+}
+function setFirmwareManagementSettings(){
+var displayMgr=new DisplayManager(null,null,'generalErrorDisplay');
+var isoUrl='';
+var srcSelect_Local=document.getElementById('srcSelect_Local');
+var baySelection=getBaySelectionDOM();
+var enabled=document.getElementById('fwManagementEnabled').checked;
+var forceOption=document.getElementById('chkForceOption').checked;
+var policy=0;
+if(enabled){
+if(srcSelect_Local&&srcSelect_Local.checked){
+var isoUrlLocal=document.getElementById('isoUrlLocal');
+isoUrl=isoUrlLocal.options[isoUrlLocal.selectedIndex].value;
+if(isoUrl=='-'){
+displayMgr.showErrors(top.getString('validLocalMedia'));
+return;
+}
+}else{
+isoUrl=document.getElementById('isoUrl').value;
+}
+}
+if(document.getElementById('policy1').checked){
+policy=1;
+}else if(document.getElementById('policy2').checked){
+policy=2;
+}
+var powerPolicy=0;
+if(document.getElementById('powerPolicy1').checked){
+powerPolicy=1;
+}else if(document.getElementById('powerPolicy2').checked){
+powerPolicy=2;
+}
+var scheduleDate=document.getElementById('scheduleDate').value;
+var scheduleTime=document.getElementById('scheduleTime').value;
+if(scheduleDate!=''&&scheduleDate.match(REGEX_DATE())==null){
+displayMgr.showErrors(top.getString('invalidDateMessage'));
+return;
+}
+if(scheduleTime!=''&&scheduleTime.match(REGEX_TIME())==null){
+displayMgr.showErrors(top.getString('invalidTimeMessage'));
+return;
+}
+if(enabled){
+if(policy==2||(scheduleDate!=''&&scheduleTime!='')){
+if(!confirm(top.getString('warningUpdateConfirm')+'\n\n'+top.getString('efmSupportNotice')+'\n\n'+top.getString('clickOkToContinue'))){
+return;
+}
+}
+}
+var batchMgr=new BatchManager(function(success){
+if(enabled&&success){
+top.mainPage.displayNotice(top.getString("isoSetTo:")+isoUrl+".\n\n<b>"+top.getString("note:")+"</b><i> "+top.getString("isoMountDelayNote")+"</i>\n\n",top.getString("firmwareManagement"),AlertMsgTypes.Information,500,15);
+}
+},false,'generalErrorDisplay','tabContent');
+batchMgr.createWaitContainer(top.getString('applyingFwSettings'));
+var batch=batchMgr.addBatch('Set Firmware Management Settings');
+var trans1;
+if(enabled){
+trans1=batch.addTransaction(top.getString('firmwareMgmtSettings'),new FormManager());
+trans1.formMgr.queueCall(hpem.setFirmwareManagementIsoUrl,[isoUrl],['lblFirmwareIso']);
+trans1.formMgr.queueCall(hpem.setFirmwareManagementEnabled,[enabled],[],['286','287']);
+trans1.formMgr.queueCall(hpem.setFirmwareManagementForceDowngrade,[forceOption]);
+trans1.formMgr.queueCall(hpem.setFirmwareManagementPolicy,[policy],['lblPolicy0','lblPolicy1','lblPolicy2']);
+trans1.formMgr.queueCall(hpem.setFirmwareManagementPowerPolicy,[powerPolicy],['lblPowerPolicy0','lblPowerPolicy1','lblPowerPolicy2']);
+trans1.formMgr.queueCall(hpem.setFirmwareManagementSchedule,[scheduleDate,scheduleTime],['lblScheduleDate','lblScheduleTime']);
+trans1.formMgr.queueCall(hpem.setFirmwareManagementBays,[baySelection]);
+}else{
+trans1=batch.addTransaction(top.getString('enablefirmwareMgmt'),new FormManager());
+trans1.formMgr.queueCall(hpem.setFirmwareManagementEnabled,[enabled],[],['286','287']);
+}
+batchMgr.runBatches();
+}
+function toggleUrlForm(radioId){
+if(radioId=='srcSelect_URL'){
+toggleFormEnabled('frmIsoUrl',true);
+toggleFormEnabled('frmIsoLocal',false);
+}else{
+toggleFormEnabled('frmIsoUrl',false);
+toggleFormEnabled('frmIsoLocal',true);
+}
+}
+function clearFirmwareMgmtLog(){
+if(confirm(top.getString('clearLogConfirm'))){
+hpem.clearFirmwareManagementLog(function(result){});
+}
+}
+function refreshPage(){
+setTabContent(getCurrentTab(),true);
+}
+function firmwareLogCleared(result){
+if(getCurrentTab()=='firmwareLogTab'){
+setTabContent(getCurrentTab(),false);
+}
+}
+function urlStatus(result){
+if(getCurrentTab()=='settingsTab'){
+var contentTab=document.getElementById("settingsTab");
+var contentLocation=contentTab.getAttribute('contentLocation');
+var processor=new XsltProcessor(contentLocation);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('fwManagementSettings',result);
+processor.addParameter('templatePart','DVD_INFO');
+if(document.getElementById('dvdInfo')!=null){
+document.getElementById('dvdInfo').innerHTML=processor.getOutput();
+}
+processor.addParameter('templatePart','URL_STATUS');
+if(document.getElementById('urlStatus')!=null){
+document.getElementById('urlStatus').innerHTML=processor.getOutput();
+}
+}
+}
+function oaStatusChanged(result){
+var oaRole=getElementValueXpath(result,"//hpoa:oaStatus/hpoa:oaRole");
+updateHWdata();
+if(hpemHW.activeBoard>=hpemHW.minSupported){
+if(oaRole==STANDBY()){
+updateDisplay();
+}
+}
+}
+</script>
+</head>
+<body style="margin:10px;" onload="loadContent();" onunload="deRegisterEventHandlers();" onresize="pageResize();">
+    <div id="bodyContent">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td valign="bottom">
+              <div class="tabSet" id="tabSet" style="display:block;">
+                <div class="tabOff" tabid="settingsTab" contextId="FORM_ENC_FW_MANAGEMENT" id="settingsTab" contentLocation="../Forms/FirmwareManagement.xsl"><script type="text/javascript">document.write(top.getString('settings'));</script></div>
+                <div class="tabOff" tabid="manualDiscoveryTab" contextId="FORM_ENC_FW_MANUAL_DISCOVERY" id="manualDiscoveryTab" contentLocation="../Forms/FirmwareManagementManual.xsl"><script type="text/javascript">document.write(top.getString('manualDiscovery'));</script></div>
+                <div class="tabOff" tabid="manualUpdateTab" contextId="FORM_ENC_FW_MANUAL_UPDATE" id="manualUpdateTab" contentLocation="../Forms/FirmwareManagementManual.xsl"><script type="text/javascript">document.write(top.getString('manualUpdate'));</script></div>
+                <div class="tabOff" tabid="firmwareLogTab" contextId="FORM_ENC_FW_LOG" id="firmwareLogTab" contentLocation="../Forms/SysLogPage.xsl"><script type="text/javascript">document.write(top.getString('fwMgmtLog'));</script></div>
+                <div class="tabBottomLine"></div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-top:10px;">
+              <div id="tabContent"></div>
+              <div id="waitContainer"></div>
+            </td>
+          </tr>
+        </table> 
+
+        <script type="text/javascript">
+if(typeof(TabManager)!="undefined"){
+ourTabManager.init();
+}
+        </script>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,51 @@
+#!/bin/sh
+#
+# Thomas W. Palmer - 2011/04/26
+#
+# Small script to pull a self-signed certificate off of a web server. 
+#
+
+OPENSSL=/usr/sbin/openssl
+ECHO=/bin/echo
+
+CRT=/ramdisk/irsCert.pem
+ERR=/ramdisk/irs-$1.err
+
+rm -f $ERR $CRT >/dev/null 2>&1
+
+#Friendly error message
+if [ ! -x $OPENSSL ]; then
+	echo "Unable to find openssl" > $ERR
+	exit 1
+fi
+
+#Avoid using ssl2 to not infringe on FIPS mode
+$ECHO "GET /favicon.ico" | $OPENSSL s_client -connect $1:$2 -no_ssl2 2> $ERR | $OPENSSL x509 -out $CRT 
+
+#check file presence
+if [ ! -f $CRT ] ; then
+	exit 1
+fi
+
+#check for valid x509 by looking for a fingerprint
+if [ "`$OPENSSL x509 -in $CRT -noout -fingerprint 2>/dev/null`" = "" ]; then
+	rm -f $CRT
+	exit 1
+fi
+
+#Certificate should state that it can serve up SSL
+if [ "`$OPENSSL x509 -in $CRT -noout -purpose | grep 'SSL server :' | grep -c -i yes`" -eq "0" ]; then
+	echo "Host $1:$2 does not have a SSL server certificate" > $ERR
+	rm -f $CRT
+	exit 1
+fi
+
+#IRS depends on this being a self-signed certificate
+if [ "`$OPENSSL x509 -in $CRT -noout -purpose | grep 'SSL server CA :' | grep -c -i yes`" -eq "0" ]; then
+	echo "Host $1:$2 does not have a self-signed certificate" > $ERR
+	rm -f $CRT
+	exit 1
+fi
+
+rm -f $ERR
+exit 0

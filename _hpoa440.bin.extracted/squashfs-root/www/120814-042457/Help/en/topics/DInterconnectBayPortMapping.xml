@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DInterconnectBayPortMapping" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Interconnect Bay Port Mapping</title>
+  <source>/120814-042457/Help/en/topics/DInterconnectBayPortMapping.xml</source>
+  <keywords>port mapping interconnect bay</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">This screen provides a graphical view and a table view of the interconnect bay port mapping.</p>
+        <p class="bodytext">
+          <b>Graphical view</b>
+        </p>
+        <p class="bodytext">The graphical view provides the same information, when you mouse over the port on the interconnect, that is displayed in the table view.</p>
+        <p class="bodytext">
+          <b>Table view</b>
+        </p>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Column
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Interconnect Bay Port
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The number of the interconnect bay port in order from 1 to 16
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Port Status
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Current status of the port
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Device Bay
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The device bay corresponding with the interconnect port mapping
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Server Mezzanine Slot
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The type of device placed into the mezzanine of the server blade
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Server Mezzanine Port
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The physical port of the mezzanine device
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Device ID
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The MAC address of the interconnect bay port
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="bodytext">Related topics</p>
+        <p class="bodytext">
+          <a href="DDeviceBayPortMappingforc3000enclosure.xml">Device Bay Port Mapping for c3000 Enclosure</a>
+        </p>
+        <p class="bodytext">
+          <a href="DServerBayPortMapping.xml">Device Bay Port Mapping for c7000 Enclosure</a>
+        </p>
+        <p class="bodytext">
+          <a href="DDeviceBayPortMappingGraphicalViewforc3000enclosure.xml">Device Bay Port Mapping Graphical View for c3000 Enclosure</a>
+        </p>
+        <p class="bodytext">
+          <a href="DServerBayPortMappingGraphicalView.xml">Device Bay Port Mapping Graphical View for c7000 Enclosure</a>
+        </p>
+        <p class="bodytext">
+          <a href="DServerBayPortMappingTableView.xml">Device Bay Port Mapping Table View</a>
+        </p>
+      </content>
+    </section>
+  </sections>
+</topic>

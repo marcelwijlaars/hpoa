@@ -1,0 +1,558 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css"/>
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+<link rel="stylesheet" type="text/css" href="../Help/stylesheets/help.css" />
+<style type="text/css">
+  div.bodyDiv {
+     margin-right:10px;
+     width:98%;
+  }
+  * html div.bodyDiv {
+    margin-right:0px;
+    width:99%;
+  }
+</style>
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/tableManager.js"></script>
+<script type="text/javascript" src="../js/dropdownMenuManager.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+<script type="text/javascript" src="../js/iLO.js"></script>
+<script type="text/javascript" src="/120814-042457/js/helpTips.js"></script>
+
+<script type="text/javascript">
+var me=this;
+var encNum;
+var hpem=null;
+var fwVersion;
+var uidSelection=new Array();
+var powerSelection=new Array();
+function updateMenuStatus(){
+var menusEnabled=false;
+var inputs=document.getElementsByTagName("INPUT");
+for(var i=0;i<inputs.length;i++){
+if(inputs[i].getAttribute("affectsMenus")=='true'&&inputs[i].checked){
+menusEnabled=true;
+break;
+}
+}
+ourDropdownMenuManager.setLocalMenuEnabled(menusEnabled);
+}
+function loadContent(){
+try{
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+fwVersion=hpem.getActiveFirmwareVersion();
+var formMgr=new FormManager(function(success){
+loadSummaryTable();
+});
+formMgr.startBatch(true);
+formMgr.queueCall(hpem.getVirtualMediaUrlList,['VM_DEV_CDROM']);
+formMgr.queueCall(hpem.getOaMediaDeviceArray,[hpem.getOaBayNumber('ACTIVE')]);
+formMgr.endBatch();
+hpem.registerEventHandler(loadSummaryTable,['EVENT_BLADE_INFO']);
+hpem.registerEventHandler(bladeUidChanged,['EVENT_BLADE_UID']);
+hpem.registerEventHandler(bladeStatusChanged,['EVENT_BLADE_STATUS','EVENT_BLADE_INSERT_COMPLETED','EVENT_BLADE_GRP_CAP_TIMEOUT']);
+hpem.registerEventHandler(powerStateChanged,['EVENT_BLADE_POWER_STATE']);
+hpem.registerEventHandler(mpInfoChanged,['EVENT_BLADE_MP_INFO','EVENT_ILO_HAS_IPADDRESS','EVENT_BLADE_FQDN_INFO_REFRESH']);
+hpem.registerEventHandler(mediaStatusChanged,['EVENT_VIRTUAL_MEDIA_STATUS','EVENT_MEDIA_DRIVE_INSERTED','EVENT_MEDIA_DRIVE_REMOVED']);
+top.mainPage.getHelpLauncher().setCurrentTopic("FORM_SVB_SUMMARY");
+}else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);
+}
+}catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+}
+function mediaStatusChanged(result,callerBay){
+var bayNumber=getElementValueXpath(result,'//hpoa:virtualMediaStatus/hpoa:bayNumber');
+if(bayNumber==0&&typeof(callerBay)!='undefined'&&!isNaN(callerBay)&&callerBay!=""){
+bayNumber=callerBay;
+}
+var devUrlContainer=document.getElementById('bay'+bayNumber+'DevUrl');
+if(devUrlContainer){
+var devUrl=getElementValueXpath(result,'//hpoa:virtualMediaStatus/hpoa:cdromUrl');
+if(devUrl=='http://169.254.0.1/cgi-bin/cdrom.iso'){
+devUrl='Enclosure DVD';
+}
+else if(devUrl=='http://169.254.0.2/fcgi-bin/dvd.iso'){
+devUrl='Enclosure DVD';
+}
+devUrlContainer.innerHTML=devUrl;
+}
+var statusContainer=document.getElementById('bay'+bayNumber+'VmStatus');
+if(statusContainer){
+var cdRomStatus=getElementValueXpath(result,'//hpoa:virtualMediaStatus/hpoa:cdromStatus');
+var support=getElementValueXpath(result,'//hpoa:virtualMediaStatus/hpoa:support');
+if(support=='VM_FIRMWARE_UPDATE_NEEDED'){
+cdRomStatus=top.getString('incompatibleFirmware');
+}
+else if(support=='VM_NOT_SUPPORTED'){
+cdRomStatus=top.getString('notSupported');
+}
+else if(support=='VM_DEV_ABSENT'){
+cdRomStatus=top.getString('deviceAbsent');
+}
+else if(support=='VM_BAY_SUBSUMED'){
+cdRomStatus=top.getString('baySubsumed');
+}
+else if(support=='VM_SUPPORT_UNKNOWN'){
+cdRomStatus=top.getString('statusUnknown');
+}
+else if(support=='VM_ADVANCED_LICENSE_REQUIRED'){
+cdRomStatus=top.getString('iLoAdvancedLiceseRequired');
+}
+else{
+switch(cdRomStatus){
+case 'VM_DEV_STATUS_DISCONNECTED':
+cdRomStatus=top.getString('disconnected');
+break;
+case 'VM_DEV_STATUS_CONNECTED':
+cdRomStatus=top.getString('connected');
+break;
+case 'VM_DEV_STATUS_DISCONNECTING':
+cdRomStatus=top.getString('disconnecting');
+break;
+case 'VM_DEV_STATUS_CONNECTING':
+cdRomStatus=top.getString('connecting');
+break;
+default:
+cdRomStatus=top.getString('statusUnknown');
+break;
+}
+}
+statusContainer.innerHTML=cdRomStatus;
+}
+}
+function bladeUidChanged(result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var uidState=getElementValueXpath(result,'//hpoa:uid');
+var uidContainer=document.getElementById('bay'+bayNumber+'uid');
+if(uidContainer){
+var processor=new XsltProcessor('../Templates/uidExternal.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('uidState',uidState);
+uidContainer.innerHTML=processor.getOutput();
+if(uidSelection[bayNumber]&&uidSelection[bayNumber]==true){
+unCheckBayCheckbox(bayNumber);
+uidSelection[bayNumber]=false;
+}
+var bayCheckbox=document.getElementById('chk'+bayNumber);
+if(bayCheckbox){
+bayCheckbox.setAttribute('uidState',uidState);
+}
+}
+}
+function bladeStatusChanged(result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var bayStatus=getElementValueXpath(result,'//hpoa:operationalStatus');
+var statusContainer=document.getElementById('bay'+bayNumber+'status');
+if(statusContainer){
+var processor=new XsltProcessor('../Templates/statusIconExternal.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('statusCode',bayStatus);
+processor.addParameter('showLabel','true');
+statusContainer.innerHTML=processor.getOutput();
+}
+}
+function powerStateChanged(result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var powerState=getElementValueXpath(result,'//hpoa:powered');
+var powerContainer=document.getElementById('bay'+bayNumber+'powerState');
+if(powerContainer){
+if(powerState=='POWER_OFF'){
+powerContainer.innerHTML=top.getString('off');
+}
+else if(powerState=='POWER_ON'){
+powerContainer.innerHTML=top.getString('on');
+}
+else{
+powerContainer.innerHTML=top.getString('statusUnknown');
+}
+}
+if(powerSelection[bayNumber]&&powerSelection[bayNumber]==true){
+unCheckBayCheckbox(bayNumber);
+powerSelection[bayNumber]=false;
+}
+}
+function mpInfoChanged(result,callerBay){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+if(bayNumber==0&&typeof(callerBay)!='undefined'&&!isNaN(callerBay)&&callerBay!=""){
+bayNumber=callerBay;
+}
+var iLoLinkContainer=document.getElementById('bay'+bayNumber+'iLO-Ip');
+var iLoNameContainer=document.getElementById('bay'+bayNumber+'iLO-Name');
+if(iLoLinkContainer){
+var ipAddress=getElementValueXpath(result,'//hpoa:ipAddress');
+var webUrl=getElementValueXpath(result,'//hpoa:webUrl');
+var loginUrl=getElementValueXpath(result,'//hpoa:loginUrl');
+var bladeInfo=hpem.getBladeInfo(bayNumber);
+var bladeType=getElementValueXpath(bladeInfo,'//hpoa:bladeType');
+var productId=getElementValueXpath(bladeInfo,'//hpoa:bladeInfo/hpoa:productId');
+var processor=new XsltProcessor('../Templates/baySummaryILOLink.xsl');
+processor.addParameter('ipAddress',ipAddress);
+processor.addParameter('webUrl',webUrl);
+processor.addParameter('loginUrl',loginUrl);
+processor.addParameter('bayNumber',bayNumber);
+processor.addParameter('bladeType',bladeType);
+processor.addParameter('mpInfoDoc',hpem.getBladeMpInfoDOM(true));
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('currentBayNumber',bayNumber);
+processor.addParameter('productId',productId);
+iLoLinkContainer.innerHTML=processor.getOutput();
+}
+if(iLoNameContainer){
+var iLoName=getElementValueXpath(result,'//hpoa:dnsName');
+if(iLoName==''){
+iLoNameContainer.innerHTML=top.getString('statusUnknown');
+}
+else{
+iLoNameContainer.innerHTML=iLoName;
+}
+}
+}
+function unCheckBayCheckbox(bayNumber){
+var bladeSelect=document.getElementById('chk'+bayNumber);
+var masterSelect=document.getElementById('summaryMaster');
+if(bladeSelect){
+bladeSelect.checked=false;
+try{
+var tr=bladeSelect.parentNode.parentNode;
+var originalClass=tr.getAttribute('originalClass');
+if(originalClass=='altRowColor'){
+tr.className='altRowColor';
+}
+else{
+tr.className='';
+}
+}
+catch(e){
+alert(e.message);
+}
+}
+if(masterSelect){
+masterSelect.checked=false;
+}
+}
+function loadSummaryTable(fresh){
+try{
+var processor=new XsltProcessor('../Templates/baySummary.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('encNum',encNum);
+processor.addParameter('fwVersion',fwVersion);
+processor.addParameter('bladeStatusDoc',hpem.getBladeStatusDOM());
+processor.addParameter('bladeInfoDoc',hpem.getBladeInfoDOM());
+processor.addParameter('enclosureInfoDoc',hpem.getEnclosureInfo());
+processor.addParameter('mpInfoDoc',hpem.getBladeMpInfoDOM(true));
+processor.addParameter('serviceUserAcl',hpem.getUserAccessLevel());
+processor.addParameter('numDeviceBays',hpem.getNumBlades());
+processor.addParameter('virtualMediaStatusDoc',hpem.getVirtualMediaStatusDOM(true));
+processor.addParameter('virtualMediaUrlListDoc',hpem.getVirtualMediaUrlList('VM_DEV_CDROM'));
+processor.addParameter('oaMediaDeviceList',hpem.getOaMediaDeviceDOM());
+processor.addParameter("firmwareMgmtSupported",hpem.getFirmwareManagementSupported()+"");
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+}catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+reconcilePage();
+var bladeMpInfoNeeded=document.getElementsByName("bladeMpInfoNeeded");
+var vmStatusNeeded=document.getElementsByName("vmStatusNeeded");
+var formMgr=new FormManager();
+formMgr.startTransactionBatch(true,true);
+for(var i=0;i<bladeMpInfoNeeded.length;i++){
+var args=bladeMpInfoNeeded[i].value.split(':');
+formMgr.queueCall(hpem.getBladeMpInfo,[args[1]],null,null,
+new Function("result","mpInfoChanged(result,'"+args[1]+"');"),
+new Function("blinkElements('"+args[0]+"iloIpLoadingText"+args[1]+"', '"+args[0]+"iloNameLoadingText"+args[1]+"');"));
+}
+for(var j=0;j<vmStatusNeeded.length;j++){
+var args=vmStatusNeeded[j].value.split(':');
+formMgr.queueCall(hpem.getVirtualMediaStatus,[args[1],'VM_DEV_CDROM'],null,null,
+new Function("result","mediaStatusChanged(result,'"+args[1]+"');"),
+new Function("blinkElements('"+args[0]+"vmLoadingText"+args[1]+"');"));
+}
+formMgr.endBatch();
+}
+function blinkElements(){
+for(var i=0;i<arguments.length;i++){
+var elem=document.getElementById(arguments[i]);
+if(elem){
+elem.style.visibility=(elem.style.visibility=="visible"?"hidden":"visible");
+window.setTimeout(function(){blinkElements(elem.id);},500);
+}
+}
+}
+function selectDevice(number){
+top.mainPage.getHiddenFrame().selectDevice(number,BAY(),encNum,true);
+}
+function getSelectedDevices(){
+var summaryTable=document.getElementById('summaryTable');
+var inputCollection=summaryTable.getElementsByTagName('input');
+var baySelection=new Array();
+for(var i=0;i<inputCollection.length;i++){
+if(inputCollection[i].getAttribute('type')=='checkbox'){
+var bayNumber=inputCollection[i].getAttribute('bayNumber');
+var baySelectObject=new Object();
+if(bayNumber){
+bayNumber=parseInt(bayNumber);
+baySelectObject.selected=inputCollection[i].checked;
+baySelectObject.bladeType=inputCollection[i].getAttribute('bladeType');
+baySelectObject.productId=inputCollection[i].getAttribute('productId');
+baySelectObject.uidState=inputCollection[i].getAttribute('uidState');
+baySelectObject.checkboxRef=inputCollection[i];
+baySelection[bayNumber]=baySelectObject;
+}
+else{
+}
+}
+}
+return baySelection;
+}
+function toggleBladeUids(uidState){
+clearAllErrorMessages();
+var baySelection=getSelectedDevices();
+for(var i=0;i<baySelection.length;i++){
+if(typeof(baySelection[i])!='undefined'&&baySelection[i]){
+if(baySelection[i].selected&&baySelection[i].uidState!='UID_BLINK'){
+hpem.setBladeUid(i,uidState,function(){});
+uidSelection[i]=true;
+}
+else if(baySelection[i].uidState=='UID_BLINK'){
+unCheckBayCheckbox(i);
+}
+}
+}
+}
+function setBladesPower(powerControl){
+var confirmString=top.getString('virButtonallSelSrvDesc')+'\n';
+confirmString+=top.getString('virButtonallSelSrvNote');
+if(confirm(confirmString)){
+clearAllErrorMessages();
+var baySelection=getSelectedDevices();
+for(var i=0;i<baySelection.length;i++){
+if(typeof(baySelection[i])!='undefined'&&baySelection[i]){
+if(baySelection[i].selected&&baySelection[i].bladeType=='BLADE_TYPE_SERVER'){
+hpem.setBladePower(i,powerControl,function(){});
+powerSelection[i]=true;
+}
+else{
+if(baySelection[i].checkboxRef){
+baySelection[i].checkboxRef.checked=false;
+}
+}
+}
+}
+}
+}
+function isBootAgent(bootOption){
+if(bootOption=='NORMAL_BOOT_OS'||bootOption=='SYS_PART'||bootOption=='QUICK_DIAGS'||bootOption=='RBSU'||bootOption=='PXE'){
+return true;
+}
+else{
+return false;
+}
+}
+function setBladeFirstTimeBoot(bootDevice){
+var confirmString=top.getString('nextOnetimeBootAllSelSrvDesc')+'\n';
+confirmString+=top.getString('nextOnetimeBootAllSelSrvNote');
+if(confirm(confirmString)){
+var bootDeviceNoChange='ONE_TIME_BOOT_NO_CHANGE';
+var bootAgentNoChange='NORMAL_BOOT_OS';
+var bootAgent='';
+if(isBootAgent(bootDevice)){
+bootAgent=bootDevice;
+bootDevice=bootDeviceNoChange;
+}
+else{
+bootAgent=bootAgentNoChange;
+}
+if(bootDevice!=''){
+var baySelection=getSelectedDevices();
+var formMgr=new FormManager(function(success){
+var baySelection=getSelectedDevices();
+var masterSelect=document.getElementById('summaryMaster');
+if(masterSelect){masterSelect.checked=false;}
+for(var i=0;i<baySelection.length;i++){
+if(typeof(baySelection[i])!='undefined'&&baySelection[i]
+&&baySelection[i].selected&&baySelection[i].checkboxRef){
+baySelection[i].checkboxRef.checked=false;
+}
+}
+},false,'summaryErrorDisplay','bodyContent','waitContainer');
+formMgr.createWaitContainer(top.getString('completingFirstTimeBootSettings'));
+clearAllErrorMessages();
+formMgr.startBatch();
+for(var i=0;i<baySelection.length;i++){
+if(typeof(baySelection[i])!='undefined'&&baySelection[i]){
+if(baySelection[i].selected&&baySelection[i].bladeType=='BLADE_TYPE_SERVER'
+&&baySelection[i].productId=="8224"){
+formMgr.setCurrentEnclosureName(top.getString("bay")+" "+i);
+if(fwVersion>=4.30){
+formMgr.queueCall(hpem.setBladeOneTimeBootEx,[i,bootDevice,bootAgent,true,false]);
+}else{
+formMgr.queueCall(hpem.setBladeOneTimeBoot,[i,bootDevice,bootAgent,true]);
+}
+unCheckBayCheckbox(i);
+}
+else if(baySelection[i].checkboxRef){
+baySelection[i].checkboxRef.checked=false;
+}
+}
+}
+formMgr.endBatch();
+}
+else{
+var alertString=top.getString('chooseBootOption');
+alert(alertString);
+}
+}
+}
+function deRegisterEvents(){
+if(hpem!=null){
+hpem.removeRegisteredHandler(loadSummaryTable);
+hpem.removeRegisteredHandler(bladeUidChanged);
+hpem.removeRegisteredHandler(bladeStatusChanged);
+hpem.removeRegisteredHandler(powerStateChanged);
+hpem.removeRegisteredHandler(mpInfoChanged);
+}
+}
+function refreshSummary(){
+var formMgr=new FormManager(function(success){
+try{
+loadSummaryTable(true);
+}
+catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+});
+formMgr.startBatch(true,true);
+formMgr.queueCall(hpem.getBladeMpInfoAll);
+formMgr.queueCall(hpem.getBladeInfoArray,[getXmlBayArray(getAllArray(1,EM_MAX_BLADE_ARRAY()))]);
+formMgr.queueCall(hpem.getBladeStatusArray,[getXmlBayArray(getAllArray(1,EM_MAX_BLADE_ARRAY()))]);
+if(fwVersion>="2.00"){
+formMgr.queueCall(hpem.getVirtualMediaStatusAll,['VM_DEV_CDROM']);
+formMgr.queueCall(hpem.getVirtualMediaUrlList,['VM_DEV_CDROM']);
+}
+formMgr.endBatch();
+}
+function connectServers(vmUrl){
+var confirmString=top.getString('bayConfirm1');
+confirmString+=top.getString('bayConfirm2');
+if(vmUrl==' '){
+if(!confirm(confirmString)){
+return;
+}
+}
+var baySelection=getSelectedDevices();
+var formMgr=new FormManager(function(success){
+if(success){
+for(var i=1;i<=baySelection.length;i++){
+if(typeof(baySelection[i])!='undefined'&&baySelection[i]){
+if(baySelection[i].selected){
+unCheckBayCheckbox(i);
+}
+}
+}
+}
+},false,'summaryErrorDisplay');
+formMgr.createWaitContainer(top.getString('bayConnectingVirtualMedia'));
+clearAllErrorMessages();
+formMgr.startBatch();
+for(var i=1;i<=baySelection.length;i++){
+if(typeof(baySelection[i])!='undefined'&&baySelection[i]){
+if(baySelection[i].selected){
+formMgr.setCurrentEnclosureName(top.getString("bay")+" "+i);
+formMgr.queueCall(hpem.insertVirtualMedia,[i,'VM_DEV_CDROM',vmUrl]);;
+}
+}
+}
+formMgr.endBatch();
+}
+function doFirmwareManagement(action){
+var deviceList=getSelectedDevices();
+var xml=top.getXml();
+var baySelection=xml.parseXML('<hpoa:baySelection xmlns:hpoa="hpoa.xsd" />');
+var bladeBaysElement=baySelection.createElement('hpoa:bladeBays');
+for(var i=0;i<deviceList.length;i++){
+if(deviceList[i]&&deviceList[i].selected){
+var bladeDoc=xml.parseXML('<hpoa:blade xmlns:hpoa="hpoa.xsd" />');
+var bayNumElement=bladeDoc.createElement('hpoa:bayNumber');
+var bayNumValue=bladeDoc.createTextNode(''+i);
+bayNumElement.appendChild(bayNumValue);
+var bayAccessElement=bladeDoc.createElement('hpoa:access');
+var bayAccessValue=bladeDoc.createTextNode(''+deviceList[i].selected);
+bayAccessElement.appendChild(bayAccessValue);
+bladeDoc.documentElement.appendChild(bayNumElement);
+bladeDoc.documentElement.appendChild(bayAccessElement);
+bladeBaysElement.appendChild(bladeDoc.documentElement.cloneNode(true));
+}
+}
+baySelection.documentElement.appendChild(bladeBaysElement);
+var swmBaysElement=baySelection.createElement('hpoa:interconnectTrayBays');
+baySelection.documentElement.appendChild(swmBaysElement);
+baySelection=baySelection.documentElement.cloneNode(true);
+var formMgr=new FormManager(function(success){
+if(success){
+for(var i=1;i<=deviceList.length;i++){
+if(typeof(deviceList[i])!='undefined'&&deviceList[i]){
+if(deviceList[i].selected){
+unCheckBayCheckbox(i);
+}
+}
+}
+var processor=new XsltProcessor('../Templates/firmwareMgmtErrors.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('errorsDoc',formMgr.getDataByCallIndex(0));
+if(isValidString(processor.getOutput())){
+var errorContainer=document.getElementById('summaryErrorDisplay');
+if(errorContainer){
+errorContainer.innerHTML=processor.getOutput();
+errorContainer.style.display='block';
+}
+}
+}
+},false,'summaryErrorDisplay');
+if(action=='update'){
+if(!confirm(top.getString('warningUpdateConfirm')+'\n\n'+top.getString('efmSupportNotice')+'\n\n'+top.getString('clickOkToContinue'))){
+return;
+}
+formMgr.createWaitContainer(top.getString('startingUpdate'));
+}else{
+if(!confirm(top.getString('discConfirm')+'\n\n'+top.getString('efmSupportNotice')+'\n\n'+top.getString('clickOkToContinue'))){
+return;
+}
+formMgr.createWaitContainer(top.getString('startingDisc'));
+}
+clearAllErrorMessages();
+formMgr.startBatch();
+if(action=='update'){
+formMgr.queueCall(hpem.bladeManualUpdate,[baySelection]);
+}else{
+formMgr.queueCall(hpem.bladeManualDiscovery,[baySelection]);
+}
+formMgr.endBatch();
+}
+	</script>
+</head>
+<body style="margin:10px;" onload="loadContent();" onunload="deRegisterEvents();">
+    <div id="bodyContent" class="bodyDiv"></div>
+    <div id="waitContainer" class="waitContainer"></div>
+    <div id="iLoSsoContent"></div>
+
+    <div id="tooltip" class="popupSmallWrapper" onclick="killToolTip();" onmouseover="clearTooltipTimer();" onmouseout="updateTooltipTimer();" style="top:0;left:0;">
+        <div class="popupSmallBody" style="background-color:#fff;"></div>
+    </div>
+</body>
+</html>

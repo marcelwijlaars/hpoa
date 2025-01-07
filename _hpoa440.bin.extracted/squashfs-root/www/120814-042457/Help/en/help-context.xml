@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8" ?> 
+<!--
+	 Copyright 2006-2014 Hewlett-Packard Development Company, L.P. 
+	
+	Proprietary computer software. Valid license from HP required 
+	for possession, use or copying. 
+	
+	Consistent with FAR 12.211 and 12.212, Commercial Computer Software, 
+	Computer Software Documentation, and Technical Data for Commercial 
+	Items are licensed to the U.S. Government under vendor's standard 
+	commercial license.
+-->
+
+<!--
+    HP Onboard Administrator Help context-id file
+-->
+
+<contexts xml:lang="en">
+
+  <!-- ============ First Time Setup Wizard ============ -->
+
+  <!-- Stages -->
+  <context key="WIZ_WELCOME">DSetupWizardoverview</context>
+  <context key="WIZ_FINISH">DFinish</context>
+  <context key="WIZ_EBIPA_WELCOME">DEnclosureBayIPAddressing</context>
+  <context key="WIZ_EBIPAv4_FINISH">DEBIPAforIPv4</context>
+  <context key="WIZ_EBIPAv6_FINISH">DEBIPAforIPv6</context>
+
+  <!-- Users -->
+  <context key="WIZ_USER_OVERVIEW">DLocalUserAccounts</context>
+  <context key="WIZ_USER_ADMIN_PWD">DAdministratoraccountsetup</context>
+  <context key="WIZ_USER_EDIT">DUsersettingsforNewandEdit</context>
+  <context key="WIZ_USER_ADD">DUsersettingsforNewandEdit</context>
+  <context key="WIZ_USER_DELETE">DUsersettingsforNewandEdit</context>
+
+  <!-- Network -->
+  <context key="WIZ_OA_NETWORK_WELCOME">DOnboardAdministratorNetworkWelcome</context>
+  <context key="WIZ_OA_NETWORK_SETTINGS">DFTSWOAnetworkIPV4settings</context>
+  <context key="WIZ_OA_NETWORK_SETTINGSv6">DFTSWOAnetworkIPV6settings</context>
+  <context key="WIZ_LDAP_GROUPS">DDirectoryGroupsFirstTimeSetup</context>
+  <context key="WIZ_LDAP_GROUPS_ADD">DGroupSettings-AddGroup</context>
+  <context key="WIZ_LDAP_GROUPS_EDIT">DGroupSettings-UpdateGroup</context>
+  <context key="WIZ_LDAP_CONFIG">DLDAPconfiguration</context>
+  <context key="WIZ_UPLOAD_CERTIFICATE">DConfigurationManagement</context>
+  <context key="WIZ_FIPS_MODE">DFIPS_FTSW</context>
+
+  <!-- Enclosure -->
+  <context key="WIZ_ENC_SELECTION">DEnclosureselection</context>
+  <context key="WIZ_ENC_SETTINGS">DRackandenclosuresettings</context>
+  <context key="WIZ_ENC_ADMIN_SETUP">DAdministratoraccountsetup</context>
+  <context key="WIZ_ENC_SNMP_SETTINGS">DEnclosureSNMPsettings</context>
+  <context key="WIZ_ENC_SNMP_ADD_USER">DAddSNMPUser_1</context>
+  <context key="WIZ_ENC_SNMP_ADD_ALERT">DAddSNMPAlert_1</context>
+  <context key="WIZ_ENC_UPLOAD_SCRIPT">DConfigurationManagement</context>
+
+  <!-- Power Supplies -->
+  <context key="WIZ_POWER_MGMT">DPowerManagementsettings</context>
+
+  <!-- Fans -->
+
+  <!-- ============= Firmware Update Wizard =========== -->
+
+  <context key="WIZ_FW_WELCOME">DFirmwareWizardWelcome</context>
+  <context key="WIZ_FW_SELECT_ENCLOSURES">DFirmwareWizardSelectEnclosures</context>
+  <context key="WIZ_FW_CHOOSE_SOURCE">DFirmwareWizardChooseSource</context>
+  <context key="WIZ_FW_INSTALL_FIRMWARE">DFirmwareWizardInstallFirmware</context>
+  <context key="WIZ_FW_FINISH">DFirmwareWizardFinish</context>
+
+  <!-- =================== Forms ====================== -->
+
+  <!-- Users -->
+  <context key="FORM_USER_OVERVIEW">DLocalUsersforNewandEdit</context>
+  <context key="FORM_USER_EDIT">DEditLocalUser</context>
+  <context key="FORM_USER_EDIT_CERTIFICATE">DEditLocalUserCertificateInformationtab</context>
+  <context key="FORM_USER_ADD">DAddLocalUser</context>
+  <context key="FORM_USER_DELETE">DUsersettings</context>
+  <context key="FORM_USER_SESSIONS">DSignedInUsers</context>
+  <context key="FORM_USER_SESSION_OPTIONS">DSessionOptionstab</context>
+  <context key="FORM_USER_PASSWORD_SETTINGS">DPasswordSettings</context>
+
+  <!-- Enclosure -->
+  <context key="FORM_ENC_ALERT_TABLE">DSystemStatusAlerts</context>
+  <context key="FORM_ENC_STATUS">DEnclosureTopLevel</context>
+  <context key="FORM_ENC_INFO">DEnclosureInformationtab</context>
+  <context key="FORM_ENC_VIRTUAL_BUTTONS">DEnclosureVirtualButtonstab</context>
+  <context key="FORM_ENC_COMPONENT_FIRMWARE">DEnclosureComponentFirmwaretab</context>
+  <context key="FORM_ENC_FACTORY_DEFAULTS">DResetFactoryDefaults</context>
+  <context key="FORM_ENC_FRU_SUMMARY">DFRUSummary</context>
+  <context key="FORM_ENC_CONFIG_SCRIPTS">DConfigurationScripts</context>
+  <context key="FORM_SSH_ADMINISTRATION">DSSHAdministration</context>
+  <context key="FORM_TWO_FACTOR_SETTINGS">DTwo-FactorAuthentication</context>
+  <context key="FORM_CA_CERTIFICATE_INFO">DTwo-FactorAuthenticationCertificateInformationtab</context>
+  <context key="FORM_CA_CERTIFICATE_UPLOAD">DTwo-FactorAuthenticationCertificateUploadtab</context>
+  <context key="FORM_ENC_USB">DActiveOnboardAdministratorUSBtab</context>
+  <context key="FORM_IPV4">DIPSettingsunderenclosuresettings</context>
+  <context key="FORM_IPV6">DIPv6Settingstab</context>
+  <context key="FORM_NIC">DNICOptionstab</context>
+
+  <context key="FORM_SVB_POWER_SEQUENCE">DDevicePowerSequenceDeviceBaystabs</context>
+  <context key="FORM_SWM_POWER_SEQUENCE">DDevicePowerSequenceInterconnectBaystab</context>
+
+  <!-- Active OA -->
+  <context key="FORM_ENC_CERTIFICATE_INFO">DCertificateAdministration</context>
+  <context key="FORM_ENC_CERTIFICATE_REQUEST">DCertificateRequestTab</context>
+  <context key="FORM_ENC_CERTIFICATE_UPLOAD">DCertificateUploadTab</context>
+  <!-- Standby OA -->
+  <context key="FORM_ENC_CERTIFICATE_INFO_STANDBY">DCertificateAdministration</context>
+  <context key="FORM_ENC_CERTIFICATE_REQUEST_STANDBY">DStandby_EM_short_name_CertificateRequestTab</context>
+  <context key="FORM_ENC_CERTIFICATE_UPLOAD_STANDBY">DCertificateUploadTab</context>
+
+  <!-- HP SIM -->
+  <context key="FORM_HP_SIM_SETTINGS">DHPSSOIntegration</context>
+  <context key="FORM_HP_SIM_INFO">DHPSSOIntegrationCertificateInformationtab</context>
+  <context key="FORM_HP_SIM_CERTIFICATE_UPLOAD">DHPSSOIntegrationCertificateUploadtab</context>
+
+  <!-- Rack -->
+  <context key="FORM_RACK_STATUS">DRackTopologytab</context>
+  <context key="FORM_RACK_OVERVIEW">DRackOverviewhomepage</context>
+  <context key="FORM_RACK_POWER_THERMAL">DRackPowerandThermaltab</context>
+  <context key="FORM_RACK_FIRMWARE_VERSIONS">DFirmwareSummarytab</context>
+  <context key="FORM_RACK_ILO_UPDATE">DiLOUpdatetab</context>
+
+  <!-- Onboard Administrator -->
+  <context key="FORM_OA_INFO">DActiveOnboardAdministrator</context>
+  <context key="FORM_OA_ALERT_MAIL">DAlertmailsettings</context>
+  <context key="FORM_OA_DATE_TIME">DDateandtimesettings</context>
+  <context key="FORM_OA_FIRMWARE_UPDATE">DFirmwareupdate</context>
+  <context key="FORM_OA_LANGUAGE_UPDATE">DLanguagePacktab</context>
+  <context key="FORM_OA_SYSTEM_LOG">DSystemLogforActive_EM_short_name_</context>
+  <context key="FORM_OA_SYSTEM_LOG_OPTIONS">DLogOptionstab</context>
+  <context key="FORM_OA_VIRTUAL_BUTTONS">DActive_EM_short_name_VirtualButtonstab</context>
+  <context key="FORM_OA_FORCE_FAILOVER">DActivetoStandby</context>
+  <context key="FORM_OA_LINK_LOSS_FAILOVER">DLinkLossFailover</context>
+
+  <!-- Standby Onboard Administrator -->
+  <context key="FORM_STDBY_OA_INFO">DStandby_Onboard_Administrator</context>
+  <context key="FORM_STDBY_OA_VIRTUAL_BUTTONS">DStandby_EM_short_name_VirtualButtonstab</context>
+  <context key="FORM_STDBY_NETWORK_SETTINGS">DIPSettingsforStandbyOA</context>
+  <context key="FORM_STDBY_IPV4_STDBY_GUI">DIPSettingsfromStandby_GUI</context>
+  <context key="FORM_STDBY_IPV6_STDBY_GUI">DIPSettingsfromStandby_GUI</context>
+  <context key="FORM_STDBY_NIC_STDBY_GUI">DIPSettingsfromStandby_GUI</context>
+  <context key="FORM_STDBY_ADV_SETTINGS_STDBY_GUI">DIPSettingsfromStandby_GUI</context>
+  <context key="FORM_STDBY_OA_SYSTEM_LOG">DSystemLogforStandby_EM_short_name_</context>
+  <context key="FORM_STDBY_OA_FORCE_FAILOVER">DStandbytoActiveonStandbyOA</context>  
+
+  <!-- Network -->
+  <context key="FORM_NETWORK_ACCESS">DNetworkaccess</context>
+  <context key="FORM_TRUSTED_IP">DTrustedHoststab</context>
+  <context key="FORM_ANONYMOUS_DATA">DAnonymousDatatab</context>
+  <context key="FORM_FIPS">DFIPStab</context>
+  <context key="FORM_NETWORK_SETTINGS">DIPSettingsforActiveOA</context>
+  <context key="FORM_NETWORK_ADVANCED">DFTSWOAnetworkIPV4settings</context>
+  <context key="FORM_ADV_SETTINGS">DAdvancedSettingstab</context>
+  <context key="FORM_NETWORK_REDUNDANT">DFTSWOAnetworkIPV4settings</context>
+  <context key="FORM_SNMP_SETTINGS">DSNMPSettings</context>
+  <context key="FORM_SNMP_SETTINGS_SNMPV3">DSNMPsettingsSNMPv3</context>
+  <context key="FORM_SNMP_USERS">DSNMPUserstab</context>
+  <context key="FORM_SNMP_ADD_USER">DAddSNMPUser</context>
+  <context key="FORM_SNMP_ADD_ALERT">DAddSNMPAlert</context>
+  <context key="FORM_SNMP_ADD_ALERT_SNMPV3">DSNMPaddAlertSNMPv3</context>
+  <context key="FORM_SVB_EBIPA_SETTINGS">DEBIPAforIPv4DeviceBaystab</context>
+  <context key="FORM_SVB_EBIPA_SIDE_A_SETTINGS">DEBIPAforIPv4DeviceBaysDoubleDenseSideAtab</context>
+  <context key="FORM_SVB_EBIPA_SIDE_B_SETTINGS">DEBIPAforIPv4DeviceBaysDoubleDenseSideBtab</context>  
+  <context key="FORM_SWM_EBIPA_SETTINGS">DEBIPAforIPv4InterconnectBaystab</context>
+  <context key="FORM_SVB_EBIPAV6_SETTINGS">DEBIPAforIPv6DeviceBaystab</context>
+  <context key="FORM_SVB_EBIPAV6_SIDE_A_SETTINGS">DEBIPAforIPv6DeviceBaysDoubleDenseSideAtab</context>
+  <context key="FORM_SVB_EBIPAV6_SIDE_B_SETTINGS">DEBIPAforIPv6DeviceBaysDoubleDenseSideBtab</context>
+  <context key="FORM_SWM_EBIPAV6_SETTINGS">DEBIPAforIPv6InterconnectBaystab</context>
+  <context key="FORM_LDAP_SETTINGS">DDirectorySettings</context>
+  <context key="FORM_LDAP_CERTIFICATES">DDirectoryCertificateInformationtab</context>
+  <context key="FORM_LDAP_TEST">DDirectorySettingsTesttab</context>
+  <context key="FORM_CERTIFICATE_UPLOAD">DDirectoryCertificateUploadtab</context>
+  <context key="FORM_LDAP_CONFIG">DLDAPconfiguration</context>
+  <context key="FORM_DIRECTORY_GROUPS">DDirectoryGroups</context>
+  <context key="FORM_GROUP_ADD">DAddanLDAPGroup</context>
+  <context key="FORM_GROUP_EDIT">DEditanLDAPGroup</context>
+  <context key="FORM_VLAN_SETUP">DVLANConfigurationVLANSetuptab</context>
+  <context key="FORM_VLAN_DEVICE_BAYS">DDeviceBaystabVLANconfiguration</context>
+  <context key="FORM_VLAN_INTERCONNECT_BAYS">DInterconnectBaystabVLANconfiguration</context>
+  <context key="FORM_VLAN_ADD">DAddVLAN</context>
+  <context key="FORM_VLAN_EDIT">DEditVLAN</context>
+  <context key="FORM_VLAN_CONTROL">DVLANConfigurationVLANControltab</context>
+  <context key="FORM_DEFINED_VLANS">DVLANConfigurationDefinedVLANstab</context>  
+
+  <!-- Blades -->
+  <context key="FORM_SVB_SUMMARY">DDevicebays</context>
+  <context key="FORM_SVB_STATUS">DServerBladeInformation</context>
+  <context key="FORM_SVB_INFO">DServerBladeInformationtab</context>
+  <context key="FORM_SVB_VIRTUAL_BUTTONS">DServerBayVirtualButtonstab</context>
+  <context key="FORM_SVB_BOOT_OPTIONS">DServerBayBootOptionstab</context>
+  <context key="FORM_SVB_PROC_INFO">DiLO</context>
+  <context key="FORM_SVB_EVENT_LOG">DiLOEventLogtab</context>
+  <context key="FORM_SVB_IML_LOG">DServerBayIMLLogtab</context>
+  <context key="FORM_SVB_MGMT_PROC">DManagementProcessor</context>
+  <context key="FORM_SVB_PORT_MAPPING_GRAPHICAL">DServerBayPortMappingGraphicalView</context>
+  <context key="FORM_SVB_PORT_MAPPING_GRAPHICAL_c3000">DDeviceBayPortMappingGraphicalViewforc3000enclosure</context>
+  <context key="FORM_SVB_PORT_MAPPING_TABLE">DServerBayPortMappingTableView</context>
+  <context key="FORM_DVD_SHARING">DDVDDrive</context>
+
+  <!-- Storage Devices -->
+  <context key="FORM_SVB_STATUS_STORAGE">DStoragebladeinformation</context>
+  <context key="FORM_SVB_INFO_STORAGE">DStoragebladeinformationtab</context>
+  <context key="FORM_SVB_VIRTUAL_BUTTONS_STORAGE">DStoragebladevirtualbuttonstab</context>
+
+  <!-- I/O Devices -->
+  <context key="FORM_SVB_STATUS_IO">DIOexpansionbladeinformation</context>
+  <context key="FORM_SVB_INFO_IO">DIOexpansionbladeinformationtab</context>
+  <context key="FORM_SVB_VIRTUAL_BUTTONS_IO">DIOexpansionbladevirtualdevicestab</context>
+  <context key="FORM_SVB_PROC_INFO_IO">DManagementConsole</context>
+
+  <!-- Interconnects -->
+  <context key="FORM_SWM_SUMMARY">DInterconnectBays</context>
+  <context key="FORM_SWM_STATUS">DInterconnectBayInformation</context>
+  <context key="FORM_SWM_INFO">DInterconnectBayInformationtab</context>
+  <context key="FORM_SWM_PORT_MAPPING">DInterconnectBayPortMapping</context>
+  <context key="FORM_SWM_VIRTUAL_BUTTONS">DInterconnectBayVirtualButtonstab</context>
+
+  <!-- Power Supplies -->
+  <context key="FORM_POWER_SUBSYSTEM_OVERVIEW">DPowerSupplies</context>
+  <context key="FORM_POWER_SUBSYSTEM_INFO">DPowerManagementsettings</context>
+  <context key="FORM_POWER_THERMAL_OVERVIEW">DPowerandThermal</context>
+  <context key="FORM_PS_INFO">DPowerSupplyInformation-Bayx</context>
+  <context key="FORM_POWER_SUPPLY_STATUS">DPowerSupplies</context>
+  <context key="FORM_POWER_MGMT">DPowerManagementsettingsscreen</context>
+  <context key="FORM_DEVICE_POWER_USAGE">DPowerAllocationinformation</context>
+  <context key="FORM_ENC_POWER_SUMMARY">DEnclosurePowerSummary</context>
+  <context key="FORM_POWER_INPUT_MODULE">DPowerManagementsettings</context>
+  <context key="FORM_POWER_METER">DPowerMeter</context>
+  <context key="FORM_POWER_METER_TABLE">DPowerMeterTableViewtab</context>
+
+  <!-- Fans -->
+  <context key="FORM_FAN_SUMMARY">DFans</context>
+  <context key="FORM_FAN_ZONES">DFanZonestab</context>
+  <context key="FORM_FAN_INFO">DFanInformation-Bayx</context>
+
+  <!-- Remote LCD -->
+  <context key="FORM_REMOTE_LCD">DInsightDisplay</context>
+  <context key="FORM_REMOTE_LCD_SECURITY">DInsightDisplay</context>
+  <context key="FORM_REMOTE_LCD_USER_NOTE">DUserNotetab</context>
+  <context key="FORM_REMOTE_LCD_IMAGE">DBackgroundtab</context>
+  <context key="FORM_REMOTE_LCD_CHAT">DChatModetab</context>
+
+  <!-- =================== General ====================== -->
+  <context key="FORM_USER_PREFS">DUserPreferences</context>
+  <context key="HELP_POPUP_BLOCKERS">59</context>
+  <context key="FORM_PAGE_CONTENT_NOT_FOUND">DPageContentNotFound</context>
+
+  <!-- ==================== EFM ==========================-->
+  <context key="FORM_ENC_FW_MANAGEMENT">DEnclosureFirmwareManagement</context>
+  <context key="FORM_ENC_FW_LOG">DFirmwareManagementLog</context>
+  <context key="FORM_ENC_FW_BAYS_TO_INCLUDE">DBaystoInclude</context><!-- unused -->
+  <context key="FORM_ENC_FW_MANUAL_DISCOVERY">DManualDiscovery</context>
+  <context key="FORM_ENC_FW_MANUAL_UPDATE">DManualUpdate</context>
+  <context key="FORM_SVB_FW_SUMMARY">DServerBayFirmware</context>
+  <context key="FORM_SVB_FW_LOG">DServerBayFirmwareLog</context>
+  <context key="FORM_SVB_FW_SESSION_LOG">DServerBayFirmwareSessionLog</context>
+  <context key="FORM_SVB_FW_HPSUM_LOG">DServerBayFirmwareHPSUMLog</context><!-- unused -->
+
+  <!-- ==================== ERS ==========================-->
+  <context key="FORM_ERS_CONFIG">DRemote_Support_Configuration_DC</context>
+  <context key="FORM_ERS_DATA_COLLECTIONS">DRemote_Support_Data_Collections</context>
+  <context key="FORM_ERS_EVENTS">DRemote_Support_Service_Events</context>
+  <context key="FORM_IRS_CERTIFICATE_INFO">DRemoteSupportCertificateAdministration</context>
+  <context key="FORM_IRS_CERTIFICATE_UPLOAD">DRemoteSupportCertificateAdministrationUploadtab</context>
+
+  <!-- ================= ACTIVE_HEALTH_SYSTEM =======================-->
+  <context key="FORM_ACTIVE_HEALTH_SYSTEM">DActive_Health_Systems</context>
+  <!-- ==================== LOGIN BANNER ============================-->
+  <context key="FORM_LOGIN_BANNER">DLoginBannertab</context>
+  
+</contexts>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DFirmwareManagementLog" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Enclosure Firmware Management log</title>
+  <source>/120814-042457/Help/en/topics/DFirmwareManagementLog.xml</source>
+  <keywords>Enclosure Firmware Managemetn log log files</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">The Enclosure Firmware Management log provides a consolidated view of major Enclosure Firmware Management events, such as firmware image selections, policy and schedule changes, and firmware operations initiating and completing. This log does not contain the step-by-step details included in the firmware log for each server.</p>
+        <p class="bodytext">The Enclosure Firmware Management log persists across OA reboots and power losses. It is retained on the Standby OA, if present.</p>
+        <p class="bodytext">To view updated log information, click <b>Refresh</b>.</p>
+        <p class="bodytext">To clear information for the Enclosure Firmware Management log and the server-specific <a href="DServerBayFirmwareLog.xml">Firmware log</a> and <a href="DServerBayFirmwareSessionLog.xml">Session log</a>, click <b>Clear All Logs</b>.</p>
+        <p class="bodytext">To clear information for the Enclosure Firmware Management log, click <b>Clear Log</b>.</p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext">
+                <img src="/120814-042457/Help/images/35928.png" alt="" />
+              </p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">CAUTION: </b> Once deleted, this data cannot be restored.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />Event failures<p class="bodytext">When an Enclosure Firmware Management task completes, the final event listed in the server firmware log is <tt>Firmware Management successfully completed</tt> or <tt>Firmware Management is incomplete</tt>.</p><p class="bodytext">If the last operation that appears in the Enclosure Firmware Management log does not indicate successful completion, the other firmware log entries might indicate the problem encountered by the Onboard Administrator. For example, the server must be powered off before a manual discovery, manual update, or scheduled update is performed. The log might indicate that the server was powered on, so the Enclosure Firmware Management operation was stopped.</p><p class="bodytext">If a failure occurs while performing an Enclosure Firmware Management task, the failed entry is logged as <tt>Firmware Management failed on blade X</tt>. The Onboard Administrator attempts the task again up to three times. If the task completes, the previous failed log entries can be disregarded. For detailed event information and current activity, see the firmware log for the server.</p></content>
+    </section>
+  </sections>
+</topic>

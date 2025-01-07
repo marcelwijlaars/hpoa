@@ -1,0 +1,173 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css">
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css">
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css">
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/batchManager.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+
+<script type="text/javascript">	
+var emNum;
+var encNum;
+var vlanIdDisplayed;
+var contextId="FORM_NETWORK_SETTINGS";
+var hpem=null;
+var role='';
+var isStandby=top.checkStandby();
+var mode;
+function loadContent(){
+try{
+emNum=parseInt(getSearchValue(location.search,'emNum'));
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+mode=getSearchValue(location.search,'mode');
+if(!isNaN(emNum)&&!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+var oaStatus=hpem.getOaStatus(emNum);
+var fwVersion=getElementValueXpath(hpem.getOaInfo(emNum),'//hpoa:oaInfo/hpoa:fwVersion');
+var readOnly=!(mode=='standby');
+var formMgr=new FormManager(function(success){
+if(success){
+var processor=new XsltProcessor('../Forms/NetworkSettingsPage.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('oaNetworkInfoDoc',formMgr.getDataByCallIndex(0));
+processor.addParameter('oaStatusDoc',formMgr.getDataByCallIndex(1));
+processor.addParameter('serviceUserAcl',hpem.getUserAccessLevel());
+processor.addParameter('serviceUserOaAccess',hpem.getUserOaPermission());
+processor.addParameter('encNum',encNum);
+processor.addParameter('readOnly',readOnly);
+processor.addParameter('enclosureVersion',fwVersion);
+if(fwVersion>=3.0){
+processor.addParameter('vlanInfoDoc',hpem.getVlanInfo());
+}
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+if(getElementValueXpath(oaStatus,'//hpoa:oaRole')==STANDBY()){
+contextId="FORM_STDBY_NETWORK_SETTINGS";
+}
+if(isStandby){
+contextId+="_STDBY_GUI";
+}
+top.mainPage.getHelpLauncher().setCurrentTopic(contextId);
+}else{
+displayContentFailed('bodyContent',formMgr.getErrorsArray());
+}
+reconcilePage();
+});
+formMgr.startBatch(true);
+formMgr.queueCall(hpem.getOaNetworkInfo,[emNum]);
+formMgr.queueCall(hpem.getOaStatus,[emNum]);
+if(fwVersion>=3.0){
+formMgr.queueCall(hpem.getVlanInfo);
+}
+formMgr.endBatch();
+}else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);
+}
+}catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+}
+function setNetworkSettings(){
+var dhcp=document.getElementById('DHCP').checked;
+var ipStatic=document.getElementById('Static').checked;
+var oaName=document.getElementById('oaName').value;
+var displayMgr=new DisplayManager();
+displayMgr.clearErrorContainers();
+if(!(ipStatic||dhcp)){
+alert(top.getString('noOptionSelected'),AlertMsgTypes.Warning);
+return;
+}
+var ourInputValidator=new InputValidator('validate-oaName','errorDisplay',true);
+if(!ourInputValidator.allInputsValidate()){
+ourInputValidator.updateMessages(true);
+ourInputValidator.autoFocus();
+return;
+}
+if(ipStatic){
+ourInputValidator.setNewInputGroup('validate-netSettings','netErrorDisplay');
+if(!ourInputValidator.allInputsValidate()){
+ourInputValidator.updateMessages(true);
+ourInputValidator.autoFocus();
+return;
+}
+}
+var requiresConfirm=(role=='ACTIVE'||isStandby);
+var confirmString=top.getString('chgOANetSettingDesc1')+'\n';
+confirmString+=top.getString('chgOANetSettingDesc2')+'\n';
+confirmString+=top.getString('chgOANetSettingDesc3');
+var waitPhrase=top.getString('completingNetwork');
+var waitDescription=top.getString('completingNetworkDes');
+var formMgr=new FormManager(function(success){
+if(success){
+loadContent();
+}
+},false);
+formMgr.createWaitContainer(waitPhrase,waitDescription);
+if((requiresConfirm&&confirm(confirmString))||(!requiresConfirm)){
+if(dhcp){
+var dynDns=document.getElementById('DDNS').checked;
+formMgr.startBatch();
+formMgr.queueCall(hpem.configureOaDhcp,[emNum,dynDns],[],['85']);
+formMgr.queueCall(hpem.setOaName,[emNum,oaName]);
+formMgr.endBatch();
+}else{
+var ipAddress=document.getElementById('ipAddress').value;
+var subnetMask=document.getElementById('subnetMask').value;
+var gateway=assertEmptyIpAddress(document.getElementById('gateway').value);
+var dns1=assertEmptyIpAddress(document.getElementById('dnsAddress1').value);
+var dns2=assertEmptyIpAddress(document.getElementById('dnsAddress2').value);
+formMgr.startBatch();
+formMgr.queueCall(hpem.setIpConfigStatic,[emNum,ipAddress,subnetMask,gateway,dns1,dns2],[],['85','86','300','306']);
+formMgr.queueCall(hpem.setOaName,[emNum,oaName]);
+formMgr.endBatch();
+}
+}
+}
+function setOaNicSettings(){
+if(isStandby){
+role=STANDBY();
+}else{
+role=ACTIVE();
+}
+var confirmString=top.getString('confirmChangeNic');
+var forcedFull=document.getElementById(role+'fullAutoSetting_Full'+encNum).checked;
+var formMgr=new FormManager(function(success){
+if(success){
+loadContent();
+}
+},false,'nicErrorDisplay');
+formMgr.createWaitContainer(top.getString('applyingNICSettings'));
+if(!confirm(confirmString)){
+return;
+}
+if(forcedFull){
+var nicSpeed='';
+var nicDuplex='NIC_DUPLEX_FULL';
+var nicSpeedSelect=document.getElementById(role+'nicSpeedSelect'+encNum);
+if(nicSpeedSelect){
+nicSpeed=nicSpeedSelect.options[nicSpeedSelect.selectedIndex].value;
+}
+formMgr.makeCall(hpem.configureOaNicForced,[emNum,nicSpeed,nicDuplex]);
+}
+else{
+formMgr.makeCall(hpem.configureOaNicAuto,[emNum]);
+}
+}
+</script>
+</head>
+<body style="margin:10px;" onload="loadContent();">
+    <div id="bodyContent"></div>
+    <div id="waitContainer" class="waitContainer"></div>
+</body>
+</html>

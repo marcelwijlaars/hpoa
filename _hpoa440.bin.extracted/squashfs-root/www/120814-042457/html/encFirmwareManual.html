@@ -1,0 +1,84 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css"/>
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/tabManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/batchManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+<script type="text/javascript" src="../js/domBuilder.js"></script>
+<script type="text/javascript" src="../js/ipv4.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+<script type="text/javascript" src="../js/firmwareManagement.js"></script>
+
+<style type="text/css">
+/* Hides from ie-mac \*/ 
+* html #content1 {height: 1%;} 
+/* End hide from ie-mac */ 
+</style>
+
+<script type="text/javascript">
+var encNum;
+var hpem=null;
+var action='';
+var currentSvbPermissions=new Array();
+var currentSwmPermissions=new Array();
+function loadContent(){
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+var formMgr=new FormManager(function(success){
+action=getSearchValue(location.search,'action');
+var processor=new XsltProcessor('../Forms/FirmwareManagementManual.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('enclosureType',hpem.getEnclosureType());
+processor.addParameter('isTower',hpem.getIsTower()+"");
+processor.addParameter('numDeviceBays',hpem.getNumBlades());
+processor.addParameter('numIoBays',hpem.getNumTrays());
+processor.addParameter('action',action);
+processor.addParameter('encNum',encNum);
+processor.addParameter('fwManagementSettings',hpem.getFirmwareManagementSettings());
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+reconcilePage();
+if(action=='discovery'){
+top.mainPage.getHelpLauncher().setCurrentTopic("MANUAL_DISCOVERY");
+}else if(action=='update'){
+top.mainPage.getHelpLauncher().setCurrentTopic("MANUAL_UPDATE");
+}else{
+top.mainPage.getHelpLauncher().setCurrentTopic("BAYS_TO_INCLUDE");
+}
+});
+formMgr.startBatch(true,true);
+formMgr.queueCall(hpem.getFirmwareManagementSettings);
+formMgr.endBatch();
+}else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);
+}
+pageResize();
+}
+function pageResize(){
+var settingsContainer=document.getElementById('settingsContainer');
+if(!settingsContainer)
+return;
+settingsContainer.style.width=document.body.offsetWidth;
+}
+function unloadHandlers(){
+}
+</script>
+</head>
+<body style="margin:10px;" onload="loadContent();" onunload="unloadHandlers();" onresize="pageResize();">
+    <div id="waitContainer"></div>
+    <div id="bodyContent"></div>
+</body>
+</html>

@@ -1,0 +1,436 @@
+<!--  (C) Copyright 2011 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css"/>
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+<link rel="stylesheet" type="text/css" href="../Help/stylesheets/help.css"/>
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/tabManager.js"></script>
+<script type="text/javascript" src="../js/tableManager.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/batchManager.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/helpTips.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+<script type="text/javascript" src="../js/snmp.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+<script type="text/javascript">	
+var encNum;
+var hpem=null;
+var batchInProgress=false;
+var ourProxyValidator=null;
+var eventsIgnored=0;
+var ersActivated=false;
+var ersLockDirect=null;
+var currentCriteria='timeOfEventStr';
+var sortAsc=true;
+var ersEvents=[
+'EVENT_OA_ERS_CONFIG_CHANGED',
+'EVENT_OA_ERS_MAINTENANCE_SET',
+'EVENT_OA_ERS_MAINTENANCE_ENABLED',
+'EVENT_OA_ERS_MAINTENANCE_CLEARED',
+'EVENT_OA_ERS_EVENTS_CLEARED',
+'EVENT_OA_ERS_TEST',
+'EVENT_OA_ERS_TEST_MANUAL',
+'EVENT_OA_ERS_DATACOLLECTION_MANUAL',
+'EVENT_OA_ERS_DATACOLLECTION_FAILURE',
+'EVENT_OA_ERS_DATACOLLECTION_SUCCESS',
+'EVENT_TIME_CHANGE',
+'EVENT_OA_ERS_STATUS',
+];
+function loadContent(){
+try{
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+ersLockDirect=hpem.getRemoteSupportDirectLocked();
+selectTab('ersConfiguration',false,true);
+hpem.registerEventHandler(handleRemoteSupportEvent,ersEvents);
+}else{
+displayContentFailed('tabContent',[top.getString('noOnboardAdmin')]);
+}
+}catch(e){
+displayContentFailed('tabContent',[e.message]);
+}
+}
+function selectTab(tabId,fresh,init){
+ourTabManager.toggleTabs(tabId);
+setTabContent(tabId,init,fresh);
+}
+function setTabContent(tabId,init,fresh){
+var contentTab=document.getElementById(tabId);
+var contentLocation=contentTab.getAttribute('contentLocation');
+var contextHelpId=contentTab.getAttribute('contextId');
+top.mainPage.getHelpLauncher().setCurrentTopic(contextHelpId);
+var formMgr=new FormManager(function(success){
+var ersConfigInfo=formMgr.getDataByCallIndex(0);
+var ersOverridden=(getElementValueXpath(ersConfigInfo,"//hpoa:ersConfigInfo/hpoa:extraData[@hpoa:name = 'ersSolutionOverrideStatus']")=="true");
+ersActivated=(getElementValueXpath(ersConfigInfo,"//hpoa:ersEnabled")=='true');
+var processor=new XsltProcessor(contentLocation);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('ersConfigInfoDoc',ersConfigInfo);
+processor.addParameter('serviceUserAcl',hpem.getUserAccessLevel());
+if(tabId=='ersServiceEvents'){
+processor.addParameter('sortCriteria',currentCriteria);
+processor.addParameter('sortAscending',''+sortAsc);
+}
+document.getElementById('tabContent').innerHTML=processor.getOutput();
+document.getElementById("tabSet").style.display=(ersOverridden?"none":"block");
+reconcilePage();
+if(tabId=='ersConfiguration'){
+ourProxyValidator=new InputValidator('validate-proxy','errorDisplayProxy',true);
+}
+},false,null,'tabContent',null);
+if(init){
+formMgr.startBatch(true,assertFalse(fresh));
+}else{
+formMgr.startTransactionBatch(assertFalse(fresh));
+}
+formMgr.queueCall(hpem.getErsConfigInfo);
+formMgr.endBatch();
+}
+function applyRemoteSupportSettings(){
+var mode=getOptionGroupValue("remoteSupportType");
+switch(mode){
+case RemoteSupportTypes.DirectConnect:
+activateDirectConnect();
+break;
+case RemoteSupportTypes.InsightRemote:
+activateRemoteConnect();
+break;
+default:
+alert('Please choose one of the service options before attempting to register.');
+break;
+}
+}
+function deactivateRemoteSupport(){
+if(!confirm(top.getString("confirmUnregisterRemoteSupport")+"\n"+top.getString("clickOkToContinue"))){
+return;
+}
+var formMgr=new FormManager(function(success){
+if(success){
+alert(top.getString("remoteSupportUnregistrationSuccessful"),AlertMsgTypes.Normal,30);
+}else{
+alert(formMgr.getErrorList(true),AlertMsgTypes.Warning,30);
+}
+},false,'errorDisplayUnregister','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString("unregisteringRemoteSupport"));
+formMgr.startBatch();
+formMgr.queueCall(hpem.disableErs);
+formMgr.endBatch();
+}
+function activateDirectConnect(){
+var ourInputValidator=new InputValidator(null,"errorDisplayHP",true);
+if(!ourInputValidator.allInputsValidate()){
+ourInputValidator.updateMessages(true);
+return;
+}else{
+ourInputValidator.clearMessages();
+}
+if(!ersActivated&&!getInputValue("chkEULA")){
+ourInputValidator.showCustomMessage(top.getString("mustReadAndAgreeToEula"));
+return;
+}
+batchInProgress=true;
+if(!ersActivated){
+var username=getInputValue("userId");
+var password=getInputValue("userPassword");
+var optIn="false";
+}
+var proxy=getInputValue("proxyUrl");
+var proxyPort=getInputValue("ersProxyPort");
+var proxyUsername=getInputValue("proxyUsername");
+var proxyPassword=getInputValue("proxyPassword");
+var locale="en-us";
+var formMgr=new FormManager(function(success){
+batchInProgress=false;
+if(success){
+if(!ersActivated){
+top.mainPage.displayNotice(top.getString("remoteSupportRegistrationSuccessful"),top.getString("remoteSupport"),AlertMsgTypes.Normal,null,5);
+}else{
+top.mainPage.displayNotice(top.getString("remoteSupportConfigurationUpdated"),top.getString("remoteSupport"),AlertMsgTypes.Normal,null,5);
+}
+if(eventsIgnored>0){
+eventsIgnored=0;
+setTabContent(ourTabManager.getCurrentTab(),false,false);
+}
+}
+},false,'errorDisplayHP','tabContent','waitContainer');
+formMgr.createWaitContainer((ersActivated?top.getString("updatingRemoteSupportConfiguration"):top.getString("registeringStepOne")));
+formMgr.batchEventDelay=3;
+formMgr.startBatch();
+if(!(ourProxyValidator.allInputsAreClean())){
+formMgr.setCurrentEnclosureName(top.getString("webProxyUrl:").replace(":",""));
+formMgr.queueCall(hpem.setErsProxyUrl,[proxy,(proxyPort==""?0:proxyPort),proxyUsername,proxyPassword]);
+formMgr.setCurrentEnclosureName("");
+}
+if(!ersActivated){
+formMgr.queueCall(hpem.enableErs,[RemoteSupportTypes.DirectConnect,username,password,"",0,optIn,locale,true]);
+}
+formMgr.endBatch();
+}
+function updateProxySettings(){
+var ourInputValidator=new InputValidator(null,"errorDisplayProxy",true);
+if(!ourInputValidator.allInputsValidate()){
+ourInputValidator.updateMessages(true);
+return;
+}else{
+ourInputValidator.clearMessages();
+}
+if(ourProxyValidator.allInputsAreClean()){
+ourProxyValidator.showCustomMessage(top.getString("nothingToUpdate"));
+return;
+}
+batchInProgress=true;
+var proxy=getInputValue("proxyUrl");
+var proxyPort=getInputValue("ersProxyPort");
+var proxyUsername=getInputValue("proxyUsername");
+var proxyPassword=getInputValue("proxyPassword");
+var formMgr=new FormManager(function(success){
+batchInProgress=false;
+if(success){
+top.mainPage.displayNotice(top.getString("remoteSupportConfigurationUpdated"),top.getString("remoteSupport"),AlertMsgTypes.Normal,null,5);
+if(eventsIgnored>0){
+eventsIgnored=0;
+setTabContent(ourTabManager.getCurrentTab(),false,false);
+}
+}
+},false,'errorDisplayProxy','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString("updatingRemoteSupportConfiguration"));
+formMgr.batchEventDelay=3;
+formMgr.startBatch();
+formMgr.queueCall(hpem.setErsProxyUrl,[proxy,(proxyPort==""?0:proxyPort),proxyUsername,proxyPassword]);
+formMgr.endBatch();
+}
+function setOnlineRegistrationComplete(){
+if(!confirm(top.getString('reallyCompletedOnlineErsReg')+'\n\n'+top.getString('clickOkToConfirm'))){
+return;
+}
+batchInProgress=true;
+var formMgr=new FormManager(function(success){
+batchInProgress=false;
+if(success){
+top.mainPage.displayNotice(top.getString("remoteSupportRegistrationSuccessful"),top.getString("remoteSupport"),AlertMsgTypes.Normal,null,5);
+if(eventsIgnored>0){
+eventsIgnored=0;
+setTabContent(ourTabManager.getCurrentTab(),false,false);
+}
+}
+},false,'errorDisplayStep2','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString('confirmingErsOnlineRegistrationComplete'));
+formMgr.batchEventDelay=3;
+formMgr.startBatch();
+formMgr.queueCall(hpem.setErsOnlineRegistrationComplete);
+formMgr.endBatch();
+}
+function activateRemoteConnect(){
+var ourInputValidator=new InputValidator(null,"errorDisplayIRS",true);
+if(!ourInputValidator.allInputsValidate()){
+ourInputValidator.updateMessages(true);
+return;
+}else{
+ourInputValidator.clearMessages();
+}
+batchInProgress=true;
+var irsHost=getInputValue("irsHost");
+var irsPort=getInputValue("irsPort");
+var locale='en-us';
+var formMgr=new FormManager(function(success){
+batchInProgress=false;
+if(success){
+top.mainPage.displayNotice(top.getString("remoteSupportRegistrationSuccessful"),top.getString("remoteSupport"),AlertMsgTypes.Normal,null,5);
+if(eventsIgnored>0){
+eventsIgnored=0;
+setTabContent(ourTabManager.getCurrentTab(),false,false);
+}
+}
+},false,'errorDisplayIRS','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString("registeringWithRemoteSupport"));
+formMgr.batchEventDelay=3;
+formMgr.startBatch();
+formMgr.queueCall(hpem.enableErs,[RemoteSupportTypes.InsightRemote,'','',irsHost,irsPort,true,locale,true]);
+formMgr.endBatch();
+}
+function setErsMaintenance(){
+var ourInputValidator=new InputValidator(null,"errorDisplay",true);
+if(!ourInputValidator.allInputsValidate()){
+ourInputValidator.updateMessages(true);
+return;
+}else{
+ourInputValidator.clearMessages();
+}
+var enabled=getInputValue("chkMaintMode");
+var interval=getInputValue("cboMaintDuration");
+var formMgr=new FormManager(function(success){
+if(success){
+}
+},false,'errorDisplay','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString("configuringMaintenanceMode"));
+formMgr.startBatch();
+formMgr.queueCall(hpem.setErsMaintenance,[enabled,(enabled?interval:0)]);
+formMgr.endBatch();
+}
+function sendServiceEvent(){
+var formMgr=new FormManager(function(success){
+if(success){
+var workbox=document.getElementById("serviceEventInProgress");
+if(workbox){
+workbox.innerHTML="<img src='/120814-042457/images/icon_status_working.gif' style='width:13px;height:13px;vertical-align:middle' alt='' />&#160<em style='vertical-align:middle;'>"+top.getString("inProgress")+"</em>";
+}
+}
+},false,'errorDisplay','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString("sendingServiceTestEvent"));
+formMgr.startBatch();
+formMgr.queueCall(hpem.testErs);
+formMgr.endBatch();
+}
+function clearErsServiceEventLog(){
+var formMgr=new FormManager(function(success){
+if(success){
+}
+},false,'clearLogErrorDisplay','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString("clearingServiceEventLog"));
+formMgr.batchEventDelay=5;
+formMgr.startBatch();
+formMgr.queueCall(hpem.clearErsServiceEventLog);
+formMgr.endBatch();
+}
+function sendDataCollection(){
+var formMgr=new FormManager(function(success){
+if(success){
+var workbox=document.getElementById("dataCollectionInProgress");
+if(workbox){
+workbox.innerHTML="<img src='/120814-042457/images/icon_status_working.gif' style='width:13px;height:13px;vertical-align:middle;margin-bottom:2px;' alt='' />&#160<em style='vertical-align:middle;'>"+top.getString("inProgress")+"</em>";
+}
+}
+},false,'errorDisplay','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString("requestingDataCollection"));
+formMgr.startBatch();
+formMgr.queueCall(hpem.sendErsDataCollection);
+formMgr.endBatch();
+}
+function handleRemoteSupportEvent(result){
+var eventName=getElementValueXpath(result,"//hpoa:event");
+var errorText="";
+switch(eventName){
+case "EVENT_OA_ERS_CONFIG_CHANGED":
+if(batchInProgress){
+eventsIgnored++;
+return;
+}else{
+var newErsLockDirect=hpem.getRemoteSupportDirectLocked();
+if(newErsLockDirect!=ersLockDirect){
+ersLockDirect=newErsLockDirect;
+top.mainPage.displayNotice(top.getString("ersLockDirectChanged"),top.getString("remoteSupport"),AlertMsgTypes.Normal,null,5);
+}else{
+top.mainPage.displayNotice(top.getString("remoteSupportConfigurationChanged"),top.getString("remoteSupport"),AlertMsgTypes.Normal,null,5);
+}
+}
+break;
+case "EVENT_OA_ERS_MAINTENANCE_SET":
+case "EVENT_OA_ERS_MAINTENANCE_ENABLED":
+top.mainPage.displayNotice(top.getString("maintenanceModeEnabled"),top.getString("remoteSupport"),AlertMsgTypes.Normal,null,5);
+break;
+case "EVENT_OA_ERS_MAINTENANCE_CLEARED":
+top.mainPage.displayNotice(top.getString("maintenanceModeCleared"),top.getString("remoteSupport"),AlertMsgTypes.Normal,null,5);
+break;
+case "EVENT_OA_ERS_EVENTS_CLEARED":
+top.mainPage.displayNotice(top.getString("serviceEventLogCleared"),top.getString("remoteSupport"),AlertMsgTypes.Normal,null,5);
+break;
+case "EVENT_OA_ERS_TEST":
+top.mainPage.displayNotice(top.getString("manualServiceEventTestSent"),top.getString("remoteSupport"),AlertMsgTypes.Normal,null,5);
+break;
+case "EVENT_OA_ERS_TEST_MANUAL":
+errorText=assertLocalizedString(getElementValueXpath(result,"//hpoa:extraData[@hpoa:name='ersLastTestAlertErrorCode']"),getElementValueXpath(result,"//hpoa:ersLastTestAlertErrorStr"));
+if(errorText!=""){
+top.mainPage.displayNotice(top.getString("manualServiceEventTestFailed:")+"<br /><div style='margin-left:5px;margin-top:2px;'><font style='color:#cc0000;'>"+errorText+"</font></div>",top.getString("remoteSupport"),AlertMsgTypes.Critical,500,10);
+}else{
+top.mainPage.displayNotice(top.getString("manualServiceEventTestSuccess"),top.getString("remoteSupport"),AlertMsgTypes.Normal,null,5);
+}
+break;
+case "EVENT_OA_ERS_DATACOLLECTION_MANUAL":
+errorText=assertLocalizedString(getElementValueXpath(result,"//hpoa:extraData[@hpoa:name='ersLastInventoryErrorCode']"),getElementValueXpath(result,"//hpoa:ersLastInventoryErrorStr"));
+if(errorText!=""){
+top.mainPage.displayNotice(top.getString("manualDataCollectionFailed:")+"<br /><div style='margin-left:5px;margin-top:2px;'><font style='color:#cc0000;'>"+errorText+"</font></div>",top.getString("remoteSupport"),AlertMsgTypes.Critical,500,10);
+}else{
+top.mainPage.displayNotice(top.getString("manualDataCollectionSuccess"),top.getString("remoteSupport"),AlertMsgTypes.Normal,null,5);
+}
+case "EVENT_OA_ERS_DATACOLLECTION_SUCCESS":
+case "EVENT_OA_ERS_DATACOLLECTION_FAILURE":
+break;
+case "EVENT_TIME_CHANGE":
+if(ourTabManager.getCurrentTab()=="ersConfiguration"){
+return;
+}
+break;
+case "EVENT_OA_ERS_STATUS":
+top.mainPage.displayNotice(top.getString("remoteSupportStatusChanged"),top.getString("remoteSupport"),AlertMsgTypes.Normal,null,5);
+break;
+default:
+break;
+}
+setTabContent(ourTabManager.getCurrentTab(),false,false);
+}
+function sortEventLog(criteria){
+sortAsc=!sortAsc;
+currentCriteria=criteria;
+var processor=new XsltProcessor("/120814-042457/Forms/remoteSupportEvents.xsl");
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('ersConfigInfoDoc',hpem.getErsConfigInfo());
+processor.addParameter('serviceUserAcl',hpem.getUserAccessLevel());
+processor.addParameter('sortCriteria',currentCriteria);
+processor.addParameter('sortAscending',''+sortAsc);
+processor.addParameter('templateName','eventLogTable');
+document.getElementById('eventLogTable').innerHTML=processor.getOutput();
+reconcilePage();
+}
+function refreshPage(){
+setTabContent(ourTabManager.getCurrentTab(),true,true);
+}
+function pageUnload(){
+try{
+hpem.removeRegisteredHandler(handleRemoteSupportEvent);
+}catch(e){}
+}
+</script>
+</head>
+<body style="margin:10px;" onload="loadContent();" onunload="pageUnload();">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+      <td valign="bottom">
+        <div class="tabSet" id="tabSet" style="display:block">
+          <div class="tabOff" tabid="ersConfiguration" contextId="FORM_ERS_CONFIG" id="ersConfiguration" contentLocation="/120814-042457/Forms/remoteSupport.xsl"><script type="text/javascript">document.write(top.getString('registration'));</script></div>
+          <div class="tabOff" tabid="ersServiceEvents" contextId="FORM_ERS_EVENTS" id="ersServiceEvents" contentLocation="/120814-042457/Forms/remoteSupportEvents.xsl" style="display:block;"><script type="text/javascript">document.write(top.getString('serviceEvents'));</script></div>
+          <div class="tabOff" tabid="ersDataCollections" contextId="FORM_ERS_DATA_COLLECTIONS" id="ersDataCollections" contentLocation="/120814-042457/Forms/remoteSupportData.xsl"><script type="text/javascript">document.write(top.getString('dataCollections'));</script></div>
+          <div class="tabBottomLine"></div>
+        </div>          
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-top:5px;">
+        <div id="tabContent"></div>
+        <div id="waitContainer"></div>
+      </td>
+    </tr>
+  </table>  
+
+  <script type="text/javascript">
+if(typeof(TabManager)!="undefined"){
+ourTabManager.init();
+}
+  </script>
+
+  <div id="helpTooltip" class="popupSmallWrapper">
+    <div class="popupSmallTitle"><img alt="" src="/120814-042457/images/icons/help-popup.gif" /></div>
+    <div id="tooltipText" class="helpPopupSmallBody"></div>
+  </div>
+</body>
+</html>

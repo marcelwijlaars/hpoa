@@ -1,0 +1,348 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<html>
+	<head>
+	<title>HP BladeSystem Onboard Administrator</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<link rel="stylesheet" type="text/css" href="../css/default.css"/>
+	<link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+	<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+	
+	<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+	<script type="text/javascript" src="../js/inputValidator.js"></script>
+	<script type="text/javascript" src="../js/global.js"></script>
+	<script type="text/javascript" src="../js/buttonManager.js"></script>
+	<script type="text/javascript" src="../js/browser.js"></script>
+	<script type="text/javascript" src="../js/dropdownMenuManager.js"></script>
+	<script type="text/javascript" src="../js/init.js"></script>
+	<script type="text/javascript" src="../js/xml.js"></script>
+	<script type="text/javascript" src="../js/xslt.js"></script>
+	<script type="text/javascript" src="../js/displayManager.js"></script>
+	<script type="text/javascript" src="../js/formManager.js"></script>
+	<script type="text/javascript" src="../js/domBuilder.js"></script>
+	
+	<script type="text/javascript">
+globalManagerCreate();
+var g_iPanel=1
+var g_nWidth=0;
+var g_nCount=-2;
+var xml=top.getXml();
+var fwUpdateMgr=null;
+var stepsDocument=null;
+var stepsDocumentPath='';
+top.loadWizardStringsFile();
+function myOnUnload(){
+top.unloadWizardStringsFile();
+var unloadScript=getWizardAttribute("unloadScript");
+if(unloadScript!=""){
+eval(unloadScript);
+}
+if(top.primaryWebRestart==true){
+setCookieValue("wizStep",getCurrentStepNumber());
+}else{
+try{
+var hpems=top.getTopology().getSelectedProxies();
+for(var i=0;i<hpems.length;i++){
+hpems[i].setIsWizardSelected(false);
+}
+}catch(e){}
+}
+}
+function getWizardAttribute(attributeName){
+return getElementValueXpath(stepsDocument,"//"+attributeName);
+}
+function getWizardStepAttribute(attributeName){
+return getElementValueXpath(stepsDocument,"//step[number="+getCurrentStepNumber()+"]/"+attributeName);
+}
+function getFwUpdateManager(){
+if(fwUpdateMgr==null){
+try{
+fwUpdateMgr=new FirmwareUpdateManager(getWizardContentFrame());
+}catch(e){
+top.logEvent(["Wizard: could not create Firmwware Update Wizard.","Error: "+e.message],null,1,6)
+}
+}
+return fwUpdateMgr;
+}
+function myOnLoad(){
+g_nWidth=MxBrowserGetBodyWidth(0,0);
+setTimeout("myOnResize()",1000);
+var savedStep=getCookieValue("wizStep");
+deleteCookieValue("wizStep");
+if(savedStep!=""){
+startWizard(savedStep);
+}else{
+startWizard();
+}
+top.getTopology().selectPrimaryEnclosure();
+var loadScript=getWizardAttribute("loadScript");
+if(loadScript!=""){
+eval(loadScript);
+}
+reconcilePage();
+}
+function myOnResize(){
+var h=Math.max(0,MxBrowserGetBodyHeight(0,0));
+var w=Math.max(0,MxBrowserGetBodyWidth(0,0));
+if(top._browserInfo.browserName=="Chrome"){
+try{
+top.mainPage.myOnResize();
+}catch(e){
+}
+}
+if(g_iPanel==1){
+resizePanel_1(h,w);
+}
+}
+function resizePanel_1(h,w){
+var borders=(top._browserInfo.agent.indexOf("webkit")>-1?-1:document.all?11:0);
+var oFrame=document.getElementById("WIZARD_CONTENT");
+if(oFrame!=null){
+oFrame.style.height=Math.max(0,h-oFrame.offsetTop-borders);
+oFrame.style.width=Math.max(0,w-oFrame.offsetLeft-borders);
+}
+}
+function openStepsDocument(){
+stepsDocument=getDomDocument(stepsDocumentPath);
+}
+function getStepsDocument(){
+return stepsDocument;
+}
+function getStepsDocumentPath(){
+return stepsDocumentPath;
+}
+function getWizardContentFrame(){
+return document.getElementById('WIZARD_CONTENT').contentWindow;
+}
+function setTitle(title){
+var titleText=document.getElementById("ID_PORTAL_TITLE");
+titleText.innerHTML=title;
+setWizardSubtitle('');
+}
+function setWizardHeader(title,subtitle){
+setTitle(title);
+setWizardSubtitle(subtitle);
+}
+function setWizardSubtitle(subtitle){
+var wizardSubtitle=document.getElementById("ID_PORTAL_SUBTITLE");
+wizardSubtitle.innerHTML=subtitle;
+}
+function startWizard(savedStep){
+if(!savedStep){
+initServiceObjects();
+}
+stepsDocumentPath=getSearchValue(location.search,'stepsDocPath');
+if(stepsDocumentPath!=''){
+openStepsDocument();
+var wizardInfo=getWizardInfo();
+try{
+setWizardHeader(top.getString(wizardInfo.wizardTitle),top.getString(wizardInfo.wizardSubTitle));
+}
+catch(e){
+setWizardHeader(top.getString('wizardLoadError'),'');
+}
+getWizardContentFrame().location='/120814-042457/Wizards/wizardContainerPage.html?step='+(savedStep?savedStep:'0');
+}
+else{
+}
+}
+function gotoStepNumber(step){
+top.getTopology().selectPrimaryEnclosure();
+getWizardContentFrame().location=pathFix('/120814-042457/Wizards/wizardContainerPage.html?step='+step);
+}
+function getCurrentStepNumber(){
+return getSearchValue(getWizardContentFrame().location.search,'step');
+}
+var globalParams=new Object();
+function setParam(name,value){
+globalParams[name]=value;
+}
+function getParam(name){
+if(typeof(globalParams[name])!='undefined'){
+return globalParams[name];
+}
+else{
+return '';
+}
+}
+function removeParam(name){
+if(typeof(globalParams[name])!='undefined'){
+delete globalParams[name];
+}
+}
+function getSelectedEnclosures(includeNonActive){
+var enclosureDoc=null;
+if(xml!=null){
+try{
+enclosureDoc=xml.parseXML('<enclosureList />');
+var hpems=top.getTopology().getProxies(assertFalse(includeNonActive));
+for(var i=0;i<hpems.length;i++){
+var encElement=enclosureDoc.createElement('enclosure');
+var encUuidElement=enclosureDoc.createElement("uuid");
+var encUuidValue=enclosureDoc.createTextNode(''+hpems[i].getUuid());
+encUuidElement.appendChild(encUuidValue);
+var encNameElement=enclosureDoc.createElement('enclosureName');
+var encNameValue=enclosureDoc.createTextNode(''+hpems[i].getEnclosureName());
+encNameElement.appendChild(encNameValue);
+var encNumElement=enclosureDoc.createElement('enclosureNum');
+var encNumValue=enclosureDoc.createTextNode(hpems[i][ENCLOSURE_NUM()]);
+encNumElement.appendChild(encNumValue);
+var encTypeElement=enclosureDoc.createElement('encType');
+var encTypeValue=enclosureDoc.createTextNode(hpems[i].getEnclosureType());
+encTypeElement.appendChild(encTypeValue);
+var encTowerElement=enclosureDoc.createElement('isTower');
+var encTowerValue=enclosureDoc.createTextNode(''+hpems[i].getIsTower());
+encTowerElement.appendChild(encTowerValue);
+var fwVersionElement=enclosureDoc.createElement('fwVersion');
+var fwVersionValue=enclosureDoc.createTextNode("%0.2f".format(hpems[i].getActiveFirmwareVersion()));
+fwVersionElement.appendChild(fwVersionValue);
+var standbyFwVersionElement=enclosureDoc.createElement('standbyFwVersion');
+var standbyFwVersionValue=enclosureDoc.createTextNode("%0.2f".format(hpems[i].getStandbyFirmwareVersion()));
+standbyFwVersionElement.appendChild(standbyFwVersionValue);
+var encSelectedElement=enclosureDoc.createElement('selected');
+var encSelectedValue=enclosureDoc.createTextNode(''+hpems[i].getIsWizardSelected());
+encSelectedElement.appendChild(encSelectedValue);
+var twoFactorEnabledElement=enclosureDoc.createElement('twoFactorEnabled');
+var twoFactorEnabledValue=enclosureDoc.createTextNode(''+hpems[i].getTwoFactorEnabled());
+twoFactorEnabledElement.appendChild(twoFactorEnabledValue);
+var encAuthenticatedElement=enclosureDoc.createElement('authenticated');
+var encAuthenticatedValue=enclosureDoc.createTextNode(''+hpems[i].getIsAuthenticated());
+encAuthenticatedElement.appendChild(encAuthenticatedValue);
+var hasPrivilegesElement=enclosureDoc.createElement('hasPrivileges');
+var hasAcl=(convertAccessLevel(hpems[i].getUserAccessLevel())>=convertAccessLevel(getWizardAttribute("wizardAccessLevel")));
+var needsOaAccess=parseBool(getWizardAttribute("wizardOaAccess"));
+var oaAccess=(needsOaAccess?(hpems[i].getUserOaPermission()==true):true);
+var hasPrivs=((hpems[i].getIsAuthenticated()==false||hpems[i].getIsLoaded()==false)||(hasAcl&&oaAccess));
+var hasPrivilegesValue=enclosureDoc.createTextNode(''+hasPrivs);
+hasPrivilegesElement.appendChild(hasPrivilegesValue);
+var encLocalElement=enclosureDoc.createElement('local');
+var encLocalValue=enclosureDoc.createTextNode(''+hpems[i].getIsLocal());
+encLocalElement.appendChild(encLocalValue);
+var encOaSessionKeyElement=enclosureDoc.createElement('oaSessionKey');
+var encOaSessionValue=enclosureDoc.createTextNode(''+hpems[i].getSessionKey());
+encOaSessionKeyElement.appendChild(encOaSessionValue);
+var encOaPathElement=enclosureDoc.createElement('oaPath');
+var link=removeTrailingSlash(getServiceUrl(hpems[i].getIsLocal()?'':hpems[i].getProxyUrl(),true));
+var encOaPathValue=enclosureDoc.createTextNode(link);
+encOaPathElement.appendChild(encOaPathValue);
+encElement.appendChild(encNameElement);
+encElement.appendChild(encUuidElement);
+encElement.appendChild(encNumElement);
+encElement.appendChild(encTypeElement);
+encElement.appendChild(encTowerElement);
+encElement.appendChild(fwVersionElement);
+encElement.appendChild(standbyFwVersionElement);
+encElement.appendChild(encSelectedElement);
+encElement.appendChild(twoFactorEnabledElement);
+encElement.appendChild(encAuthenticatedElement);
+encElement.appendChild(hasPrivilegesElement);
+encElement.appendChild(encLocalElement);
+encElement.appendChild(encOaSessionKeyElement);
+encElement.appendChild(encOaPathElement);
+enclosureDoc.documentElement.appendChild(encElement);
+}
+}
+catch(e){
+}
+}
+return enclosureDoc;
+}
+function getNumSelected(){
+return(top.getTopology().getSelectedProxies().length);
+}
+function initServiceObjects(clearPrimary){
+var hpems=top.getTopology().getProxies();
+for(var i=0;i<hpems.length;i++){
+hpems[i].setIsWizardSelected(hpems[i].getIsLocal()&&(clearPrimary!=true));
+}
+}
+function addEnclosure(encNum){
+var hpem=top.getTopology().getProxy(encNum);
+if(hpem!=null){
+hpem.setIsWizardSelected(true);
+}
+}
+function cancelSubWizard(nextStepHref){
+if(confirm(top.getString('returnToNextStep'))){
+getWizardContentFrame().location=nextStepHref;
+}
+}
+function getWizardInfo(){
+var wizardInfo=new Object();
+var nodeList;
+var xpathString="//wizardTitle | //wizardSubTitle";
+try{
+nodeList=stepsDocument.evaluate(xpathString,stepsDocument,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
+var nodeItem;
+for(var i=0;i<nodeList.snapshotLength;i++){
+wizardInfo[nodeList.snapshotItem(i).tagName]=nodeList.snapshotItem(i).childNodes[0].nodeValue;
+}
+}
+catch(e){
+try{
+stepsDocument.setProperty("SelectionLanguage","XPath");
+nodeList=stepsDocument.selectNodes(xpathString);
+for(var i=0;i<nodeList.length;i++){
+wizardInfo[nodeList[i].tagName]=nodeList[i].childNodes[0].nodeValue
+}
+}
+catch(e){
+}
+}
+return wizardInfo;
+}
+function openContextHelp(){
+top.mainPage.getHelpLauncher().openContextHelp();
+}
+function setHelpCurrentContext(context){
+top.mainPage.getHelpLauncher().setCurrentTopic(context);
+}
+    </script>
+	</head>
+	<body class="body-flush-fit-inner-1" onload="myOnLoad();" onunload="myOnUnload();" onresize="myOnResize();" style="position:relative;height:100%;width:auto;">
+		
+		<input type="hidden" id="helpText" />
+		
+		<div class="body-proxy" id="ID_BODY_PROXY">		
+			<table class="window-border-table" id="ID_25" border="0" cellpadding="0" cellspacing="0">
+				<tr>
+					<td>
+					<table class="title-outer-table" border="0" cellpadding="0" cellspacing="0" ID="Table1">
+						<tr>
+							<td id="ID_PORTAL_TITLE" class="title-name" nowrap style="padding-bottom:3px;"></td>
+							<td rowspan="3" class="title-links"></td>
+							<td rowspan="2" style="background-color:#cccccc" valign="bottom">								
+                <table border="0" cellpadding="0" cellspacing="0" id="Table3">
+                  <tr>
+                    <td>
+                      <div class="buttonSet" style="margin-top: 20px; margin-bottom: 32px; padding-right: 8px;">
+                        <div class="bWrapperUp">
+                          <div>
+                            <button class="hpButtonSmall shrinkWrapButton helpButton" onclick="openContextHelp();"
+                              id="contextHelp" style="width: 16px; height: 16px; padding: 0px; margin: 0px;">
+                              <img src="/120814-042457/images/icons/help.gif" style="width: 6px; height: 10px;
+                                border-style: none;" alt="">
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="clearFloats">
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+							</td>
+						</tr>
+						<tr>
+							<td id="ID_PORTAL_SUBTITLE" class="title-subtitle" valign="top" nowrap></td>
+						</tr>
+					</table>
+					</td>
+				</tr>
+			</table>			
+			<div id="contentContainer" style="border:3px solid #CCCCCC;">
+				<iframe scrolling="auto" name="WIZARD_CONTENT" id="WIZARD_CONTENT" width="100%" height="100%" frameborder="no" src="../html/blank.html" onload="myOnResize();"></iframe>
+			</div>			
+		</div>
+	</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html>
+<head>
+<title></title>
+  <!--[if gte IE 10]>
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE9"/>
+  <![endif]-->
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<link rel="stylesheet" type="text/css" href="/120814-042457/css/default.css" />
+	<link rel="stylesheet" type="text/css" href="/120814-042457/css/blue_theme.css" />
+	<link rel="stylesheet" type="text/css" href="/120814-042457/css/MxPortalEx.css" />
+	<script type="text/javascript" src="/120814-042457/js/buttonManager.js"></script>
+<script type="text/javascript"> 
+var ourButtonManager=new ButtonManager();
+function myOnLoad(){
+myOnResize();
+ourButtonManager.init();
+}
+function myOnResize(){
+top.setNewSize(window,"iframeContentsTree",(document.all?5:0),12);
+}
+function toggleTree(open){
+if(open){
+top.getHelpManager().openTree();
+}else{
+top.getHelpManager().closeTree();
+}
+}
+</script>
+</head>
+<body class="body-flush-fit" style="margin-left:7px;position:fixed;height:100%" onload="myOnLoad();" onresize="myOnResize();">
+<table cellpadding="0" cellspacing="0" width="100%" height="30">
+  <tr>
+    <td style="padding-left:0px;background:#cccccc;height:30px;" nowrap>
+	  <div class="buttonSet buttonsAreLeftAligned" style="margin-top:10px;margin-bottom:0px;margin-left:-2px;height:15px">
+		  <div class="bWrapperUp"><div><button style="width:20px;height:11px" class="hpButtonVerySmall" onclick="toggleTree(true);" id="btnOpen"><img src="/120814-042457/images/plus-plus.gif" style="padding-bottom:2px" border="0" ></button></div></div>
+		  <div class="bWrapperUp"><div><button style="width:20px;height:11px" class="hpButtonVerySmall" onclick="toggleTree(false);" id="btnClose"><img src="/120814-042457/images/minus-minus.gif" style="padding-bottom:2px" border="0" ></button></div></div>
+	   </div><div class="clearFloats"></div>
+    </td>
+  </tr>
+</table>
+ <iframe name="iframeContentsTree" id="iframeContentsTree" scrolling="auto" frameborder="no" style="width:100%;height:100%;border-right:0px;border-top:0px;border-left:5px solid #cccccc;border-bottom:5px solid #cccccc;" src="emHelp-TreePanel.html" />
+</body>
+</html>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DDirectorySettingsTesttab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Directory Test Settings tab</title>
+  <source>/120814-042457/Help/en/topics/DDirectorySettingsTesttab.xml</source>
+  <keywords>directory test settings LDAP group testing testing directory services</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">The <b>Test Settings</b> tab enables Onboard Administrator administrators to ensure that the configuration information provided allows the directory user access to the Onboard Administrator and to the resources in the enclosure. The <b>Test Settings</b> tab applies only to the current settings. Therefore, after making changes to the <b>Directory Settings </b>tab, you must click <b>Apply</b>, and then select the <b>Test Settings</b> tab.</p>
+        <p class="bodytext">Use the <b>Test Settings</b> tab to run and report the tests. When the tab page initially appears, it contains a list of tests with the current status of <tt>Not Run</tt>. To run the tests, click <b>Test Settings</b>. The tests are run in the order that they appear. The tests terminate when an error occurs. To perform the User Authentication and User Authorization tests, you must enter a user name and password in <b>Directory Test Controls</b>.</p>
+        <p class="bodytext">The following tests are performed in the order listed.</p>
+        <ul class="listbullet">
+          <li class="listbullet">
+            <b>Overall Test Status</b>
+            <p class="listcontinue">The Overall Test Status is an aggregation of all the tests run. The value will either be <tt>Not Run</tt>, <tt>Passed</tt>, or <tt>Failed</tt>. If any of the individual tests fail, the status is <tt>Failed</tt>.</p>
+          </li>
+          <li class="listbullet">
+            <b>Ping Directory Server</b>
+            <p class="listcontinue">A simple ping test is performed after a valid IP address or domain name is verified for the directory server. The ping test sends a maximum of four ping packets to the directory server and reports success or failure.</p>
+            <ul class="listbullet2">
+              <li class="listbullet2">A successful test reports that Onboard Administrator can establish a network path to the directory server.</li>
+              <li class="listbullet2">A failed test reports that Onboard Administrator cannot establish a network path to the directory server. The administrator should verify the host name or IP address.</li>
+            </ul>
+          </li>
+          <li class="listbullet">
+            <b>Directory Server IP Address</b>
+            <p class="listcontinue">If the LDAP configuration specifies an IP address instead of a DNS, then this test validates that the IP address is a valid IPv4 address. Otherwise, the test reports the <tt>Not Run</tt> status.</p>
+            <ul class="listbullet2">
+              <li class="listbullet2">A successful test reports that the IP address stored for the directory server is a valid IPv4 address.</li>
+              <li class="listbullet2">A failed test reports that the IP address stored for the directory server is not a valid IPv4 address. The administrator must verify the IP address entered and correct the IP address.</li>
+            </ul>
+          </li>
+          <li class="listbullet">
+            <b>Directory Server DNS Name</b>
+            <p class="listcontinue">The DNS lookup test determines if Onboard Administrator can resolve the domain name of the LDAP server. If the LDAP server configuration uses IP addresses instead of a DNS name, then this test reports the <tt>Not Run </tt>status.</p>
+            <ul class="listbullet2">
+              <li class="listbullet2">A successful test reports that Onboard Administrator is able to resolve the Directory Server host name using domain name.</li>
+              <li class="listbullet2">A failed test reports that Onboard Administrator is unable to resolve the Directory Server host name. The administrator must verify that the directory server host name is correct and that the host name is correct for the directory server.</li>
+            </ul>
+          </li>
+          <li class="listbullet">
+            <b>Connect to Directory Server</b>
+            <p class="listcontinue">This test attempts to connect to the specified directory server IP address and service port.</p>
+            <ul class="listbullet2">
+              <li class="listbullet2">A successful test reports that Onboard Administrator can establish a connection to the directory server at the specified host name or address and at the specified port number. The successful test indicates that network service is available; the directory service is running and available at the specified directory server and port.</li>
+              <li class="listbullet2">A failed test reports that Onboard Administrator cannot establish a connection to the directory server. The unsuccessful test reports that the network service is not available. The administrator must verify the host name or address and port number.</li>
+            </ul>
+          </li>
+          <li class="listbullet">
+            <b>Connect using SSL</b>
+            <p class="listcontinue">This test verifies that the directory server is providing the directory service over an SSL connection.</p>
+            <ul class="listbullet2">
+              <li class="listbullet2">A successful test reports that Onboard Administrator can establish an SSL connection to the directory server host name or IP address and port. The network service is available as a secure SSL connection.</li>
+              <li class="listbullet2">A failed test reports that the network service is not available as a secure SSL connection and the Onboard Administrator does not allow this type of connection. The administrator must identify a directory server that supports SSL connections or reconfigure the directory server to use SSL connections.</li>
+            </ul>
+          </li>
+          <li class="listbullet">
+            <b>Certificate of Directory Server</b>
+            <p class="listcontinue">If the directory server SSL certificate has been loaded onto Onboard Administrator, use this test to verify that the certificate provided by the directory server matches the current certificate stored on Onboard Administrator. If the directory server SSL certificate has not been loaded, then this test does not run.</p>
+            <ul class="listbullet2">
+              <li class="listbullet2">A successful test reports that Onboard Administrator was able to validate the directory server certificate against the certificates stored on Onboard Administrator for the specified directory server.</li>
+              <li class="listbullet2">A failed test reports that the directory server certificate stored on Onboard Administrator does not match the certificate provided on the SSL connection.</li>
+            </ul>
+          </li>
+          <li class="listbullet">
+            <b>User Authentication</b>
+            <p class="listcontinue">This test attempts to log in the user to the directory by using the user name and password provided in <b>Directory Test Controls</b>. If user authentication fails using the provided user name and password, then each search context is attempted. If a search context begins with the character @, then the DN used to log in is the search name concatenated to the user name entered. Otherwise, the search DN used to log in is constructed as follows: <tt>cn=&lt;username&gt;,&lt;search context&gt;</tt>. The result from this test identifies the search context that was successful in authenticating the user.</p>
+          </li>
+          <li class="listbullet">
+            <b>User Authorization</b>
+            <p class="listcontinue">After a user has successfully authenticated and logged into Onboard Administrator, the configured directory group to which the user belongs is identified. A user might belong to multiple directory groups, so the directory group that gives the user the most privileges is identified.</p>
+            <ul class="listbullet2">
+              <li class="listbullet2">A successful test reports the directory group with the highest privilege levels for the authenticated user.</li>
+              <li class="listbullet2">A failed test reports the authenticated user does not have any authorization on Onboard Administrator because the user does not belong to any of the configured directory groups.</li>
+            </ul>
+          </li>
+        </ul>
+        <p class="bodytext">
+          <b>Test Log</b>
+        </p>
+        <p class="bodytext">This is a running log of the details associated with the tests that have run and the results of those tests.</p>
+        <p class="bodytext">
+          <b>Directory Test Controls</b>
+        </p>
+        <p class="bodytext">The user name and password are sent to the LDAP server for authentication before the User Authentication and User Authorization tests are performed. The Onboard Administrator limits the length of the user name and password as indicated. Authentication requirements are defined by the LDAP server; the length limits imposed by the LDAP server might be more restricted than the limits imposed by the Onboard Administrator.</p>
+        <ul class="listbullet">
+          <li class="listbullet">User Name—Accepts 0 to 256 characters.</li>
+          <li class="listbullet">Password—Accepts 0 to 1024 characters.</li>
+        </ul>
+      </content>
+    </section>
+  </sections>
+</topic>

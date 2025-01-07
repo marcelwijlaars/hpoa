@@ -1,0 +1,139 @@
+<!--  (C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css">
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css">
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css">
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+
+<script type="text/javascript">
+var encNum;
+var hpem=null;
+var formMgr=null;
+function loadContent(){
+try{
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+var formMgr=new FormManager(function(success){
+var processor=new XsltProcessor('../Templates/encFactoryDefaults.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('oaSessionKey',(hpem.getActiveFirmwareVersion()<2.00?hpem.getSessionKey():""));
+processor.addParameter('oaUrl',removeTrailingSlash(getServiceUrl(hpem.getIsLocal()?'':hpem.getProxyUrl(),true)));
+processor.addParameter('vcmMode',hpem.getOaVcmMode());
+processor.addParameter('fipsMode',getElementValueXpath(hpem.getEnclosureNetworkInfo(),'//hpoa:extraData[@hpoa:name="FipsMode"]'));
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+hpem.registerEventHandler(handleVcmEvent,['EVENT_OA_VCM','EVENT_VCM_FQDN_INFO_REFRESH']);
+reconcilePage();
+});
+formMgr.startBatch(true,true);
+formMgr.queueCall(hpem.getOaVcmMode);
+formMgr.endBatch();
+top.mainPage.getHelpLauncher().setCurrentTopic("FORM_ENC_FACTORY_DEFAULTS");
+}else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);
+}
+}catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+}
+function load_config_script(){
+var local_oaUrl='';
+var local_oaSessionKey='';
+var local_queryString='';
+if(hpem.getActiveFirmwareVersion()<2.00){
+local_oaSessionKey=hpem.getSessionKey();
+}
+if(local_oaSessionKey!=''){
+local_queryString+='?oaSessionKey=';
+local_queryString+=local_oaSessionKey;
+local_queryString+='&stylesheetUrl=/120814-042457/Templates/cgiResponse';
+}else{
+local_queryString+='?stylesheetUrl=/120814-042457/Templates/cgiResponse';
+}
+if(hpem.getIsLocal()){
+local_oaUrl+=getServiceUrl('',true);
+}
+else{
+local_oaUrl+=getServiceUrl(hpem.getProxyUrl(),true);
+}
+local_oaUrl+='/cgi-bin/getConfigScript';
+local_oaUrl+=local_queryString;
+window.open(local_oaUrl);
+}
+function resetDefaults(){
+var confirmString=top.getString('confirmResetDefaultsDesc1')+
+top.getString('confirmResetDefaultsDesc2')+' '+
+top.getString('confirmResetDefaultsDesc3')+' '+
+top.getString('confirmResetDefaultsDesc4')+'\n\n'+
+top.getString('areYouSure');
+if(confirm(confirmString)){
+formMgr=new FormManager(function(success){
+if(success){
+if(hpem.getIsLocal()==true&&top.getTopology().getAuthenticatedProxies().length>1){
+top.getTopology().logoutAndDestroyAll(true,function(){},null,true);
+}
+if(hpem.getIsAuthenticated()==true){
+if(hpem.getIsLocal()==true){
+top.logEvent("Factory Defaults: Starting reset timer from formMgr.",null,1,2);
+top.displayHiddenFrame();
+top.MX_HIDDEN.displayResetTimer(false,null,'',OA_REBOOT_TIMEOUT_FR());
+}else{
+top.logEvent("Factory Defaults: Removing linked enclosure.",null,1,2);
+top.getTopology().removeProxy(hpem.getUuid());
+}
+hpem.setIsAuthenticated(false);
+}else{
+top.logEvent("Factory Defaults: EVENT_OA_REBOOT already received.",null,1,3);
+}
+}else{
+top.getTransport().assertUntimedCallsEnded(hpem.getUuid());
+top.logEvent("Factory Defaults: Unsuccessful formMgr batch @ restoreFactoryDefaults.",null,1,6);
+}
+},false,'resetErrorDisplay','bodyContent','waitContainer');
+formMgr.createWaitContainer(top.getString('resettingFactoryDefaults'));
+formMgr.startBatch(false);
+formMgr.queueCall(hpem.restoreFactoryDefaults);
+formMgr.endBatch();
+}
+}
+function clearVcmMode(){
+var confirmString=top.getString('clearVcConfirm');
+if(confirm(confirmString)){
+formMgr=new FormManager(function(success){
+if(success){
+alert(top.getString('vcCleared'),AlertMsgTypes.Information);
+}
+},false,'clearVcErrorDisplay','bodyContent','waitContainer');
+formMgr.createWaitContainer(top.getString('vcClearWaitMsg'));
+formMgr.makeCall(hpem.clearOaVcmMode);
+}
+}
+function unloadPage(){
+try{
+hpem.removeRegisteredHandler(handleVcmEvent);
+}catch(e){}
+}
+function handleVcmEvent(result){
+var enabled=getElementValueXpath(result,'//hpoa:oaVcmMode/hpoa:isVcmMode');
+if(enabled=='false')
+toggleElementVisible('resetErrorDisplay',false);
+document.getElementById('vcModeLbl').innerHTML=top.getString(enabled=='false'?'disabled':'enabled');
+}
+</script>
+</head>
+<body style="margin:10px;" onload="loadContent();" onunload="unloadPage();">
+    <div id="bodyContent"></div>
+  <div id="waitContainer" class="waitContainer"></div>
+</body>
+</html>

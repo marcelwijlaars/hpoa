@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DFIPS_FTSW" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>FIPS</title>
+  <source>/120814-042457/Help/en/topics/DFIPS_FTSW.xml</source>
+  <keywords>enforce strong encryption FIPS Mode enabling</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>FIPS Mode</b>
+        </p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  FIPS Mode changes to ON/DEBUG or OFF do not take effect unless VC Mode is disabled.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  When the Onboard Administrator is operating in FIPS Mode, certificates must have a minimum RSA key length of 2048 bits, and the signature hash algorithm must be SHA1, SHA-224, SHA-256, SHA-384, or SHA-512. 
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <ul class="listbullet">
+          <li class="listbullet">
+            <b>FIPS Mode OFF</b>—Enables the use of non-FIPS-140-2-approved algorithms.</li>
+          <li class="listbullet">
+            <b>FIPS Mode ON</b>—Enforces the use of the Onboard Administrator in a FIPS 140-2-approved mode. This setting supports the use of approved cryptographic protocols and ciphers.</li>
+          <li class="listbullet">
+            <b>FIPS Mode DEBUG</b>—Sets the Onboard Administrator to an environment similar to the FIPS Mode ON, but with the option of debug support from HP. The FIPS Mode DEBUG has the functionalities of the FIPS Mode ON, but it is not considered FIPS-compliant because of the debug option.</li>
+        </ul>
+        <p class="bodytext">The Onboard Administrator restarts after all changes are made.</p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext">
+                <img src="/120814-042457/Help/images/35894.png" alt="" />
+              </p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">IMPORTANT:</b>  All existing settings are lost when you run this operation. Any change to the FIPS Mode setting performs a Restore to Factory Default operation.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="bodytext">
+          <b>FIPS Strong Password Enforcement</b>
+        </p>
+        <p class="bodytext">When changing between available FIPS modes, strong passwords are enabled, minimum password length is set to eight characters, and a new Administrator account password is requested. Additionally, if changing to either FIPS Mode ON or FIPS Mode DEBUG, the Enclosure IP Mode, Telnet, SNMPv1, and SNMPv2 protocols are disabled and SNMPv3 is available.</p>
+        <p class="bodytext">To save the settings, click <b>Next</b>. In case of linked enclosures, only the primary enclosure is affected. To advance to the next step without applying the FIPS settings, click <b>Skip</b>.</p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  Entering and exiting FIPS Mode performs a factory restore operation and locks the Insight Display (LCD). If the Onboard Administrator was previously configured with a static IP address, it defaults to a DHCP address until reconfigured with a static IP address. Recovery requires access to the Onboard Administrator serial console to perform the <tt>SHOW OA NETWORK</tt> command to discover the new Onboard Administrator IP address.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="bodytext">The term FIPS Mode used in this document and within the product is to describe the feature, and not its validation status. The FIPS validation process is lengthy, so not all versions are FIPS validated. For information about the current FIPS status of this or any other firmware version, see the following documents:</p>
+        <ul class="listbullet">
+          <li class="listbullet">
+            <a href="http://csrc.nist.gov/groups/STM/cmvp/documents/140-1/140InProcess.pdf" target="ID0EBF">Cryptographic Module Validation Program FIPS 140-1 and FIPS 140-2 Modules In Process List</a>
+          </li>
+          <li class="listbullet">
+            <a href="http://csrc.nist.gov/groups/STM/cmvp/documents/140-1/1401vend.htm" target="ID0EHF">FIPS 140-1 and FIPS 140-2 Vendor List</a>
+          </li>
+        </ul>
+        <p class="bodytext">
+          <b>Clear VC Mode</b>
+        </p>
+        <p class="bodytext">Clearing the VC mode removes all VC settings from the enclosure. Before clearing the VC mode, power off all VC-configured servers. If servers are not powered down, they might maintain the VC settings until they are rebooted. You must clear the VC mode before changing the FIPS Mode setting from OFF to ON/DEBUG or vice versa.</p>
+        <p class="procedurelead-in">To clear the VC Mode:</p>
+        <ol class="listnumber">
+          <li class="listnumber">Click <b>Clear VC Mode</b>. A confirmation screen appears, stating <tt>All servers should be powered off and not configured by Virtual Connect prior to clearing VC mode. Are you sure that you wish to clear VC mode?</tt></li>
+          <li class="listnumber">Click <b>OK</b>.</li>
+        </ol>
+        <p class="bodytext">
+          <b>Advanced Security Settings</b>
+        </p>
+        <p class="bodytext">You can enable or disable selected security protocols and ciphers from the <b>Enclosure Settings</b>&gt;<b>Network Access</b>&gt;<b><a href="DFIPStab.xml">FIPS</a></b><a href="DFIPStab.xml"> tab</a>.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DEditVLAN" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Edit VLAN</title>
+  <source>/120814-042457/Help/en/topics/DEditVLAN.xml</source>
+  <keywords>edit VLAN VLAN configuration</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">You can only edit the VLAN Name. This field is limited to a maximum of 31 alphanumeric characters.</p>
+        <p class="bodytext">To save the VLAN Name change, click <b>Apply.</b></p>
+      </content>
+    </section>
+  </sections>
+</topic>

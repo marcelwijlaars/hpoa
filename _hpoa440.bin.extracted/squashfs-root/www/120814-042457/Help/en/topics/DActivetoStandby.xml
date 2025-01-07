@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DActivetoStandby" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Active to Standby</title>
+  <source>/120814-042457/Help/en/topics/DActivetoStandby.xml</source>
+  <keywords>active to standby</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">If more than one Onboard Administrator is installed in the enclosure, you can manually change which Onboard Administrator is active. This feature can be useful when troubleshooting the Onboard Administrator or if a second Onboard Administrator has been installed with an older firmware version (and automatic transition is disabled).</p>
+        <p class="bodytext">To perform a transition, click <b>Transition Active to Standby</b> to force the change. A confirmation screen appears, asking if you are sure that you want to perform the transition and warning you that you will have to close your browser if you are signed into the Active Onboard Administrator. To proceed, click <b>OK;</b> to exit without a change, click <b>Cancel</b>.</p>
+        <p class="bodytext">If only one Onboard Administrator is installed in the enclosure, the Active to Standby menu item does not appear in the menu.</p>
+        <p class="bodytext">The transition times from Standby to Active and Active to Standby vary, depending on the configuration, enclosure population, and various other factors. Removing the previously Active Onboard Administrator early in the transition process forces the transition time of the Standby to Active to increase.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

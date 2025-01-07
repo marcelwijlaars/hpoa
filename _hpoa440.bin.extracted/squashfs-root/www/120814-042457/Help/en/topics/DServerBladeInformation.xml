@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DServerBladeInformation" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Server blade information</title>
+  <source>/120814-042457/Help/en/topics/DServerBladeInformation.xml</source>
+  <keywords>Secure Boot firmware management restrictions server blade status information server information</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">Selecting a specific server blade will display the Device Bay Information—Bay xx page, where xx is the bay selected. Information provided on this screen includes tabs for Status, Information, Virtual Buttons, Boot Options, and IML Log.</p>Server blade status tab<p class="bodytext">The Server Management section of the page contains links to facilitate management of the server blade in the device bay.</p><p class="bodytext"><b>Status information</b></p><p class="tablespacerbefore" /><table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2"><tr><th class="tableheading" style="border:1px solid #010101;text-align:left;">Row
+</th><th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">System Event Health 
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">The internal System Event Health that the device is reporting. If the status is not OK, examine the blade System Event Log on the iLO to determine the cause of the condition. Possible values are OK, Degraded, or Failed. 
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Status
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">The overall status of the blade. Possible values are Unknown, OK, Degraded, Failed, or Other with an informational icon. The informational icon with an Other status displays until the server blade is configured for Virtual Connect Manager. See the Diagnostic Information table for further information.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Powered
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">The power state of the blade. Possible values are On or Off.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Power Delay Remaining 
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">The number of seconds remaining before the device powers on.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Power Allocated
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">The amount of power allocated to the blade in watts.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Partner Device
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">The storage/expansion blade the server blade is partnered with. This information does not display if there is no partner device.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Virtual Fan
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">The percentage of maximum RPM of the virtual fan.
+</p></td></tr></table><p class="tablespacerafter" /><p class="bodytext">The information in the status information table is current as of the last download. To update the status information, click <b>Refresh.</b></p><p class="bodytext"><b>Diagnostic Information</b></p><p class="bodytext">Diagnostic information is gathered by polling a device microcontroller (resulting in a degraded status if a failure has occurred) or is sent by the device microcontroller, without being polled to report a failure.</p><p class="tablespacerbefore" /><table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2"><tr><th class="tableheading" style="border:1px solid #010101;text-align:left;">Row
+</th><th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Device Identification Data
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Model name, part number, serial number, and other information used to identify the device is checked. This data is also referred to as FRU data. If the data is not present or not readable by the Onboard Administrator, then a device identification data error appears. Possible values are OK or Error.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Management Processor
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Status of the iLO. Possible values are OK or Error.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Temperature
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Temperature is above the warning threshold. Possible values are OK or Temperature Warning.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Overheat Check
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Temperature is above the danger threshold. Possible values are OK or Critical temperature threshold reached.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">I/O Configuration
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Device bay configuration is incorrect. If a storage blade is partnered with a full-height server blade, and the server blade does not have the correct mezzanine card, then an invalid I/O configuration results. Possible values are OK or I/O mismatch detected.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Power Allocation Request
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Available power is insufficient to adequately power this server blade. Possible values are OK or Insufficient enclosure power.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Cooling
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">The number of fans is insufficient to properly cool this server blade, or the fan configuration is incorrect. Possible values are OK or Insufficient fans for enclosure cooling.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Device Location
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">The server blade has been placed in the wrong slot in the enclosure according to the current fan configuration. Possible values are OK or Incorrect location for proper device cooling.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Device Operational
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Device has failed. Status was not requested by the Onboard Administrator. Possible values are OK or Error.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Device Degraded
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Device has failed. Status was requested by the Onboard Administrator. Possible values are OK or Error.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">iLO Network
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Detects an iLO network configuration problem. Possible values are OK or iLO network configuration problem, check connectivity to iLO default gateway. If the problem continues, then attempt to reset the iLO using the iLO GUI or the Onboard Administrator CLI <tt>RESET ILO</tt> command. You can also use the CLI  <tt>HPONCFG</tt> command to send a script command to reset iLO.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Memory Error
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">A memory error occurred on the server blade. To correct the error, follow the instructions provided.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Mezzanine Card
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Displays an error if a missing mezzanine card prevents the server blade from partnering. Displays OK if no partnering issues were discovered while diagnosing a power-on request. This status will be reset if the Onboard Administrator reboots.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Duplicate IP Address
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">A check to see if a duplicate IP address exists on the network during assignment. Possible values are OK or an informational message indicating there is a duplicate IP address on the network.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Enclosure Dynamic Power Capping
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">A warning that communication with iLO has been lost and power capping cannot be set.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Partner Device Link
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Server blade partner device link status. Possible values are OK or Inappropriate device in adjacent bay. If the server blade is not partnered with a storage blade, this information does not appear.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Virtual Connect Configured
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Possible values are Configured for Virtual Connect or Not configured for Virtual Connect. When the server blade is not configured for Virtual Connect, an informational icon with an Other status appears. To configure the server blade profile, go to the Virtual Connect Manager.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Low Power Request
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">The server blade reported an abnormally low power requirement. The server blade was powered off and did not release all of the power. The server blade will continue to operate properly, but correct the issue by contacting a service representative.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Firmware Management
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">The status of firmware management on the server.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Power Denial-Discovery
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">A warning that device power delayed during device discovery.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Power Denial-SAS Storage
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">A warning that device power delayed until SAS storage is ready.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Power Denial-Partnering
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">A warning that device power delayed until device is configured for partnership.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Power Denial-VC Profile
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">A warning that device power delayed until VC profile is applied.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Power Denial-OA Initialization
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">A warning that device power delayed until the OA has completed initialization.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Power Denial-Power Delay
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">A warning that device power delayed until the configured Power Delay for this bay has elapsed.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Power Denial-Firmware Management
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">A warning that device power delayed until Firmware Management process completes.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Power Denial-I/O Discovery
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">A warning that device power delayed until interconnect discovery is complete.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Power Denial-Settings
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">A warning that device power delayed until device settings are updated. Please retry power operation.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Power Denial-Partner Discovery
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">A warning that device power delayed until potential partner devices are discovered.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Power Denial-I/O Ready
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">A warning that device power delayed until corresponding interconnect is ready.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Power Denial-I/O Missing
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">A warning that device power delayed until corresponding interconnect is inserted into enclosure.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Power Denial-SAS Mezz
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">A warning that device power delayed until SAS Mezz discovery is complete.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Power Denial-Blade Link Discovery
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">A warning that device power delayed during MMP Blade Link device discovery.
+</p></td></tr></table><p class="tablespacerafter" /><p class="bodytext"><b>Temperature Sensors information</b></p><p class="tablespacerbefore" /><table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2"><tr><th class="tableheading" style="border:1px solid #010101;text-align:left;">Column
+</th><th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Location
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Location of sensor in the device.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Status
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">This is the status of the temperature sensor. The status matches the graphic presentation of the temperature.
+</p></td></tr><tr valign="top"><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Temperature
+</p></td><td style="border:1px solid #010101;" align="left"><p class="tablebodytext">Graphic presentation of temperature.
+</p></td></tr></table><p class="tablespacerafter" /><p class="bodytext"><b>Related topic:</b></p><p class="bodytext"><a href="DStoragebladeinformation.xml">Storage blade information</a></p></content>
+    </section>
+  </sections>
+</topic>

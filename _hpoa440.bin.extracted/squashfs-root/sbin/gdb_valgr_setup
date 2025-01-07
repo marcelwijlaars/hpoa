@@ -1,0 +1,120 @@
+#!/bin/sh
+
+# ****** Before Running This Script ******
+# - Host nfs.tar.gz on a server (can any server with apache running, etc.)
+# - Set up and enable NFS server (on your development server)
+
+# ****** Enter Parameters ***************
+# 1) Enter hostname/IP for NFS share; 
+# 2) Enter the NFS directory path and subdirectory name if applicable.
+# Example: NFS_HOST=172.16.1.10; NFS_DIR=/nfs; HOST_DIR=svnroot
+# For example, if you have trunk, f_abc, and f_xyz checked out in /nfs, then to debug f_abc, HOST_DIR=f_abc.
+NFS_HOST=$1
+WEB_SERVER_URL=$2
+NFS_DIR=/var/jenkins/workspace/OA-4.40-Release
+HOST_DIR=sources
+
+if [ "x$NFS_HOST" = "x" ]; then
+	echo "NFS_HOST not defined.  Please run script with ip address of your NFS server"
+	exit 1
+fi
+
+if [ "x$NFS_DIR" = "x" ]; then
+	echo "NFS_DIR not defined. ????"
+	exit 1
+fi
+
+if [ "x$HOST_DIR" = "x" ]; then
+	echo "HOST_DIR  not defined. ????"
+	exit 1
+fi
+SVNROOT_HOST=$NFS_DIR/$HOST_DIR
+if [ "x$WEB_SERVER_URL" = "x" ]; then
+	TARBALL_ADDR=http://$1/
+else 
+	TARBALL_ADDR=$WEB_SERVER_URL
+fi
+
+NFS_TAR_ADDR="$TARBALL_ADDR/nfs.tar.gz"
+DEBUGFS_SERVER=$SVNROOT_HOST/udog-initrd/vroot-debugfs
+DEBUGFS_OA=/usr/local2
+
+KVER=`uname -r`
+RAMDISK_DIR=/ramdisk
+NFS_OA_DIR=$RAMDISK_DIR/$HOST_DIR
+
+echo ""
+echo "Getting NFS Tarball ..."
+cd $RAMDISK_DIR
+wget $NFS_TAR_ADDR
+
+echo ""
+echo "Extracting NFS Tarball ..."
+zcat nfs.tar.gz | tar xvf -
+VROOT_NFS=$RAMDISK_DIR/vroot-nfs
+
+echo ""
+echo "Inserting SUNRPC module ... "
+if [ ! -f "$VROOT_NFS/lib/modules/$KVER/kernel/net/sunrpc/sunrpc.ko" ]; then
+	echo "Can't find sunrpc.ko in $VROOT_NFS/lib/modules/$KVER/kernel/net/sunrpc/"
+	exit 1
+else
+	insmod $VROOT_NFS/lib/modules/$KVER/kernel/net/sunrpc/sunrpc.ko
+fi
+
+echo "Inserting LOCKD module ... "
+if [ ! -f "$VROOT_NFS/lib/modules/$KVER/kernel/fs/lockd/lockd.ko" ]; then
+	echo "Can't find lockd.ko in $VROOT_NFS/lib/modules/$KVER/kernel/fs/lockd/"
+	exit 1
+else
+	insmod $VROOT_NFS/lib/modules/$KVER/kernel/fs/lockd/lockd.ko
+fi
+
+echo "Inserting NFS module ... "
+if [ ! -f "$VROOT_NFS/lib/modules/$KVER/kernel/fs/nfs/nfs.ko" ]; then
+    echo "Can't find nfs.ko in $VROOT_NFS/lib/modules/$KVER/kernel/fs/nfs/nfs.ko"
+    exit 1
+else
+	insmod $VROOT_NFS/lib/modules/$KVER/kernel/fs/nfs/nfs.ko
+fi
+
+echo ""
+echo "Loading NFS tools..."
+if [ ! -f "$VROOT_NFS/nfs/sbin/portmap" ]; then
+	echo "portmap doesn't exist"
+	exit 1
+fi
+
+if [ ! -f "$VROOT_NFS/nfs/sbin/rpc.statd" ]; then
+	echo "rpc.statd doesn't exit"
+	exit 1
+fi
+
+cd $VROOT_NFS/nfs/sbin
+./portmap
+./rpc.statd -L
+
+echo ""
+echo "Mounting nfs..."
+
+if [ ! -f "$VROOT_NFS/nfs/sbin/mount.nfs" ]; then
+	echo "mount.nfs doesn't exist"
+fi
+
+if [ ! -d $NFS_OA_DIR ]; then
+	mkdir -p $NFS_OA_DIR
+fi
+
+if [ ! -d $DEBUGFS_OA ]; then
+	mkdir -p $DEBUGFS_OA
+fi
+
+# du can hog alot of CPU cycles when traversing NFS mounts
+killall monitor
+
+./mount.nfs $NFS_HOST:$SVNROOT_HOST $NFS_OA_DIR
+./mount.nfs $NFS_HOST:$DEBUGFS_SERVER $DEBUGFS_OA
+
+ln -sf $DEBUGFS_OA/bin/valgrind /sbin/valgrind
+
+ln -sf $DEBUGFS_OA/bin/gdb /sbin/gdb

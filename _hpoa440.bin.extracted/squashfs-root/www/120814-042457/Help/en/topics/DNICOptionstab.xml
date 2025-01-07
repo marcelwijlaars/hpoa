@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DNICOptionstab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>NIC Options tab</title>
+  <source>/120814-042457/Help/en/topics/DNICOptionstab.xml</source>
+  <keywords>DHCP (Dynamic Host Configuration Protocol) NIC Options tab NIC settings settings NIC</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>TCP/IP settings - NIC options</b>
+        </p>
+        <p class="bodytext">
+          <b>NIC settings</b>
+        </p>
+        <ul class="listbullet">
+          <li class="listbullet">
+            <b>Auto-Negotiate</b>—Automatically configures the best link. This is the default setting. This option supports a NIC speed of 10Mb/s, 100Mb/s, or 1000Mbps. The 1000Mb/s setting is only available when Auto-Negotiate is selected.</li>
+          <li class="listbullet">
+            <b>Forced Full Duplex</b>—Enables you to manually specify which settings the external NIC uses when trying to establish a link. Onboard Administrator does not verify that the forced Ethernet settings are valid on the network. The loss of communications might occur if the wrong or incompatible settings are used. Forced settings take effect 3 seconds after enabling or disabling the settings. The forced option only supports NIC speeds of 10Mbps or 100Mb/s.</li>
+          <li class="listbullet">
+            <b>NIC Speed</b>—Selects a NIC speed of 10Mb/s or 100Mb/s</li>
+        </ul>
+        <p class="bodytext">To save the new settings, click <b>Apply</b>.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

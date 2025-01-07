@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DLoginBannertab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Login Banner tab</title>
+  <source>/120814-042457/Help/en/topics/DLoginBannertab.xml</source>
+  <keywords>network access configuring</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">Enabling the Login Banner option requires Onboard Administrator users to acknowledge the banner text before they can log in.</p>
+        <p class="bodytext">
+          <b>Enable Display of Banner on User Login</b>—Select this check box to enable the Login Banner option. Acknowledgment of the Login Banner text provides access to all systems connected to the primary Onboard Administrator.</p>
+        <p class="bodytext">
+          <b>Banner Text</b>—The field size is limited to 1,500 printable characters, excluding the % \ &lt; &gt; ( ) &amp; # characters.  While spaces and line feeds are accepted, using only white-space characters within this text field is not allowed.</p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext"></p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">NOTE:</b>  The Login Banner accepts English (ASCII) characters only.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="bodytext">
+          <b>Apply</b>—Click to validate the Banner Text field. If the Banner Text field is empty or contains only white-space characters, but the Enable Display of Banner on User Login check box is selected, you are prompted to disable this feature.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

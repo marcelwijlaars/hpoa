@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DSetupWizardoverview" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>First Time Setup Wizard overview</title>
+  <source>/120814-042457/Help/en/topics/DSetupWizardoverview.xml</source>
+  <keywords>First Time Setup Wizard passwords setup wizard using</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">The First Time Setup Wizard assists you in setting up your enclosures the first time you sign in to the Onboard Administrator. The wizard can also be used after initial setup to make the same changes to multiple enclosures at the same time.</p>
+        <p class="bodytext">If you did not finish using the First Time Setup Wizard and do not want to return to it the next time you sign in, then select the check box.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

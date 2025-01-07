@@ -1,0 +1,263 @@
+<!--  (C) Copyright 2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css">
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css">
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css">
+<link rel="stylesheet" type="text/css" href="../css/widgets.css">
+<script type="text/javascript" src="../js/EnvironConstants.js" ></script>
+<script type="text/javascript" src="../js/tabManager.js"></script>
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+<script type="text/javascript">	
+var encNum;
+var emNum;
+var hpem=null;
+var readOnly=true;
+var inputTest1=null;
+var inputTest2=null;
+var inputTest3=null;
+var inputTest4=null;
+var templateNames={
+ipv4Tab:'ipv4SettingsTab',
+ipv6Tab:'ipv6SettingsTab',
+nicTab:'nicSettingsTab',
+advTab:'advSettingsTab'
+};
+function loadContent(){
+try{
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+emNum=parseInt(getSearchValue(location.search,'emNum'));
+var tabRef=getSearchValue(location.search,'tabid');
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+readOnly=(hpem.getUserAccessLevel()=="USER"||hpem.getUserOaPermission()!=true);
+hpem.registerEventHandler(networkEventHandler,['EVENT_NETWORK_INFO_CHANGED','EVENT_OA_NETWORK_CONFIG_CHANGED']);
+selectTab((tabRef==''?'ipv4Tab':tabRef),false);
+}else{
+displayContentFailed('tabContent',[top.getString('noOnboardAdmin')]);
+}
+}catch(e){
+displayContentFailed('tabContent',[e.message]);
+}
+}
+function getCurrentTab(){
+return ourTabManager.getCurrentTab();
+}
+function selectTab(tabId,fresh){
+ourTabManager.toggleTabs(tabId);
+setTabContent(tabId,assertFalse(fresh),true);
+}
+function setTabContent(tabId,fresh,init){
+try{
+var contentTab=document.getElementById(tabId);
+var contentLocation=contentTab.getAttribute('contentLocation');
+var contextId=contentTab.getAttribute('contextId');
+top.mainPage.getHelpLauncher().setCurrentTopic(contextId);
+formMgr=new FormManager(function(success){
+if(success){
+var processor=new XsltProcessor(contentLocation);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('enclosureName',hpem.getEnclosureName());
+processor.addParameter('oaStatusDoc',hpem.getOaStatus(emNum));
+processor.addParameter('oaNetworkInfoDoc',hpem.getOaNetworkInfo(emNum));
+processor.addParameter('readOnly',String(readOnly));
+processor.addParameter('templateName',templateNames[tabId]);
+document.getElementById('tabContent').innerHTML=processor.getOutput();
+if(readOnly){
+toggleFormEnabled('pageContents',false);
+}
+reconcilePage();
+if(tabId=="ipv6Tab"){
+inputTest1=new InputValidator("validate-static-ip","errorContainer",true);
+inputTest2=new InputValidator("validate-dyn-dns","errorContainer",true);
+inputTest3=new InputValidator("validate-static-default-gw","errorContainer",true);
+inputTest4=new InputValidator("validate-static-gw","errorContainer",true);
+}
+}else{
+displayContentFailed('tabContent',formMgr.getErrorsArray());
+}
+},true,'errorContainer','tabContent','waitContainer');
+if(init){
+formMgr.startBatch(true,fresh);
+}else{
+formMgr.startTransactionBatch(fresh);
+}
+formMgr.queueCall(hpem.getOaNetworkInfoAll);
+formMgr.endBatch();
+}catch(e){
+displayContentFailed('tabContent',[e.message]);
+reconcilePage();
+}
+}
+function networkEventHandler(result){
+if(getElementValueXpath(result,"//hpoa:bayNumber")==emNum){
+if(getInnerHTML("errorContainer")!=""){
+toggleElementVisible("loadNotice",true);
+}else if(getBatchCount()==0){
+setTabContent(getCurrentTab(),false,false);
+}
+}
+}
+function setupStandbyIpv4Settings(){
+var ourInputValidator=new InputValidator('validate-netsettings','errorContainer',true);
+var opt=getOptionGroupValue('IPSetting');
+if(!(opt=="DHCP"||opt=="Static")){
+alert(top.getString('noOptionSelected'));
+return;
+}
+if(opt=="Static"&&(!ourInputValidator.allInputsValidate())){
+ourInputValidator.updateMessages(true);
+ourInputValidator.autoFocus();
+return;
+}else{
+ourInputValidator.clearMessages();
+}
+var confirmString=top.getString('chgOANetSettingDesc1')+'\n'+top.getString('chgOANetSettingDesc2')+'\n'+top.getString('chgOANetSettingDesc3');
+if(!confirm(confirmString)){
+return;
+}
+var oaName=getInputValue('DnsName');
+var ipAddress=getInputValue('ipAddress');
+var netmask=getInputValue('subnetMask');
+var gateway=getInputValue('gateway');
+var dns1=assertEmptyIpAddress(getInputValue('dnsAddress1'));
+var dns2=assertEmptyIpAddress(getInputValue('dnsAddress2'));
+var dynDns=getInputValue('DynDNS');
+var formMgr=new FormManager(function(success){
+if(success){
+}
+},false,'errorContainer','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString('completingOaNetworkSettings'));
+formMgr.batchEventDelay=3;
+formMgr.startBatch();
+if(opt=="Static"){
+formMgr.queueCall(hpem.setIpConfigStatic,[emNum,ipAddress,netmask,gateway,dns1,dns2]);
+}else{
+formMgr.queueCall(hpem.configureOaDhcp,[emNum,dynDns],[],['85']);
+}
+formMgr.queueCall(hpem.setOaName,[emNum,oaName]);
+formMgr.endBatch();
+}
+function setupStandbyIpv6Settings(){
+var inputValidator=new InputValidator("validate-static-ip","errorContainer",true);
+if(!inputValidator.allInputsValidate()){
+inputValidator.updateMessages(true);
+return;
+}else{
+inputValidator.clearMessages();
+}
+inputValidator=new InputValidator("validate-static-default-gw","errorContainer",true);
+if(!inputValidator.allInputsValidate()){
+inputValidator.updateMessages(true);
+return;
+}else{
+inputValidator.clearMessages();
+}
+inputValidator=new InputValidator("validate-static-gw","errorContainer",true);
+if(!inputValidator.allInputsValidate()){
+inputValidator.updateMessages(true);
+return;
+}else{
+inputValidator.clearMessages();
+}
+var confirmString=top.getString('chgOANetSettingDesc1')+'\n'+top.getString('chgOANetSettingDesc2')+'\n'+top.getString('chgOANetSettingDesc3');
+if(!confirm(confirmString)){
+return;
+}
+var formMgr=new FormManager(function(success){
+if(success){
+}
+},false,'errorContainer','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString('completingOaNetworkSettings'));
+formMgr.batchEventDelay=5;
+formMgr.startBatch();
+if(!inputTest1.allInputsAreClean()){
+formMgr.queueCall(hpem.setOaNetworkStaticIpv6,[emNum,getInputValue('StaticAddrIpv61'),getInputValue('StaticAddrIpv62'),getInputValue('StaticAddrIpv63'),getInputValue('ipv6dns1'),getInputValue('ipv6dns2')]);
+}
+if(!inputTest2.allInputsAreClean()){
+formMgr.queueCall(hpem.configureOaIpv6DyndnsBay,[emNum,getInputValue("ipv6DynDns")]);
+}
+if(!inputTest3.allInputsAreClean()){
+formMgr.queueCall(hpem.setOaIpv6StaticDefaultGateway,[emNum,getInputValue('staticipv6gw')]);
+}
+if(!inputTest4.allInputsAreClean()){
+formMgr.queueCall(hpem.setOaIpv6StaticRoutes,[emNum,getInputValue('staticipv6routedestination1'),getInputValue('staticipv6routedestination2'),getInputValue('staticipv6routedestination3'),getInputValue('staticipv6routegateway1'),getInputValue('staticipv6routegateway2'),getInputValue('staticipv6routegateway3')]);
+}
+formMgr.endBatch();
+}
+function setupStandbyNicSettings(){
+var confirmString=top.getString('confirmNicSettings1')+'\n'+top.getString('confirmNicSettings2');
+if(!confirm(confirmString)){
+return;
+}
+var formMgr=new FormManager(function(success){
+if(success){
+}
+},false,'errorContainer','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString('completingOaNetworkSettings'));
+formMgr.batchEventDelay=3;
+formMgr.startBatch();
+if(getOptionGroupValue('nicSetting')=="NIC_DUPLEX_FULL"){
+formMgr.queueCall(hpem.configureOaNicForced,[emNum,getInputValue('nicSpeedSelect'),"NIC_DUPLEX_FULL"]);
+}else{
+formMgr.queueCall(hpem.configureOaNicAuto,[emNum]);
+}
+formMgr.endBatch();
+}
+function setupStandbyAdvancedSettings(){
+var formMgr=new FormManager(function(success){
+if(success){
+}
+},false,'errorContainer','tabContent','waitContainer');
+formMgr.createWaitContainer(top.getString('completingAdvancedNetSettings'));
+formMgr.batchEventDelay=3;
+formMgr.startBatch();
+formMgr.queueCall(hpem.setOaUserDomainNameAndState,[emNum,getInputValue('overrideDn'),!(getInputValue('dnsOverride'))]);
+formMgr.endBatch();
+}
+function pageUnload(){
+try{
+hpem.removeRegisteredHandler(networkEventHandler);
+}catch(e){}
+}
+</script>
+</head>
+<body style="padding:0px;margin:10px;" onload="loadContent();" onunload="pageUnload();">
+  <div id="ID_BODY_PROXY" style="width:98%;margin:0px;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" ID="tabTable">
+      <tr>
+        <td valign="bottom">
+          <div class="tabSet" id="tabSet">
+            <div class="tabOff" tabid="ipv4Tab" contextId="FORM_STDBY_IPV4_STDBY_GUI" id="ipv4Tab" contentLocation="../Forms/standbyNetworkSettingsPage.xsl"><script>document.write(top.getString('ipv4Settings'));</script></div>
+            <div class="tabOff" tabid="ipv6Tab" contextId="FORM_STDBY_IPV6_STDBY_GUI" id="ipv6Tab" contentLocation="../Forms/standbyNetworkSettingsPage.xsl"><script>document.write(top.getString('ipv6Settings'));</script></div>
+            <div class="tabOff" tabid="nicTab" contextId="FORM_STDBY_NIC_STDBY_GUI" id="nicTab" contentLocation="../Forms/standbyNetworkSettingsPage.xsl"><script>document.write(top.getString('nicOptions'));</script></div>
+            <div class="tabOff" tabid="advTab" contextId="FORM_STDBY_ADV_SETTINGS_STDBY_GUI" id="advTab" contentLocation="../Forms/standbyNetworkSettingsPage.xsl"><script>document.write(top.getString('advSettings'));</script></div>
+            <div class="tabBottomLine"></div>
+          </div>
+        </td>
+      </tr>
+    </table>
+    <br />
+
+    <div id="tabContent" style="padding:10px;"></div>
+    <div id="waitContainer" class="waitContainer"></div>
+
+    <script type="text/javascript">
+if(typeof(TabManager)!="undefined"){
+ourTabManager.init();
+}
+    </script>    
+  </div>
+</body>
+</html>

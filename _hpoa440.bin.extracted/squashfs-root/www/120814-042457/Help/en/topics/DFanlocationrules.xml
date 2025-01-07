@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DFanlocationrules" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Fan location rules for HP BladeSystem c7000 Enclosure</title>
+  <source>/120814-042457/Help/en/topics/DFanlocationrules.xml</source>
+  <keywords>fan rules HP BladeSystem c7000 Enclosure</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">The HP BladeSystem c7000 Enclosure ships with four HP Active Cool Fans and supports up to 10 fans. Install fans in even numbered groups, based on the total number of server blades installed in the enclosure. Install fan blanks in any unused fan bays.</p>
+        <p class="bodytext">
+          <b>Four-fan rule</b>
+        </p>
+        <p class="bodytext">Fan bays 4, 5, 9, and 10 are used to support a maximum of two devices located in device bays 1, 2, 9, or 10.</p>
+        <p class="bodytext">
+          <b>Six-fan rule</b>
+        </p>
+        <p class="bodytext">Fan bays 3, 4, 5, 8, 9, and 10 are used to support a maximum of eight devices in device bays 1, 2, 3, 4, 9, 10, 11, or 12.</p>
+        <p class="bodytext">
+          <b>Eight-fan rule</b>
+        </p>
+        <p class="bodytext">Fan bays 1, 2, 4, 5, 6, 7, 9, and 10 are used to support a maximum of 16 devices in any device bay.</p>
+        <p class="bodytext">
+          <b>Ten-fan rule</b>
+        </p>
+        <p class="bodytext">All fan bays are used to support a maximum of 16 devices in any device bay.</p>
+        <p class="bodytext">
+          <b>Related topics</b>
+        </p>
+        <p class="bodytext">
+          <a href="DFans.xml">Thermal Subsystem</a>
+        </p>
+        <p class="bodytext">
+          <a href="DFanInformation-Bayx.xml">Fan Information</a>
+        </p>
+      </content>
+    </section>
+  </sections>
+</topic>

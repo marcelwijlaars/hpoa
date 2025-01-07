@@ -1,0 +1,890 @@
+<!--  (C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+    <title>HP BladeSystem Onboard Administrator</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../css/default.css" />
+    <link rel="stylesheet" type="text/css" href="../css/blue_theme.css" />
+    <link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css" />
+    <link rel="stylesheet" type="text/css" href="../Help/stylesheets/help.css" />
+    <script type="text/javascript" src="../js/helpTips.js"></script>
+    <script type="text/javascript" src="../js/formManager.js"></script>
+    <script type="text/javascript" src="../js/displayManager.js"></script>
+    <script type="text/javascript" src="../js/EnvironConstants.js"></script>
+    <script type="text/javascript" src="../js/init.js"></script>
+    <script type="text/javascript" src="../js/xml.js"></script>
+    <script type="text/javascript" src="../js/xslt.js"></script>   
+    <script src="../js/browser.js" type="text/javascript"></script>
+    <script src="../js/global.js" type="text/javascript"></script>   
+    <script src="../js/treeManager.js" type="text/javascript"></script>
+    <script src="../js/buttonManager.js" type="text/javascript"></script>       
+    <script type="text/javascript">
+var treeLoading=false;
+var regEventHandlers=new Array();
+var statusEvents=[
+'EVENT_ENC_STATUS',
+'EVENT_ENC_UID',
+'EVENT_ENC_SHUTDOWN',
+'EVENT_BLADE_STATUS',
+'EVENT_BLADE_UID',
+'EVENT_BLADE_POWER_STATE',
+'EVENT_BLADE_INSERTED',
+'EVENT_BLADE_INSERT_COMPLETED',
+'EVENT_BLADE_REMOVED',
+'EVENT_BLADE_POWER_MGMT',
+'EVENT_BLADE_SHUTDOWN',
+'EVENT_BLADE_FAULT',
+'EVENT_BLADE_CONNECT',
+'EVENT_BLADE_DISCONNECT',
+'EVENT_FAN_STATUS',
+'EVENT_INTERCONNECT_STATUS',
+'EVENT_INTERCONNECT_UID',
+'EVENT_INTERCONNECT_RESET',
+'EVENT_INTERCONNECT_REMOVED',
+'EVENT_INTERCONNECT_INSERTED',
+'EVENT_SWITCH_CONNECT',
+'EVENT_SWITCH_DISCONNECT',
+'EVENT_INTERCONNECT_HEALTH_LED',
+'EVENT_INTERCONNECT_CPUFAULT',
+'EVENT_INTERCONNECT_POWER',
+'EVENT_INTERCONNECT_THERMAL',
+'EVENT_PS_STATUS',
+'EVENT_PS_REDUNDANT',
+'EVENT_PS_SUBSYSTEM_STATUS',
+'EVENT_PS_OVERLOAD',
+'EVENT_AC_FAILURE',
+'EVENT_OA_NAMES',
+'EVENT_OA_STATUS',
+'EVENT_OA_UID',
+'EVENT_BLADE_GRP_CAP_TIMEOUT'
+];
+var ersEvents=[
+'EVENT_OA_ERS_CONFIG_CHANGED',
+'EVENT_OA_ERS_MAINTENANCE_SET',
+'EVENT_OA_ERS_MAINTENANCE_ENABLED',
+'EVENT_OA_ERS_MAINTENANCE_CLEARED',
+'EVENT_OA_ERS_TEST',
+'EVENT_OA_ERS_TEST_MANUAL',
+'EVENT_OA_ERS_DATACOLLECTION_MANUAL',
+'EVENT_OA_ERS_DATACOLLECTION_FAILURE',
+'EVENT_OA_ERS_DATACOLLECTION_SUCCESS'
+];
+function loadTree(autoHighlight){
+if(treeLoading==true){
+return;
+}
+treeLoading=true;
+var hpems=null;
+try{
+hpems=top.getTopology().getProxies();
+}catch(e){}
+if(hpems==null||hpems.length==0){
+return;
+}
+document.getElementById('shortcutContainer').style.display=(hpems.length==1?"none":"block");
+document.getElementById('divider-top').style.display=(hpems.length==1?"none":"block");
+if(regEventHandlers==null){
+regEventHandlers=new Array();
+}
+var treeTarget=document.getElementById('MULTI_ENCLOSURE_TREE');
+var processor=new XsltProcessor('../Templates/treeNav.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('enclosureList',top.getTopology().getMaxEnclosureList());
+treeTarget.innerHTML=processor.getOutput();
+var shortcutTarget=document.getElementById('shortcutContainer');
+shortcutTarget.innerHTML='';
+for(var i=0;i<hpems.length;i++){
+loadTreeEnclosure(hpems[i],hpems[i].getEnclosureNumber());
+addEventHandlers(hpems[i]);
+var encNameLabel=document.getElementById('encNameLabel'+hpems[i].getEnclosureNumber());
+if(encNameLabel){
+encNameLabel.innerHTML=hpems[i].getEnclosureName();
+if(hpems[i].getIsLocal()==true){
+encNameLabel.parentNode.firstChild.nodeValue=top.getString('primary')+": ";
+encNameLabel.title="Primary Enclosure";
+}else{
+encNameLabel.parentNode.firstChild.nodeValue=top.getString('linked')+": ";
+encNameLabel.title="Linked Enclosure";
+}
+}
+}
+buildShortcuts(hpems);
+for(var j=regEventHandlers.length-1;j>=0;j--){
+var found=false;
+for(i=0;i<hpems.length;i++){
+if(regEventHandlers[j].uuid==hpems[i].getUuid()){
+found=true;
+break;
+}
+}
+if(!found){
+top.logEvent("Navigation Tree: Deleting event handlers.",regEventHandlers[j].encNum,1,4);
+regEventHandlers.splice(j,1);
+}
+}
+myOnResize();
+reconcilePage();
+if(autoHighlight==true){
+top.MX_HIDDEN.selectedDeviceChanged();
+}
+treeLoading=false;
+}
+function addEventHandlers(hpoa){
+var encNum=hpoa.getEnclosureNumber();
+var uuid=hpoa.getUuid();
+for(var index in regEventHandlers){
+if(regEventHandlers[index].uuid==uuid){
+if(regEventHandlers[index].encNum==encNum&&hpoa.getTotalEventListeners()>=regEventHandlers[index].funcs.length){
+top.logEvent("Navigation Tree: Event handlers already registered.",encNum,1,2);
+return;
+}else{
+top.logEvent("Navigation Tree: Event handlers need to be removed.",encNum,1,4);
+removeEventHandlers(hpoa);
+break;
+}
+}
+}
+var funcCollection=new Object();
+funcCollection.uuid=uuid;
+funcCollection.encNum=encNum;
+funcCollection.funcs=new Array();
+funcCollection.funcs[0]=new Function("result","enclosureNameChanged("+encNum+", result);");
+hpoa.registerEventHandler(funcCollection.funcs[0],['EVENT_ENC_NAMES','EVENT_ENC_INFO']);
+funcCollection.funcs[1]=new Function("result","enclosureUserAdded("+encNum+", result);");
+hpoa.registerEventHandler(funcCollection.funcs[1],['EVENT_USER_ADDED']);
+funcCollection.funcs[2]=new Function("result","enclosureUserRemoved("+encNum+", result);");
+hpoa.registerEventHandler(funcCollection.funcs[2],['EVENT_USER_DELETED']);
+funcCollection.funcs[3]=new Function("result","enclosureGroupAdded("+encNum+", result);");
+hpoa.registerEventHandler(funcCollection.funcs[3],['EVENT_LDAPGROUP_ADDED']);
+funcCollection.funcs[4]=new Function("result","enclosureGroupRemoved("+encNum+", result);");
+hpoa.registerEventHandler(funcCollection.funcs[4],['EVENT_LDAPGROUP_DELETED']);
+funcCollection.funcs[5]=new Function("result","fanInserted("+encNum+", result)");
+hpoa.registerEventHandler(funcCollection.funcs[5],['EVENT_FAN_INSERTED']);
+funcCollection.funcs[6]=new Function("result","fanRemoved("+encNum+", result)");
+hpoa.registerEventHandler(funcCollection.funcs[6],['EVENT_FAN_REMOVED']);
+funcCollection.funcs[7]=new Function("result","bladeInserted("+encNum+", result)");
+hpoa.registerEventHandler(funcCollection.funcs[7],['EVENT_BLADE_INSERTED']);
+funcCollection.funcs[8]=new Function("result","bladeRemoved("+encNum+", result)");
+hpoa.registerEventHandler(funcCollection.funcs[8],['EVENT_BLADE_REMOVED']);
+funcCollection.funcs[9]=new Function("result","bladeInfo("+encNum+", result)");
+hpoa.registerEventHandler(funcCollection.funcs[9],['EVENT_BLADE_INFO','EVENT_BAY_CHANGED']);
+funcCollection.funcs[10]=new Function("result","psInserted("+encNum+", result)");
+hpoa.registerEventHandler(funcCollection.funcs[10],['EVENT_PS_INSERTED','EVENT_PS_STATUS']);
+funcCollection.funcs[11]=new Function("result","psRemoved("+encNum+", result)");
+hpoa.registerEventHandler(funcCollection.funcs[11],['EVENT_PS_REMOVED']);
+funcCollection.funcs[12]=new Function("result","interconnectInserted("+encNum+", result)");
+hpoa.registerEventHandler(funcCollection.funcs[12],['EVENT_INTERCONNECT_INSERTED']);
+funcCollection.funcs[13]=new Function("result","interconnectRemoved("+encNum+", result)");
+hpoa.registerEventHandler(funcCollection.funcs[13],['EVENT_INTERCONNECT_REMOVED']);
+funcCollection.funcs[14]=new Function("result","interconnectInfo("+encNum+", result)");
+hpoa.registerEventHandler(funcCollection.funcs[14],['EVENT_INTERCONNECT_INFO','EVENT_TRAY_FQDN_INFO_REFRESH']);
+funcCollection.funcs[15]=new Function("result","objectStatusChanged("+encNum+", result)");
+hpoa.registerEventHandler(funcCollection.funcs[15],statusEvents);
+funcCollection.funcs[16]=new Function("result","oaStatusChanged("+encNum+", result)");
+hpoa.registerEventHandler(funcCollection.funcs[16],['EVENT_OA_STATUS']);
+funcCollection.funcs[17]=new Function("result","vcmInfoFunc("+encNum+", result)");
+hpoa.registerEventHandler(funcCollection.funcs[17],['EVENT_OA_VCM','EVENT_VCM_FQDN_INFO_REFRESH']);
+funcCollection.funcs[18]=new Function("result","thermalInfoFunc("+encNum+", result)");
+hpoa.registerEventHandler(funcCollection.funcs[18],['EVENT_COOLING_STATUS']);
+funcCollection.funcs[19]=new Function("result","domainInfoFunc("+encNum+", result)");
+hpoa.registerEventHandler(funcCollection.funcs[19],['EVENT_SBL_DOMAIN_INFO_CHANGED']);
+if(hpoa.getActiveFirmwareVersion()>=3.50){
+funcCollection.funcs[20]=new Function("result","ersInfoFunc("+encNum+", result)");
+hpoa.registerEventHandler(funcCollection.funcs[20],ersEvents);
+}
+regEventHandlers.push(funcCollection);
+}
+function removeEventHandlers(hpoa){
+var encNum=hpoa.getEnclosureNumber();
+var uuid=hpoa.getUuid();
+for(var i=0;i<regEventHandlers.length;i++){
+if(regEventHandlers[i].uuid==uuid){
+var funcCol=regEventHandlers[i];
+try{
+for(var j=0;j<funcCol.funcs.length;j++){
+hpoa.removeRegisteredHandler(funcCol.funcs[j]);
+}
+regEventHandlers.splice(i,1);
+break;
+}catch(e){
+top.logEvent(["Navigation Tree: Error removing event handler.",e.message],encNum,1,5);
+}
+}
+}
+}
+function addEnclosure(encNum,uuid){
+var hpem=top.getTopology().getProxy(encNum,uuid);
+if(hpem){
+loadTreeEnclosure(hpem,hpem.getEnclosureNumber());
+var shortcutContent=getShortcutNode(hpem.getEnclosureNumber(),hpem.getEnclosureName());
+var shortcutNode=document.getElementById('shortcutDiv'+hpem.getEnclosureNumber());
+if(shortcutNode){
+shortcutNode.innerHTML=shortcutContent;
+shortcutNode.style.display="block";
+}
+var encNameLabel=document.getElementById('encNameLabel'+hpem.getEnclosureNumber());
+if(encNameLabel){
+encNameLabel.innerHTML=hpem.getEnclosureName();
+}
+myOnResize();
+reconcilePage();
+}
+}
+function removeEnclosure(encNum){
+var treeTarget=document.getElementById('enc'+encNum+'treeContainer');
+removeShortCut(encNum);
+if(treeTarget){
+treeTarget.innerHTML='';
+treeTarget.style.display='none';
+var treeLabel=document.getElementById('enc'+encNum+'treeOuterLabel');
+if(treeLabel){
+treeLabel.style.display='none';
+}
+}
+var encNameLabel=document.getElementById('encNameLabel'+encNum);
+if(encNameLabel){
+encNameLabel.innerHTML='';
+}
+myOnResize();
+}
+function moveEnclosure(prevEncNum,newEncNum,uuid){
+removeEnclosure(prevEncNum);
+addEnclosure(newEncNum,uuid);
+}
+function oaStatusChanged(encNum,result){
+var oaRole=getElementValueXpath(result,'//hpoa:oaRole');
+if(oaRole!='ACTIVE'){
+var standbyLeaf=document.getElementById('enc'+encNum+'StandbyLeaf');
+var failoverLeaf=document.getElementById('enc'+encNum+'FailoverLeaf');
+if(standbyLeaf){
+if(oaRole=='STANDBY'){
+standbyLeaf.style.display='block';
+}else{
+standbyLeaf.style.display='none';
+}
+}
+if(failoverLeaf){
+if(oaRole=='STANDBY'){
+failoverLeaf.style.display='block';
+}else{
+failoverLeaf.style.display='none';
+}
+}
+}
+objectStatusChanged(encNum,result);
+}
+function enclosureNameChanged(encNum,result){
+var encName=getElementValueXpath(result,'//hpoa:enclosureName');
+if(encName!=''){
+try{
+document.getElementById('encNameLabel'+encNum).innerHTML=encName;
+document.getElementById('enclosure'+encNum+'ShortcutLink').innerHTML=encName;
+}catch(e){}
+}
+}
+function enclosureUserAdded(encNum,result){
+var username=getElementValue(result,'username',OA_NAMESPACE());
+var processor=new XsltProcessor('/120814-042457/Templates/treeUserLeaf.xsl');
+processor.addParameter('encNum',encNum);
+processor.addParameter('username',username);
+var wrapperId='enc'+encNum+'userLeafWrapper'+username;
+var leafWrapper=getLeafWrapper(wrapperId,['username'],[username]);
+var usersContainer=document.getElementById('enc'+encNum+'Users');
+leafWrapper.innerHTML=processor.getOutput();
+usersContainer.appendChild(leafWrapper);
+reconcilePage();
+}
+function vcmInfoFunc(encNum,result){
+var hpemEnc=top.getTopology().getProxy(encNum);
+if(!hpemEnc)
+return;
+var processor=new XsltProcessor("../Templates/treeNavVCIPv6URLFragment.xsl");
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('enclosureNumber',encNum);
+processor.addParameter('isAuthenticated',hpemEnc.getIsAuthenticated());
+processor.addParameter('isLoaded',hpemEnc.getIsLoaded());
+processor.addParameter('vcmInfoDoc',hpemEnc.getOaVcmMode());
+processor.addParameter('activeOaNetworkInfo',hpemEnc.getOaNetworkInfoByMode(ACTIVE(),null,false));
+processor.addParameter('isLocal',hpemEnc.getIsLocal());
+var proxyUrl=hpemEnc.getProxyUrl();
+if(proxyUrl.lastIndexOf('/')==proxyUrl.length-1){
+proxyUrl=proxyUrl.substring(0,proxyUrl.length-1);
+}
+processor.addParameter('proxyUrl',proxyUrl);
+if(!processor.hasErrors()){
+var vcmTreeWrapper=document.getElementById('VcmTreeWrapper'+encNum);
+if(!vcmTreeWrapper)
+return;
+vcmTreeWrapper.innerHTML=processor.getOutput();
+}
+}
+function domainInfoFunc(encNum,result){
+var hpemTemp=top.getTopology().getProxy(encNum);
+if(hpemTemp!=null){
+loadTreeEnclosure(hpemTemp,hpemTemp.getEnclosureNumber());
+reconcilePage();
+}
+}
+function thermalInfoFunc(encNum,result){
+objectStatusChanged(encNum,result);
+}
+function getLeafWrapper(id,attributes,attributeValues){
+var leafWrapper=document.createElement('div');
+leafWrapper.className='leafWrapper';
+leafWrapper.setAttribute('id',id);
+try{
+for(var i=0;i<attributes.length;i++){
+leafWrapper.setAttribute(attributes[i],attributeValues[i]);
+}
+}catch(e){}
+return leafWrapper;
+}
+function enclosureUserRemoved(encNum,result){
+var username=getElementValue(result,'message',OA_NAMESPACE());
+var usersContainer=document.getElementById('enc'+encNum+'Users');
+for(var i=0;i<usersContainer.childNodes.length;i++){
+if(usersContainer.childNodes[i].getAttribute('username')==username){
+usersContainer.removeChild(usersContainer.childNodes[i]);
+break;
+}
+}
+}
+function enclosureGroupAdded(encNum,result){
+var groupName=getElementValue(result,'ldapGroupName',OA_NAMESPACE());
+var groupsDisclosure=document.getElementById('enc'+encNum+'GroupsTreeDisclosure');
+if(groupsDisclosure&&groupsDisclosure.getAttribute('originalClassName')){
+groupsDisclosure.className=groupsDisclosure.getAttribute('originalClassName');
+}
+var processor=new XsltProcessor('/120814-042457/Templates/treeGroupLeaf.xsl');
+processor.addParameter('groupEncNum',encNum);
+processor.addParameter('groupName',groupName);
+processor.addParameter('groupNameURI',escape(groupName));
+var wrapperId='enc'+encNum+'groupLeafWrapper'+groupName;
+var leafWrapper=getLeafWrapper(wrapperId,['groupName'],[groupName]);
+var usersContainer=document.getElementById('enc'+encNum+'Groups');
+leafWrapper.innerHTML=processor.getOutput();
+usersContainer.appendChild(leafWrapper);
+}
+function enclosureGroupRemoved(encNum,result){
+var groupName=getElementValue(result,'message',OA_NAMESPACE());
+var groupsContainer=document.getElementById('enc'+encNum+'Groups');
+for(var i=0;i<groupsContainer.childNodes.length;i++){
+if(unescape(groupsContainer.childNodes[i].getAttribute('groupName'))==groupName){
+groupsContainer.removeChild(groupsContainer.childNodes[i]);
+break;
+}
+}
+var groupsLeafWrapper=document.getElementById('enc'+encNum+'groupsleafWrapper');
+if(groupsLeafWrapper&&!hasVisibleChildren(groupsLeafWrapper)){
+var groupsDisclosure=document.getElementById('enc'+encNum+'GroupsTreeDisclosure');
+if(groupsDisclosure){
+groupsDisclosure.className="";
+}
+}
+}
+function ersInfoFunc(encNum,result){
+var hpemEnc=top.getTopology().getProxy(encNum);
+var ersWrapper=document.getElementById('enc'+encNum+'ersTreeWrapper');
+if(hpemEnc&&ersWrapper){
+var processor=new XsltProcessor('/120814-042457/Templates/treeRemoteSupportLeafExternal.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('ersConfigInfoDoc',result);
+processor.addParameter('encNum',encNum);
+processor.addParameter('bayNum',hpemEnc.getOaBayNumber('ACTIVE'));
+processor.addParameter('activeFwVersion',""+hpemEnc.getActiveFirmwareVersion());
+if(!processor.hasErrors()){
+var treeOpen=(ersWrapper.innerHTML.indexOf("treeOpen")>-1);
+ersWrapper.innerHTML=processor.getOutput();
+ourTreeManager.init();
+var selectionId=top.MX_HIDDEN.getSelectedDeviceId();
+var treeNode=null;
+if(treeOpen||selectionId==('enc'+encNum+'ers16Select')){
+ourTreeManager.openAllTrees('enc'+encNum+'ersTreeWrapper');
+}
+switch(selectionId){
+case 'enc'+encNum+'ers16Select':
+treeNode=document.getElementById('enc'+encNum+'remoteSupportSelect');
+break;
+case 'enc'+encNum+'ersCert17Select':
+treeNode=document.getElementById('enc'+encNum+'irsCertificateSelect');
+if(!treeNode){
+top.MX_HIDDEN.devType=REMOTE_SUPPORT();
+top.MX_HIDDEN.devNum=16;
+top.MX_HIDDEN.selectDeviceContent();
+treeNode=document.getElementById('enc'+encNum+'remoteSupportSelect');
+}
+break;
+}
+if(treeNode&&treeNode.childNodes){
+ourTreeManager.makeTreeNodeHighlighted(treeNode.childNodes[0]);
+}
+}
+}
+}
+function fanInserted(encNum,result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var fanLeafWrapper=document.getElementById('enc'+encNum+FAN()+bayNumber+'leafWrapper');
+if(fanLeafWrapper){
+fanLeafWrapper.style.display='block';
+}
+}
+function fanRemoved(encNum,result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var fanLeafWrapper=document.getElementById('enc'+encNum+FAN()+bayNumber+'leafWrapper');
+if(fanLeafWrapper){
+fanLeafWrapper.style.display='none';
+}
+}
+function bladeInserted(encNum,result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var bladeLeafWrapper=document.getElementById('enc'+encNum+BLADE()+bayNumber+'leafWrapper');
+var bladeLeafLabel=document.getElementById('enc'+encNum+BLADE()+bayNumber+'Label');
+if(bladeLeafWrapper){
+bladeLeafWrapper.style.display='block';
+}
+}
+function bladeInfo(encNum,result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var symbolicBladeNumber=getElementValueXpath(result,"//hpoa:bladeInfo/hpoa:extraData[@hpoa:name='SymbolicBladeNumber'] ");
+if(!(existsNonNull(symbolicBladeNumber)&&(symbolicBladeNumber!=""))){
+symbolicBladeNumber=bayNumber;
+}
+var name=getElementValueXpath(result,'//hpoa:bladeInfo/hpoa:name');
+var bladeType=getElementValueXpath(result,'//hpoa:bladeInfo/hpoa:bladeType');
+var productId=getElementValueXpath(result,'//hpoa:bladeInfo/hpoa:productId');
+var serverName=getElementValueXpath(result,"//hpoa:bladeInfo/hpoa:extraData[@hpoa:name='serverHostName']");
+var bladeLeafWrapper=document.getElementById('enc'+encNum+BLADE()+bayNumber+'leafWrapper');
+var bladeLabel=document.getElementById('enc'+encNum+BLADE()+bayNumber+'Label');
+var bladeDisclosure=document.getElementById('enc'+encNum+BLADE()+bayNumber+'treeDisclosure');
+var iLOLink=document.getElementById('enc'+encNum+'mp'+bayNumber+'Select');
+var pmLink=document.getElementById('enc'+encNum+'pm_blade'+bayNumber+'Select');
+var fwLink=document.getElementById('enc'+encNum+'fw_blade'+bayNumber+'Select');
+if(bladeLabel){
+if(serverName!='[Unknown]'&&serverName!=''&&serverName!='Status is not available'){
+bladeLabel.innerHTML=symbolicBladeNumber+'. '+serverName;
+}else{
+var serialNumber=getElementValueXpath(result,"//hpoa:bladeInfo/hpoa:serialNumber");
+if(serialNumber!='[Unknown]'&&serialNumber!=''&&serialNumber!='Status is not available'){
+bladeLabel.innerHTML=symbolicBladeNumber+'. '+name+'-'+serialNumber;
+}else{
+bladeLabel.innerHTML=symbolicBladeNumber+'. '+name;
+}
+}
+}
+var monarchBlade=getElementValueXpath(result,"//hpoa:bladeInfo/hpoa:extraData[@hpoa:name='monarchBlade']");
+if(monarchBlade!=''){
+domainInfoFunc(encNum,result);
+return;
+}
+var presence=getElementValueXpath(result,'//hpoa:presence');
+if(presence){
+if((presence!='PRESENT')){
+bladeRemoved(encNum,result);
+return;
+}else{
+if(bladeLeafWrapper){
+bladeLeafWrapper.style.display='block';
+}
+}
+}
+if(bladeType=='BLADE_TYPE_SERVER'||productId=='8213'){
+if(iLOLink){
+iLOLink.style.display='block';
+var linkNode=iLOLink.getElementsByTagName('a')[0];
+if(linkNode){
+if(productId=='8213'){
+linkNode.innerHTML=top.getString('managementConsole');
+}
+else{
+linkNode.innerHTML=top.getString('ilo');
+}
+}
+}
+if(pmLink){
+pmLink.style.display='block';
+}
+if(fwLink){
+fwLink.style.display='block';
+}
+if(bladeDisclosure&&bladeDisclosure.getAttribute('originalClassName')){
+bladeDisclosure.className=bladeDisclosure.getAttribute('originalClassName');
+}
+}else{
+if(iLOLink){
+iLOLink.style.display='none';
+}
+if(pmLink){
+pmLink.style.display='none';
+}
+if(fwLink){
+fwLink.style.display='none';
+}
+if(bladeDisclosure&&bladeDisclosure.getAttribute('originalClassName')){
+bladeDisclosure.className="";
+}
+}
+}
+function bladeRemoved(encNum,result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var bladeLeafWrapper=document.getElementById('enc'+encNum+BLADE()+bayNumber+'leafWrapper');
+if(bladeLeafWrapper){
+bladeLeafWrapper.style.display='none';
+}
+}
+function psInserted(encNum,result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var psLeafWrapper=document.getElementById('enc'+encNum+POWER_SUPPLY()+bayNumber+'leafWrapper');
+if(psLeafWrapper){
+var presence=getElementValueXpath(result,'//hpoa:presence');
+if(presence=='PRESENT'){
+psLeafWrapper.style.display='block';
+}else{
+psLeafWrapper.style.display='none';
+}
+}
+}
+function psRemoved(encNum,result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var psLeafWrapper=document.getElementById('enc'+encNum+POWER_SUPPLY()+bayNumber+'leafWrapper');
+if(psLeafWrapper){
+psLeafWrapper.style.display='none';
+}
+}
+function interconnectInserted(encNum,result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var name=getElementValueXpath(result,'//hpoa:name');
+var ioLeafWrapper=document.getElementById('enc'+encNum+INTERCONNECT()+bayNumber+'leafWrapper');
+var ioLeafLabel=document.getElementById('enc'+encNum+INTERCONNECT()+bayNumber+'Label');
+if(ioLeafWrapper){
+ioLeafWrapper.style.display='block';
+}
+if(ioLeafLabel){
+ioLeafLabel.innerHTML=name;
+}
+}
+function interconnectRemoved(encNum,result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var ioLeafWrapper=document.getElementById('enc'+encNum+INTERCONNECT()+bayNumber+'leafWrapper');
+if(ioLeafWrapper){
+ioLeafWrapper.style.display='none';
+}
+}
+function interconnectInfo(encNum,result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var hpemEnc=top.getTopology().getProxy(encNum);
+if(!hpemEnc)
+return;
+var processor=new XsltProcessor("../Templates/treeNavInterconnectIPv6URLFragment.xsl");
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('enclosureNumber',encNum);
+processor.addParameter('isAuthenticated',hpemEnc.getIsAuthenticated());
+processor.addParameter('isLoaded',hpemEnc.getIsLoaded());
+processor.addParameter('netTrayInfoDoc',result);
+processor.addParameter('bayNumber',bayNumber);
+processor.addParameter('isLocal',hpemEnc.getIsLocal());
+var proxyUrl=hpemEnc.getProxyUrl();
+if(proxyUrl.lastIndexOf('/')==proxyUrl.length-1){
+proxyUrl=proxyUrl.substring(0,proxyUrl.length-1);
+}
+processor.addParameter('proxyUrl',proxyUrl);
+if(!processor.hasErrors()){
+var mgmtLinkWrapper=document.getElementById('enc'+encNum+'mc_interconnect'+bayNumber+'Select');
+if(!mgmtLinkWrapper){
+return;
+}
+mgmtLinkWrapper.innerHTML=processor.getOutput();
+var mgmtLink=document.getElementById('enc'+encNum+'mc_interconnect'+bayNumber+'Link');
+if(mgmtLink){
+mgmtLinkWrapper.style.display=(mgmtLink.getAttribute("show-mgmt-link")=="true"?"block":"none");
+}
+}
+var name=getElementValueXpath(result,'//hpoa:interconnectTrayInfo/hpoa:name');
+if(name==''){
+name='Unknown Device';
+}
+var interconnectLabel=document.getElementById('enc'+encNum+INTERCONNECT()+bayNumber+'Label');
+if(interconnectLabel){
+interconnectLabel.innerHTML=bayNumber+'. '+name;
+}
+var vcmTreeWrapper=document.getElementById('VcmTreeWrapper'+encNum);
+if(!vcmTreeWrapper)
+return;
+hpemEnc.getOaVcmMode(function(oaVcmInfo){
+var processor=new XsltProcessor("../Templates/treeNavVCIPv6URLFragment.xsl");
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('enclosureNumber',encNum);
+processor.addParameter('isAuthenticated',hpemEnc.getIsAuthenticated());
+processor.addParameter('isLoaded',hpemEnc.getIsLoaded());
+processor.addParameter('vcmInfoDoc',oaVcmInfo);
+processor.addParameter('activeOaNetworkInfo',hpemEnc.getOaNetworkInfoByMode(ACTIVE(),null,false));
+processor.addParameter('isLocal',hpemEnc.getIsLocal());
+processor.addParameter('proxyUrl',proxyUrl);
+if(!processor.hasErrors()){
+vcmTreeWrapper.innerHTML=processor.getOutput();
+}
+},true);
+}
+function objectStatusChanged(encNum,result){
+var objectType=determineObjectType(result.xml);
+var bayNumber='';
+if(objectType!='enc'&&objectType!='pss'&&objectType!='tss'){
+if(objectType=='oa'){
+bayNumber=getElementValueXpath(result,'//hpoa:oaRole');
+}else{
+bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+}
+}
+var statusElement=document.getElementById('enc'+encNum+objectType+bayNumber+'Status');
+if(statusElement){
+var statusCode=getElementValueXpath(result,'//hpoa:operationalStatus');
+if(statusCode!='OP_STATUS_OK'){
+try{
+var processor=new XsltProcessor('../Templates/statusIconExternal.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('statusCode',statusCode);
+statusElement.innerHTML=processor.getOutput();
+}catch(e){}
+}
+else{
+statusElement.innerHTML='';
+}
+}
+}
+function loadTreeEnclosure(hpem,encNum){
+if(hpem!=null){
+if(hpem.getIsLoaded()){
+var processor=new XsltProcessor("../Templates/treeNavEnclosure.xsl");
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('bladeStatusDoc',hpem.getBladeStatusDOM());
+processor.addParameter('bladeInfoDoc',hpem.getBladeInfoDOM());
+processor.addParameter('powerSupplyStatusDoc',hpem.getPsStatusDOM());
+processor.addParameter('powerSupplyInfoDoc',hpem.getPsInfoDOM());
+processor.addParameter('powerSubsystemInfoDoc',hpem.getPowerSubsystemInfo());
+processor.addParameter('netTrayStatusDoc',hpem.getInterconnectTrayStatusDOM());
+processor.addParameter('netTrayInfoDoc',hpem.getInterconnectTrayInfoDOM());
+processor.addParameter('fanInfoDoc',hpem.getFanInfoDOM());
+processor.addParameter('thermalSubsystemInfoDoc',hpem.getThermalSubsystemInfo());
+processor.addParameter('enclosureNumber',encNum);
+processor.addParameter('enclosureInfoDoc',hpem.getEnclosureInfo());
+processor.addParameter('enclosureStatusDoc',hpem.getEnclosureStatus());
+processor.addParameter('domainInfoDoc',hpem.getDomainInfo());
+if(hpem.getActiveFirmwareVersion()>=3.50){
+processor.addParameter('ersConfigInfoDoc',hpem.getErsConfigInfo());
+}
+processor.addParameter('oaStatusDoc',hpem.getOaStatusDOM());
+processor.addParameter('oaInfoDoc',hpem.getOaInfoDOM());
+processor.addParameter('activefwVersion',hpem.getActiveFirmwareVersion());
+processor.addParameter('userInfoDoc',hpem.getUsersDOM());
+processor.addParameter('groupInfoDoc',hpem.getGroupsDOM());
+processor.addParameter('serviceUsername',hpem.getCurrentServiceUser());
+processor.addParameter('serviceUserAcl',hpem.getUserAccessLevel());
+processor.addParameter('serviceUserOaAccess',hpem.getUserOaPermission());
+processor.addParameter('serviceUserType',hpem.getUserType());
+processor.addParameter('isAuthenticated',hpem.getIsAuthenticated());
+processor.addParameter('isLocal',''+hpem.getIsLocal());
+processor.addParameter('isLoaded',hpem.getIsLoaded());
+var proxyUrl=hpem.getProxyUrl();
+if(proxyUrl.lastIndexOf('/')==proxyUrl.length-1){
+proxyUrl=proxyUrl.substring(0,proxyUrl.length-1);
+}
+processor.addParameter('ersLocked',hpem.getRemoteSupportLocked()+"");
+processor.addParameter('firmwareMgmtSupported',hpem.getFirmwareManagementSupported()+"");
+processor.addParameter('proxyUrl',proxyUrl);
+processor.addParameter('vcmInfoDoc',hpem.getOaVcmMode());
+processor.addParameter('activeOaNetworkInfo',hpem.getOaNetworkInfoByMode(ACTIVE(),null,false));
+var treeTarget=document.getElementById('enc'+encNum+'treeContainer');
+if(treeTarget){
+if(!processor.hasErrors()){
+treeTarget.innerHTML=processor.getOutput();
+treeTarget.style.display='block';
+var treeLabel=document.getElementById('enc'+encNum+'treeOuterLabel');
+if(treeLabel){
+treeLabel.style.display='block';
+}
+}else{
+var errorString='The navigation tree failed to load.<br />';
+errorString+='Click <a href="javascript:reloadFailedTree('+encNum+');">here</a> to refresh.';
+treeTarget.innerHTML=errorString;
+treeTarget.style.display='block';
+}
+}
+}else{
+var processor=new XsltProcessor("../Templates/treeNavEnclosure.xsl");
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('enclosureNumber',encNum);
+processor.addParameter('isAuthenticated',hpem.getIsAuthenticated());
+processor.addParameter('isLoaded',hpem.getIsLoaded());
+processor.addParameter('activefwVersion',hpem.getActiveFirmwareVersion());
+var treeTarget=document.getElementById('enc'+encNum+'treeContainer');
+if(treeTarget){
+if(!processor.hasErrors()){
+treeTarget.innerHTML=processor.getOutput();
+treeTarget.style.display='block';
+var treeLabel=document.getElementById('enc'+encNum+'treeOuterLabel');
+if(treeLabel){
+treeLabel.style.display='block';
+}
+}else{
+var errorString='The navigation tree failed to load.<br />';
+errorString+='Click <a href="javascript:reloadFailedTree('+encNum+');">here</a> to refresh.';
+treeTarget.innerHTML=errorString;
+treeTarget.style.display='block';
+}
+}
+}
+}
+}
+function reloadFailedTree(encNum){
+top.logEvent("Navigation Tree: reloadFailedTree called.",encNum,1,5);
+addEnclosure(encNum);
+}
+function removeShortCut(encNum){
+var shortcutContainer=document.getElementById("shortcutContainer");
+for(var i=0;i<shortcutContainer.childNodes.length;i++){
+if(shortcutContainer.childNodes[i].id=='shortcutDiv'+encNum){
+shortcutContainer.childNodes[i].innerHTML='';
+shortcutContainer.childNodes[i].style.display="none";
+break;
+}
+}
+}
+function buildShortcuts(){
+var shortcutContainer=document.getElementById('shortcutContainer');
+if(shortcutContainer){
+shortcutContainer.innerHTML='';
+var maxEnclosures=top.getTopology().getMaxEnclosures();
+var hpems=top.getTopology().getProxies();
+for(var i=1;i<=maxEnclosures;i++){
+var shortcutNode=document.createElement('div');
+shortcutNode.className='shortcutWrapper';
+shortcutNode.id='shortcutDiv'+i;
+shortcutNode.style.display="none";
+shortcutContainer.appendChild(shortcutNode);
+}
+for(var i=0;i<hpems.length;i++){
+if(hpems[i].getIsLoaded()){
+var shortcutContent=getShortcutNode(hpems[i].getEnclosureNumber(),hpems[i].getEnclosureName());
+var shortcutNode=document.getElementById('shortcutDiv'+hpems[i].getEnclosureNumber());
+if(shortcutNode){
+shortcutNode.innerHTML=shortcutContent;
+shortcutNode.style.display="block";
+}
+}
+}
+}
+}
+function getShortcutNode(encNum,encName){
+var processor=new XsltProcessor('../Templates/treeShortcutLink.xsl');
+processor.addParameter('enclosureNumber',encNum);
+processor.addParameter('enclosureName',encName);
+return processor.getOutput();
+}
+globalManagerCreate();
+function myOnLoad(){
+loadTree();
+}
+function myOnResize(){
+resize_w();
+resize_h();
+}
+function resize_w(){
+var w=Math.max(0,MxBrowserGetBodyWidth(0,0));
+ourTreeManager.treeSetWidth("MULTI_ENCLOSURE_TREE",w);
+}
+function resize_h(){
+var h_total=Math.max(0,MxBrowserGetBodyHeight(-10,-10));
+var h_top=document.getElementById("MONITOR_TOP_PART").offsetHeight;
+var h_middle=document.getElementById("MONITOR_MIDDLE_PART").offsetHeight;
+var h=Math.max(0,h_total-h_top-h_middle);
+ourTreeManager.treeSetHeight("MULTI_ENCLOSURE_TREE",h);
+}
+function highlightDevice(devId){
+try{
+var hash=ourTreeManager.makeSpecificTreeNodeHighlighted(devId);
+if(hash!=null){
+location.hash=hash;
+}
+}catch(e){}
+}
+function highlightUser(username,enclosureNumber){
+highlightDevice('enc'+enclosureNumber+'userLeaf'+username);
+}
+function highlightGroup(groupName,enclosureNumber){
+highlightDevice('enc'+enclosureNumber+'groupLeaf'+groupName);
+}
+try{top.mainPage.getHiddenFrame().addDeviceChangedHandler(highlightDevice);}catch(e){}
+function clearHighlight(){
+ourTreeManager.unHighlightAllTrees("MULTI_ENCLOSURE_TREE");
+}
+function clearStatusView(){
+top.mainPage.getStatusContainer().showStatus(false);
+}
+function selectEnclosure(encNum){
+top.mainPage.getHiddenFrame().selectDevice(encNum,'enc',encNum,true);
+var treeElement=document.getElementById('enclosure'+encNum+'SelectLink');
+try{
+ourTreeManager.makeTreeNodeHighlighted(treeElement);
+location.hash=treeElement.parentNode.getAttribute('id');
+}catch(e){}
+}
+function pageUnload(){
+var hpems=top.mainPage.getHiddenFrame().getProxies();
+for(var i=0;i<hpems.length;i++){
+removeEventHandlers(hpems[i]);
+}
+}
+  </script>
+</head>
+
+<body class="body-flush-fit" onload="myOnLoad();" onresize="myOnResize()" onunload="pageUnload();" style="position:relative;height:100%;width:auto;">
+    
+    <div id="ID_BODY_PROXY" class="body-proxy">
+        <table id="MONITOR_TOP_PART" border="0" cellpadding="0" cellspacing="0" style="background-color: #cccccc;width: 100%">
+            <tr>
+                <td height="15" style="height: 15px;">
+          <div class="buttonSet buttonsAreLeftAligned" style="height: 15px; margin-top: 2px; margin-bottom: 0px; margin-left: -8px;">
+            <div class="bWrapperUp"><div><button class="hpButtonVerySmall" onclick="ourTreeManager.openAllTrees('MULTI_ENCLOSURE_TREE')" style="height: 11px; width: 20px;"><img border="0" src="/120814-042457/images/plus-plus.gif" style="padding-bottom: 2px;" alt="" /></button></div></div>
+            <div class="bWrapperUp"><div><button class="hpButtonVerySmall" onclick="ourTreeManager.closeAllTrees('MULTI_ENCLOSURE_TREE')" style="height: 11px; width: 20px;"><img border="0" src="/120814-042457/images/minus-minus.gif" style="padding-bottom: 2px;" alt="" /></button></div></div>
+          </div>
+                </td>
+            </tr>
+        </table>
+        <div id="MONITOR_MIDDLE_PART">
+            <div style='margin-left:19px;margin-top:5px;'>
+                <a href="rackOverview.html" onclick="clearHighlight();top.mainPage.getStatusContainer().showStatus(false);" target="CONTENT_HOME">
+                    <script type="text/javascript">document.writeln(top.getString('rackOverview'));</script>
+                </a>
+            </div>
+            <div style='margin-left:19px;margin-top:0px;'>
+                <a href="rackFirmware.html" onclick="clearHighlight();top.mainPage.getStatusContainer().showStatus(false);" target="CONTENT_HOME">
+                    <script type="text/javascript">document.writeln(top.getString('rackFirmware'));</script>
+                </a>
+            </div>
+            <div class='monitor-divider' id='divider-top'>
+            </div>
+            <div id="shortcutContainer">
+                <!-- Enclosure shortcuts go here -->
+            </div>
+            <div class='monitor-divider' id='divider-bottom'>
+            </div>
+        </div>
+        
+        <!-- The tree itself -->
+        <div id="MULTI_ENCLOSURE_TREE" class="treeWrapper treeHasOneIconSpacing" style="width: 223px;height: 492px;">
+        </div>
+
+      <div id="tooltip" class="popupSmallWrapper" onclick="killToolTip();" onmouseover="clearTooltipTimer();" onmouseout="updateTooltipTimer();" style="top:0;left:0;">
+        <div id="internalTooltipDiv" class="popupSmallBody" style="background-color:#fff;padding:0px;"></div>
+      </div>
+        
+    </div>
+    <!-- End BodyProxy -->
+
+    
+</body>
+</html>
+
+

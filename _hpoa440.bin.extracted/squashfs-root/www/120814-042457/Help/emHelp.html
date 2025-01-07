@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html>
+<head>
+<title></title>
+  <!--[if gte IE 10]>
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE9"/>
+  <![endif]-->
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <script type="text/javascript" src="/120814-042457/Help/scripts/helpManager.js"></script>
+    <script type="text/javascript" src="/120814-042457/Help/scripts/helpTools.js"></script>
+    <script type="text/javascript" src="/120814-042457/Help/scripts/helpLauncher.js"></script>
+    <script type="text/javascript">
+var ourHelpManager=null;
+var ourHelpLauncher=null;
+function getHelpManager(){
+if(typeof(HelpManager)!="undefined"&&ourHelpManager==null){
+ourHelpManager=new HelpManager("ourHelpManager",document.location.search);
+}
+return ourHelpManager;
+}
+function getHelpLauncher(){
+if(typeof(HelpLauncher)!="undefined"&&ourHelpLauncher==null){
+ourHelpLauncher=new HelpLauncher();
+}
+return ourHelpLauncher;
+}
+function myOnLoad(){
+document.title=getHelpManager().getString("systemName");
+getHelpManager().setDirectoryFrame(document.getElementById("frameDirectory"));
+getHelpManager().setContentFrame(document.getElementById("frameContent"));
+getHelpManager().initDirectory(null);
+}
+    </script>
+  </head>
+  <frameset rows="84,*" border="0" framespacing="0" frameborder="0" onload="myOnLoad();">
+    <frame name="mainFrame" id="mainFrame" frameborder="no" scrolling="no" noresize src="emHelp-Masthead.html"/>
+    <frameset cols="39%,61%" framespacing="0" border="0" bordercolor="#cccccc" onload="myOnLoad();">
+      <frame name="frameDirectory" id="frameDirectory" frameborder="no" marginheight="0" marginwidth="0" height="100%" width="100%" scrolling="no" noresize src="blank.html"/>
+      <frame name="frameContent" id="frameContent" frameborder="no" marginheight="0" marginwidth="0" height="100%" width="100%" scrolling="no" noresize src="emHelp-Content.html"/>
+    </frameset>
+    <noframes>
+      <body>
+        <p>This page uses frames, but your browser doesn't support them.</p>
+      </body>
+    </noframes>
+  </frameset>
+</html>

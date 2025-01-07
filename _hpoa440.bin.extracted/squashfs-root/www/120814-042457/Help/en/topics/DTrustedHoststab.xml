@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DTrustedHoststab" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Trusted Hosts tab</title>
+  <source>/120814-042457/Help/en/topics/DTrustedHoststab.xml</source>
+  <keywords>connection failure after reboot Trusted Hosts tab</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="bodytext">
+          <b>Trusted Hosts</b>
+        </p>
+        <p class="bodytext">Use the Trusted Hosts feature to restrict access to the Onboard Administrator. </p>
+        <p class="bodytext">This subcategory contains one dialog box, one entry field, and one display box, that if enabled, is used to list trusted IP addresses.</p>
+        <p class="bodytext">The <b>Enable IP address access restriction</b> check box is not selected by default. Selecting this check box allows only those IP addresses listed as Trusted Addresses to connect to the Onboard Administrator.</p>
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext">
+                <img src="/120814-042457/Help/images/35928.png" alt="" />
+              </p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">CAUTION:</b>  Enabling IP address access restriction without first entering the user's IP address in the Trusted Addresses list will disconnect the user from the Onboard Administrator.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext">
+                <img src="/120814-042457/Help/images/35928.png" alt="" />
+              </p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <b style="color:#0066FF;">CAUTION:</b>  When using the Trusted Hosts feature in an environment with multiple enclosures connected via enclosure link cables, ensure that all linked enclosures have the same Trusted Hosts settings. Linked enclosures that do not have the same Trusted Hosts settings may allow a web GUI user to access a protected enclosure from a non-trusted client.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="alertspacerafter" />
+        <p class="alertspacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2" rowsep="0" colsep="0">
+          <tr valign="top">
+            <td style="border:0px;width:1%;" align="left">
+              <p class="tablebodytext">
+                <img src="/120814-042457/Help/images/35928.png" alt="" />
+              </p>
+            </td>
+            <td style="border-top:1px solid #0066FF;border-right:0px;border-bottom:1px solid #0066FF;border-left:0px;" align="left">
+              <p class="tablebodytext">
+                <p>
+                  <b style="color:#0066FF;">CAUTION:</b>  RFC 4941 describes an IPv6 SLAAC extension that allows for generation of global-scope temporary IPv6 addresses using interface identifiers that change over time. When an OS that supports RFC 4941 reboots or the current address expires, a new temporary IPv6 address is generated. Windows 7 is an example of an OS that supports RFC 4941. </p>
+                <p>With trusted hosts enabled, if you are accessing the Onboard Administrator from a client hosted on an OS with RFC 4941 support, a reboot of the client OS can result in the inability to reconnect to the Onboard Administrator. The connection fails because the client’s new temporary IPv6 address does not match the IPv6 address configured for the client in the Trusted Addresses list. To avoid this issue, either disable generation of global-scope temporary IPv6 addresses in the OS, or reconfigure the Trusted Host IP address with the newly generated client IPv6 address.</p>
+              </p>
+            </td>
+          </tr>
+        </table>
+        <p class="alertspacerafter" />
+        <p class="bodytext">The Trusted Addresses field is used to enter the IP addresses of all hosts that are to be trusted and allowed to connect remotely to the Onboard Administrator through the protocols set up in the Protocol Restrictions subcategory. This field allows for IP addresses only. When specifying an IPv6 address, do not specify the prefix length.</p>
+        <p class="bodytext">Below the Trusted Addresses field is the list box of all trusted IP addresses, if trusted IP addresses are configured.</p>
+        <p class="bodytext">To add a trusted host, enter the IP address in the Trusted Addresses field, and then click <b>Add.</b> You can add a maximum of five Trusted Addresses.</p>
+        <p class="bodytext">To remove a trusted host, select the IP address in the Trusted Addresses list, and then click <b>Remove.</b></p>
+        <p class="bodytext">To save the settings, click <b>Apply</b>.</p>
+      </content>
+    </section>
+  </sections>
+</topic>

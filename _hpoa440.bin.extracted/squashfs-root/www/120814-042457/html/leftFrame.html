@@ -1,0 +1,303 @@
+<!--  (C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <title>HP BladeSystem Onboard Administrator</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" type="text/css" href="../css/default.css"/>
+  <link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+  <link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+
+  <script src="../js/EnvironConstants.js" type="text/javascript"></script>
+  <script type="text/javascript" src="../js/global.js"></script>
+  <script type="text/javascript" src="../js/browser.js"></script>
+  <script type="text/javascript" src="../js/buttonManager.js"></script>
+  <script type="text/javascript" src="../js/redrawManager.js"></script>
+  
+  <script type="text/javascript" src="../js/init.js"></script>
+  <script type="text/javascript" src="../js/xml.js"></script>
+  <script type="text/javascript" src="../js/xslt.js"></script>
+    
+  <script type="text/javascript">
+globalManagerCreate();
+var hpems=null;
+var loadingStatus=false;
+var redrawObj=null;
+var g_iPanel=0
+var g_nWidth=0;
+var g_nCount=-2;
+function myOnLoad(){
+try{
+hpems=top.getTopology().getProxies();
+g_nWidth=MxBrowserGetBodyWidth(0,0);
+myOnResize();
+var link=document.getElementById('linkSystemStatus');
+redrawObj=new RedrawObject(5000,handleStatusEvent);
+redrawObj.addHighlightElement(link,"#0000CC",HighlightElement.Text);
+top.getTopology().addTopologyCompleteListener(initEvents,false);
+initEvents();
+}catch(e){}
+}
+function myOnUnload(){
+try{
+for(var i=0;i<hpems.length;i++){
+hpems[i].removeRegisteredHandler(handleStatusEvent);
+}
+top.getTopology().removeListener(initEvents);
+}catch(e){}
+}
+function myOnResize(){
+var h=Math.max(0,MxBrowserGetBodyHeight(0,0));
+if(g_iPanel==0)
+resizePanel_0(h);
+}
+function resizePanel_0(h){
+var adjust=(top._browserInfo.browserName=="Firefox"?16:15);
+var hStatus=0;
+var oStatus=document.getElementById("ID_STATUS");
+if(oStatus!=null)
+hStatus=oStatus.offsetHeight+5;
+var hSearch=0;
+var oSearch=document.getElementById("ID_SEARCH");
+if(oSearch!=null)
+hSearch=oSearch.offsetHeight+5;
+var hLegend=0;
+var oLegend=document.getElementById("ID_LEGEND");
+if(oLegend!=null)
+hLegend=oLegend.offsetHeight+5;
+var hTitle=0;
+var oTitle=document.getElementById("TITLE_ID_ORGANIZER");
+if(oTitle!=null)
+hTitle=oTitle.offsetHeight;
+var oFrame=document.getElementById("FRAME_ID_ORGANIZER");
+if(oFrame!=null){
+oFrame.style.height=Math.max(0,h-adjust-hStatus-hSearch-hLegend-hTitle);
+}
+}
+function launchLegend(){
+var oWin=window.open("legend.html?fwmgmt="+(top.getTopology().getEnclosureCountByProperty("getFirmwareManagementSupported",true)>0?"true":"false"),"Legend","width=400,height=300,left=200,top=200,resizable=yes,menubar=no,directories=no,scrollbars=yes,toolbar=no,status=no");
+oWin.focus();
+}
+function toggleStatusContainer(ctl){
+var statusContainer=document.getElementById('systemStatusContainer');
+var img=null;
+if(ctl.tagName.toUpperCase()=="IMG"){
+img=ctl;
+}
+if(ctl.tagName.toUpperCase()=="A"){
+if(ctl.childNodes.length>0&&
+ctl.childNodes[0].tagName.toUpperCase()=="IMG"){
+img=ctl.childNodes[0];
+}
+}
+if(statusContainer){
+if(statusContainer.style['display']=='block'){
+statusContainer.style['display']='none';
+if(img){
+img.src='/120814-042457/images/win_expand.gif';}
+}
+else{
+statusContainer.style['display']='block';
+if(img){
+img.src='/120814-042457/images/win_shrink.gif';}
+}
+myOnResize();
+}
+}
+function loadSystemStatus(){
+try{
+if(top.mainPage.getHiddenFrame().getProxies().length>0){
+loadingStatus=true;
+var systemStatusContainer=document.getElementById('systemStatus');
+var statusDoc=top.mainPage.getHiddenFrame().getSystemStatusDocument(true);
+var processor=new XsltProcessor('../Templates/systemStatus.xsl');
+processor.addParameter('systemStatusDocument',statusDoc);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('firmwareMgmtSupported',(top.getTopology().getEnclosureCountByProperty("getFirmwareManagementSupported",true)>0)+"");
+var htmlOutput=processor.getOutput();
+systemStatusContainer.innerHTML=htmlOutput;
+setInitialTime();
+}
+}catch(e){
+top.logEvent("Error loading system status: "+e.message,null,1,6);
+}finally{
+loadingStatus=false;
+}
+}
+function setInitialTime(){
+var hpem=top.getTopology().getProxyLocal();
+if(hpem){
+hpem.getEnclosureTime(function(result){
+if(result){
+var time=getElementValueXpath(result,'//hpoa:dateTime');
+updateTimestamp(time);
+}
+},true);
+}
+}
+function updateTimestamp(timestamp){
+var timeStampElement=document.getElementById('timeStamp');
+if(timeStampElement){
+var dateString=timestamp.substring(0,timestamp.indexOf('T'));
+var timeString=timestamp.substring(timestamp.indexOf('T')+1);
+var year='';
+var month='';
+var day='';
+var hour='';
+var min='';
+var second='';
+if(timeString.indexOf('-')>-1){
+timeString=timeString.substring(0,timeString.indexOf('-'));
+}
+else if(timeString.indexOf('+')>-1){
+timeString=timeString.substring(0,timeString.indexOf('+'));
+}
+else if(timeString.indexOf('Z')>-1){
+timeString=timeString.substring(0,timeString.indexOf('Z'));
+}
+year=dateString.substring(0,dateString.indexOf('-'));
+month=dateString.substring(dateString.indexOf('-')+1,dateString.lastIndexOf('-'));
+day=dateString.substring(dateString.lastIndexOf('-')+1);
+month=parseInt(month,10)-1;
+var date=new Date(year,month,day);
+timeStampElement.innerHTML=date.toDateString()+', '+timeString;
+}
+}
+function loadAlertTable(statusCodeFilter){
+top.mainPage.setMainTitle(top.getString('systemStatus'));
+top.mainPage.top.mainPage.setContentLocation('../html/alertTable.html?severity='+statusCodeFilter);
+}
+function initEvents(){
+var systemStatusEvents=[
+'EVENT_ENC_STATUS',
+'EVENT_ENC_NAMES',
+'EVENT_ENC_UID',
+'EVENT_ENC_SHUTDOWN',
+'EVENT_BLADE_STATUS',
+'EVENT_BLADE_INFO',
+'EVENT_BLADE_UID',
+'EVENT_BLADE_POWER_STATE',
+'EVENT_BLADE_INSERTED',
+'EVENT_BLADE_INSERT_COMPLETED',
+'EVENT_BLADE_REMOVED',
+'EVENT_BLADE_POWER_MGMT',
+'EVENT_BLADE_SHUTDOWN',
+'EVENT_BLADE_THERMAL',
+'EVENT_BLADE_FAULT',
+'EVENT_BLADE_CONNECT',
+'EVENT_BLADE_DISCONNECT',
+'EVENT_BLADE_GRP_CAP_TIMEOUT',
+'EVENT_ILO_READY',
+'EVENT_ILO_DEAD',
+'EVENT_ILO_ALIVE',
+'EVENT_FAN_STATUS',
+'EVENT_FAN_INSERTED',
+'EVENT_FAN_REMOVED',
+'EVENT_FAN_ZONE_STATUS',
+'EVENT_INTERCONNECT_STATUS',
+'EVENT_INTERCONNECT_UID',
+'EVENT_INTERCONNECT_RESET',
+'EVENT_INTERCONNECT_REMOVED',
+'EVENT_INTERCONNECT_INSERTED',
+'EVENT_INTERCONNECT_THERMAL',
+'EVENT_SWITCH_CONNECT',
+'EVENT_SWITCH_DISCONNECT',
+'EVENT_INTERCONNECT_HEALTH_LED',
+'EVENT_INTERCONNECT_THERMAL',
+'EVENT_INTERCONNECT_CPUFAULT',
+'EVENT_INTERCONNECT_POWER',
+'EVENT_PS_STATUS',
+'EVENT_PS_INSERTED',
+'EVENT_PS_REMOVED',
+'EVENT_PS_REDUNDANT',
+'EVENT_PS_SUBSYSTEM_STATUS',
+'EVENT_PS_OVERLOAD',
+'EVENT_AC_FAILURE',
+'EVENT_OA_ERS_CONFIG_CHANGED',
+'EVENT_OA_ERS_MAINTENANCE_SET',
+'EVENT_OA_ERS_MAINTENANCE_ENABLED',
+'EVENT_OA_ERS_MAINTENANCE_CLEARED',
+'EVENT_OA_ERS_TEST',
+'EVENT_OA_ERS_TEST_MANUAL',
+'EVENT_OA_ERS_DATACOLLECTION_MANUAL',
+'EVENT_OA_ERS_DATACOLLECTION_FAILURE',
+'EVENT_OA_ERS_DATACOLLECTION_SUCCESS'
+];
+hpems=top.getTopology().getProxies();
+for(var i=0;i<hpems.length;i++){
+hpems[i].registerEventHandler(handleStatusEvent,systemStatusEvents);
+}
+}
+function handleStatusEvent(){
+if(redrawObj.sleeping==false){
+var statusDoc=top.mainPage.getHiddenFrame().getSystemStatusDocument(true);
+if(statusDoc!=null&&loadingStatus==false){
+var statusProcessor=new XsltProcessor('../Templates/systemStatusTotals.xsl');
+statusProcessor.addParameter('stringsDoc',top.getStringsDoc());
+statusProcessor.addParameter('systemStatusDocument',statusDoc);
+var values=statusProcessor.getOutput().split(";");
+for(var i=0;i<values.length-1;i+=2){
+try{document.getElementById(values[i]).innerHTML=values[i+1];}catch(e){}
+}
+}
+redrawObj.sleep();
+}else{
+redrawObj.addRequest();
+}
+}
+  </script>
+</head>
+
+<body class="body-flush-fit-inner-0" onload='myOnLoad();' onunload="myOnUnload();" onresize="myOnResize();" style="position:relative;height:100%;width:auto;">
+
+    <div class="body-proxy" id="ID_BODY_PROXY">
+        
+      <table border="0" cellspacing="5" cellpadding="0" width="100%">
+        <tr>
+          <td>
+              
+              <!-- Container for system status overview -->
+            <div id="systemStatus" style="background:#CCCCCC;"></div>
+            
+            <!-- Transform the system status stylesheet and load it into the page -->
+            <script type="text/javascript">
+loadSystemStatus();
+            </script>
+
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">
+            
+            <table class="window-border-table" id="ID_ORGANIZER" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td id="TITLE_ID_ORGANIZER">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" ID="Table1">
+                    <tr>
+                      <td width="100%">
+                        <h3 class="subTitle"><script type="text/javascript">document.write(top.getString('systemsAndDevices'));</script></h3>
+                        <div class="subTitleBottomEdge"></div>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td valign="top">
+                <div style="border: #CCCCCC 3px solid;">
+                  <iframe name="FRAME_ID_ORGANIZER" id="FRAME_ID_ORGANIZER"  scrolling="no" frameborder="0" width="100%" height="100%" src="leftNavTree.html"></iframe>
+                </div>
+                </td>
+              </tr>
+            </table>
+            
+          </td>
+        </tr>
+      </table>
+    
+    </div>
+
+</body>
+</html>

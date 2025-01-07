@@ -1,0 +1,733 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"><html>
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css"/>
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+<link rel="stylesheet" type="text/css" href="../css/widgets.css"/>
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/tabManager.js"></script>
+<script type="text/javascript" src="../js/tableManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/progressBarManager.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/postBackManager.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+<script type="text/javascript">
+var PRG_BAR_ID='flashProgress';
+var langBatchInProgress=false;
+var langEventsIgnored=0;
+var emNum;
+var encNum;
+var hpem=null;
+var displayMgr=null;
+var ourInputValidator=null;
+var confirmStringForce=top.getString('confirmForceDowngrade');
+var confirmStringUpdate=top.getString('confirmUpdateFirmware');
+var ourProgressBarManager=new ProgressBarManager();
+function loadContent(){
+var tabRequest=getSearchValue(location.search,'tabId');
+emNum=parseInt(getSearchValue(location.search,'emNum'));
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(emNum)&&!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+hpem.registerEventHandler(flashPending,['EVENT_FLASH_PENDING']);
+hpem.registerEventHandler(standbyFlashPending,['EVENT_STANDBY_FLASH_STARTED']);
+hpem.registerEventHandler(flashProgress,['EVENT_FLASH_PROGRESS','EVENT_STANDBY_FLASH_PROGRESS']);
+hpem.registerEventHandler(standbyRebooting,['EVENT_STANDBY_FLASH_BOOTING']);
+hpem.registerEventHandler(standbyRebootComplete,['EVENT_STANDBY_FLASH_BOOTED']);
+hpem.registerEventHandler(flashSyncBuild,['EVENT_FLASHSYNC_BUILD','EVENT_FLASHSYNC_STANDBY_BUILD']);
+hpem.registerEventHandler(flashSyncBuildComplete,['EVENT_FLASHSYNC_BUILDDONE','EVENT_FLASHSYNC_STANDBY_BUILDDONE']);
+hpem.registerEventHandler(flashSyncFailed,['EVENT_FLASHSYNC_FAILED','EVENT_FLASHSYNC_STANDBY_FAILED']);
+hpem.registerEventHandler(oaStatusChanged,['EVENT_OA_STATUS']);
+hpem.registerEventHandler(oaInfoChanged,['EVENT_OA_INFO']);
+hpem.registerEventHandler(transformUsbForm,['EVENT_USB_OA_FW_FILES']);
+hpem.registerEventHandler(urlStatus,['EVENT_FW_MGMT_ISO_STATUS']);
+if(hpem.getActiveFirmwareVersion()>=3.80){
+hpem.registerEventHandler(languageChanged,['EVENT_LANG_PACK_ADDED','EVENT_LANG_PACK_REMOVED']);
+}
+if(tabRequest!=""&&document.getElementById(tabRequest)){
+selectTab(tabRequest);
+}else{
+selectTab('firmwareUpdate');
+}
+}else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);
+}
+}
+function selectTab(tabId){
+ourTabManager.toggleTabs(tabId);
+setTabContent(tabId);
+}
+function getCurrentTab(){
+return ourTabManager.getCurrentTab();
+}
+function setTabContent(tabId){
+displayMgr=new DisplayManager('bodyContent','waitContainer');
+var contentTab=document.getElementById(tabId);
+var contentLocation=contentTab.getAttribute("content_location");
+var contextId=contentTab.getAttribute("context_id");
+top.mainPage.getHelpLauncher().setCurrentTopic(contextId);
+try{
+switch(tabId){
+case 'firmwareUpdate':
+var formMgr=new FormManager(function(success){
+var processor=new XsltProcessor(contentLocation);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('oaSessionKey',(hpem.getActiveFirmwareVersion()<2.00?hpem.getSessionKey():""));
+processor.addParameter('oaInfoDoc',hpem.getOaInfoDOM(true));
+processor.addParameter('oaStatusDoc',hpem.getOaStatusDOM(true));
+processor.addParameter('enclosureStatusDoc',hpem.getEnclosureStatus());
+processor.addParameter('oaUrl',removeTrailingSlash(getServiceUrl(hpem.getIsLocal()?'':hpem.getProxyUrl(),true)));
+processor.addParameter('firmwareMgmtSupported',hpem.getFirmwareManagementSupported()+"");
+processor.addParameter('networkInfoDoc',hpem.getEnclosureNetworkInfo());
+if(hpem.getActiveFirmwareVersion()>=3.35){
+processor.addParameter('firmwareManagementDoc',hpem.getFirmwareManagementSettings());
+}
+var fwSyncSupported=(hpem.getActiveFirmwareVersion()>=2.10)&&(hpem.getStandbyFirmwareVersion()>=2.10)
+processor.addParameter('fwSyncSupported',fwSyncSupported);
+document.getElementById('bodyContent').innerHTML=ipv6UrlFix(processor.getOutput());
+transformUsbForm();
+reconcilePage();
+oaStatusChanged(hpem.getOaStatus(1));
+},false,null,"bodyContent","waitContainer");
+formMgr.startBatch(true,true);
+formMgr.queueCall(hpem.getOaInfo,[emNum]);
+formMgr.queueCall(hpem.getUsbMediaFirmwareImages,[]);
+formMgr.queueCall(hpem.getEnclosureNetworkInfo);
+if(hpem.getActiveFirmwareVersion()>=3.35){
+formMgr.queueCall(hpem.getFirmwareManagementSettings);
+}
+formMgr.endBatch();
+break;
+case 'languageUpdate':
+var formMgr=new FormManager(function(success){
+if(success){
+var processor=new XsltProcessor(contentLocation);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('availableLanguagesDoc',hpem.getLanguages());
+processor.addParameter('preferredLanguage',(getCookieValue(LANGUAGE_COOKIE_NAME())||""));
+processor.addParameter('isSupported',''+(hpem.getActiveFirmwareVersion()>=3.80&&hpem.getProperty("LanguageCount")>0));
+processor.addParameter('oaSessionKey',"");
+processor.addParameter('isLocal',''+hpem.getIsLocal());
+processor.addParameter('oaUrl',removeTrailingSlash(getServiceUrl(hpem.getIsLocal()?'':hpem.getProxyUrl(),true)));
+document.getElementById("bodyContent").innerHTML=ipv6UrlFix(processor.getOutput());
+reconcilePage();
+}else{
+displayContentFailed("bodyContent",formMgr.getErrorsArray());
+}
+},false,null,"bodyContent","waitContainer");
+formMgr.startBatch(true);
+formMgr.queueCall(hpem.getLanguages);
+formMgr.endBatch();
+break;
+default:
+}
+}catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+}
+function updateButtons(inputs){
+var totalChecked=0;
+for(var i=0;i<inputs.length;i++){
+if(inputs[i].type=="checkbox"&&inputs[i].checked){
+totalChecked++;
+}
+}
+toggleButtonsEnabled(['btnRemove',(totalChecked>0)]);
+}
+function languageChanged(result){
+var eventName=getElementValueXpath(result,"//hpoa:event");
+switch(eventName){
+case "EVENT_LANG_PACK_ADDED":
+case "EVENT_LANG_PACK_REMOVED":
+if(langBatchInProgress==true){
+langEventsIgnored++;
+}else{
+if(getCurrentTab()=="languageUpdate"){
+setTabContent("languageUpdate");
+top.mainPage.showNotice(top.getString("languagePack"+(eventName.indexOf("ADDED")>-1?"Added":"Removed")),top.getString("availableLanguages"),AlertMsgTypes.Normal,null,10);
+}
+}
+break;
+default:
+}
+}
+function downloadLanguagePack(){
+displayMgr.clearErrorContainers();
+displayMgr.setErrorContainer('downloadLangPackErrorDisplay');
+ourInputValidator=new InputValidator("validate-download","downloadLangPackErrorDisplay",true);
+if(!ourInputValidator.allInputsValidate()){
+ourInputValidator.updateMessages(true);
+return;
+}else{
+ourInputValidator.clearMessages();
+}
+var downloadUrl=getInputValue("downloadUrl");
+var formMgr=new FormManager(function(success){
+if(success){
+languagePackDownloadedCallback(formMgr.getDataByCallIndex(0));
+}
+},false,'downloadLangPackErrorDisplay','bodyContent','waitContainer');
+formMgr.createWaitContainer(top.getString("addingLanguagePack"),top.getString("downloadingFile"));
+formMgr.startBatch();
+formMgr.queueCall(hpem.downloadFile,['LANGUAGE-PACK_FILE',downloadUrl]);
+formMgr.endBatch();
+}
+function languagePackDownloadedCallback(result){
+var imgFileToken=getElementValueXpath(result,'//hpoa:downloadFileResponse/hpoa:oaFileToken');
+if(imgFileToken!=''){
+langBatchInProgress=true;
+var formMgr=new FormManager(function(success){
+langBatchInProgress=false;
+if(success){
+top.mainPage.showNotice(top.getString("languagePackAdded"),top.getString("languagePack"),AlertMsgTypes.Normal,null,10);
+}
+if(langEventsIgnored>0){
+langEventsIgnored=0;
+setTabContent("languageUpdate");
+}
+},false,'downloadLangPackErrorDisplay','bodyContent','waitContainer');
+formMgr.createWaitContainer(top.getString("addingLanguagePack"),top.getString("installingFiles"));
+formMgr.startBatch();
+formMgr.queueCall(hpem.addLanguagePack,[imgFileToken]);
+formMgr.endBatch();
+}else{
+displayMgr.showErrors(top.getString('noDownloadedFileToken'));
+}
+}
+function removeLanguagePack(){
+var langCodes=[];
+var langTable=document.getElementById("tblAvailLang");
+if(langTable){
+var langInputs=langTable.getElementsByTagName("input");
+for(var i=0;i<langInputs.length;i++){
+if(langInputs[i].getAttribute("lang-code")&&langInputs[i].checked){
+langCodes.push(langInputs[i].getAttribute("lang-code"));
+}
+}
+}
+if(langCodes.length==0){
+alert(top.getString("pleaseSelectLanguage"));
+return;
+}else{
+if(!confirm(top.getString("confirmRemoveLanguagePack")+"\n\n"+top.getString("clickOkToContinue"))){
+return;
+}
+}
+var formMgr=new FormManager(function(success){
+if(success){
+top.mainPage.showNotice(top.getString("languagePackRemoved"),top.getString("languagePack"),AlertMsgTypes.Normal,null,10);
+}
+},false,'languageTableErrorDisplay','bodyContent','waitContainer');
+formMgr.createWaitContainer(top.getString("removingLanguagePack"));
+formMgr.startBatch();
+for(var j=0;j<langCodes.length;j++){
+formMgr.queueCall(hpem.removeLanguagePack,[langCodes[j]]);
+}
+formMgr.endBatch();
+}
+function urlStatus(result){
+if(ourTabManager.getCurrentTab()=="firmwareUpdate"){
+var oaVersion=getElementValueXpath(result,'//hpoa:oaVersion');
+setInnerHTML('oaVersion',oaVersion);
+try{
+if(oaVersion!=''){
+document.getElementById('fwIsoOaVer').style.visibility='visible';
+document.getElementById('noFwIsoOaVer').style.visibility='hidden';
+}else{
+document.getElementById('fwIsoOaVer').style.visibility='hidden';
+document.getElementById('noFwIsoOaVer').style.visibility='visible';
+}
+}catch(e){}
+}
+}
+function transformUsbForm(){
+var processor=new XsltProcessor('../Forms/UsbFirmwareForm.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('usbFirmwareListDoc',hpem.getUsbMediaFirmwareImages());
+document.getElementById('usbUpdateContainer').innerHTML=processor.getOutput();
+reconcilePage();
+}
+function oaStatusChanged(result){
+var container=document.getElementById('firmwareTableContainer');
+if(container){
+var processor=new XsltProcessor('../Templates/firmwareStatusTableExternal.xsl');
+var oaStatusDOM=hpem.getOaStatusDOM(true);
+var oaInfoDOM=hpem.getOaInfoDOM(true);
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('oaSessionKey',(hpem.getActiveFirmwareVersion()<2.00?hpem.getSessionKey():""));
+processor.addParameter('oaInfoDoc',oaInfoDOM);
+processor.addParameter('oaStatusDoc',oaStatusDOM);
+processor.addParameter('enclosureStatusDoc',hpem.getEnclosureStatus());
+processor.addParameter('oaUrl',removeTrailingSlash(getServiceUrl(hpem.getIsLocal()?'':hpem.getProxyUrl(),true)));
+processor.addParameter('fwSyncSupported',(hpem.getActiveFirmwareVersion()>=2.10));
+container.innerHTML=processor.getOutput();
+var fwSyncSupported=(hpem.getActiveFirmwareVersion()>=2.10)&&(hpem.getStandbyFirmwareVersion()>=2.10)
+var hasMismatch=(getElementValueXpath(oaStatusDOM,'//hpoa:diagnosticChecksEx/hpoa:diagnosticData[@hpoa:name="firmwareMismatch" and .="ERROR"]')!='');
+if(hasMismatch&&fwSyncSupported){
+document.getElementById('syncNeededMessage').style.display='block';
+document.getElementById('syncButtonWrapper').style.display='block';
+document.getElementById('fwInformationLabel').style.display='none';
+}else{
+document.getElementById('syncNeededMessage').style.display='none';
+document.getElementById('syncButtonWrapper').style.display='none';
+document.getElementById('fwInformationLabel').style.display='block';
+}
+}
+}
+function oaInfoChanged(result){
+if(result.xml.indexOf(SOAP_FAULT_TEST())==-1){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var versionContainer=document.getElementById('versionContainer'+bayNumber);
+var hwVersionContainer=document.getElementById('hwVersionContainer'+bayNumber);
+if(versionContainer){
+versionContainer.innerHTML=getElementValueXpath(result,'//hpoa:fwVersion');
+}
+if(hwVersionContainer){
+hwVersionContainer.innerHTML=getElementValueXpath(result,'//hpoa:hwVersion');
+}
+}
+}
+function updateFirmware(){
+if(displayMgr!=null){
+displayMgr.clearErrorContainers();
+displayMgr.showMainScreen();
+}
+ourInputValidator=new InputValidator('validate-url','urlErrorDisplay',true);
+var imgUrl=document.getElementById('fileUpdateUrl').value;
+if(ourInputValidator.allInputsValidate()){
+var forceDgCheck=document.getElementById('chkForceDowngrade');
+if(forceDgCheck.checked&&!confirm(confirmStringForce)){
+return;
+}
+if(!confirm(confirmStringUpdate)){
+return;
+}
+displayMgr.createWaitContainer(top.getString('completingFirmwareDownload'));
+var downloadMgr=new FormManager(function(success){
+if(success){
+fileDownloadedCallback(downloadMgr.getDataByCallIndex(0));
+}
+},false,'urlErrorDisplay');
+downloadMgr.makeCall(hpem.downloadFile,[FIRMWARE_IMAGE(),imgUrl]);
+}else{
+ourInputValidator.updateMessages(true);
+ourInputValidator.autoFocus();
+}
+}
+function syncFirmware(){
+var confirmString=top.getString('confirmsyncFirmwareOADesc1');
+confirmString+=top.getString('confirmsyncFirmwareOADesc2');
+if(!confirm(confirmString)){
+return;
+}
+top.mainPage.getHiddenFrame().setPerformingSync(true);
+top.mainPage.getHiddenFrame().setUserInitiatedFlash(true);
+if(displayMgr!=null){
+displayMgr.clearErrorContainers();
+displayMgr.showMainScreen();
+}
+var syncFormMgr=new FormManager(function(success){
+if(!success){
+top.mainPage.getHiddenFrame().setPerformingSync(false);
+}
+},false,'syncErrorDisplay');
+syncFormMgr.createWaitContainer(top.getString('synchronizingFirmware'));
+syncFormMgr.makeCall(hpem.syncOaRomEnhanced);
+}
+function fileDownloadedCallback(result){
+var imgFileToken=getElementValueXpath(result,'//hpoa:downloadFileResponse/hpoa:oaFileToken');
+if(imgFileToken!=''){
+var flashMgr=new FormManager(function(success){
+if(!success){
+top.mainPage.getHiddenFrame().setUserInitiatedFlash(false);
+}
+},false,'urlErrorDisplay');
+var forceDgCheck=document.getElementById('chkForceDowngrade');
+if(forceDgCheck){
+var forceDowngrade=document.getElementById('chkForceDowngrade').checked;
+top.mainPage.getHiddenFrame().setUserInitiatedFlash(hpem.getIsLocal());
+flashMgr.makeCall(hpem.flashOaRomEnhanced,[imgFileToken,false,forceDowngrade]);
+}else{
+top.mainPage.getHiddenFrame().setUserInitiatedFlash(hpem.getIsLocal());
+flashMgr.makeCall(hpem.flashOaRom,[imgFileToken,false]);
+}
+}else{
+displayMgr.showErrors(top.getString('noDownloadedFileToken'));
+}
+}
+function flashOaRomFromUsb(){
+var usbFileList=document.getElementById('usbFileList');
+var url=usbFileList.options[usbFileList.selectedIndex].value;
+if(displayMgr!=null){
+displayMgr.clearErrorContainers();
+displayMgr.showMainScreen();
+}
+var forceDgCheck=document.getElementById('chkForceDowngrade');
+if(forceDgCheck.checked&&!confirm(confirmStringForce)){
+return;
+}
+if(!confirm(confirmStringUpdate)){
+return;
+}
+displayMgr.createWaitContainer(top.getString('loadingImageFromUsb'));
+var flashMgr=new FormManager(function(success){
+if(!success){
+top.mainPage.getHiddenFrame().setUserInitiatedFlash(false);
+}
+},false,'usbErrorDisplay');
+var forceDgCheck=document.getElementById('chkForceDowngrade');
+if(forceDgCheck){
+var forceDowngrade=document.getElementById('chkForceDowngrade').checked;
+top.mainPage.getHiddenFrame().setUserInitiatedFlash(hpem.getIsLocal());
+flashMgr.makeCall(hpem.flashOaRomEnhanced,[url,false,forceDowngrade]);
+}else{
+top.mainPage.getHiddenFrame().setUserInitiatedFlash(hpem.getIsLocal());
+flashMgr.makeCall(hpem.flashOaRom,[imgFileToken,false]);
+}
+}
+function checkFileInput(){
+displayMgr.clearErrorContainers();
+displayMgr.setErrorContainer('uploadErrorDisplay');
+ourInputValidator=new InputValidator('validate-file','uploadErrorDisplay',true);
+if(ourInputValidator.allInputsValidate()){
+var forceDgCheck=document.getElementById('chkForceDowngrade');
+if(forceDgCheck.checked&&!confirm(confirmStringForce)){
+return false;
+}
+if(!confirm(confirmStringUpdate)){
+return;
+}
+try{
+document.forms[0].submit();
+displayMgr.createWaitContainer(top.getString('completingFirmwareUpload'));
+displayMgr.showWaitScreen();
+}catch(e){
+var errMsg=e.message;
+if(e.number==-2147024891){
+errMsg=top.getString('invalidFilename');
+}
+displayMgr.showErrors(errMsg);
+}
+}else{
+ourInputValidator.updateMessages(true);
+ourInputValidator.autoFocus();
+}
+return false;
+}
+function checkLanguagePackInput(){
+displayMgr.clearErrorContainers();
+displayMgr.setErrorContainer('uploadLangPackErrorDisplay');
+ourInputValidator=new InputValidator('validate-lang-pack','uploadLangPackErrorDisplay',true);
+if(ourInputValidator.allInputsValidate()){
+try{
+document.forms[0].submit();
+displayMgr.createWaitContainer(top.getString('addingLanguagePack'),top.getString("uploadingFile"));
+displayMgr.showWaitScreen();
+}catch(e){
+var errMsg=e.message;
+if(e.number==-2147024891){
+errMsg=top.getString('invalidFilename');
+}
+displayMgr.showErrors(errMsg);
+}
+}else{
+ourInputValidator.updateMessages(true);
+ourInputValidator.autoFocus();
+}
+return false;
+}
+function showVcmOaMinFwVerNote(){
+var forceDgCheck=document.getElementById('chkForceDowngrade');
+if(forceDgCheck&&forceDgCheck.checked){
+hpem.getOaVcmMode(function(vcmMode){
+var vcEnable=getElementValueXpath(vcmMode,"//hpoa:isVcmMode");
+if(vcEnable=="true"){
+hpem.getVcmOaMinFwVersion(function(vcmOaMinFwVer){
+var note_div=document.getElementById('vcmOaMinFwVerDisplay');
+var version=getElementValueXpath(vcmOaMinFwVer,"//hpoa:version");
+if(note_div&&version){
+var message=top.getString('vcmOaMinFwVerNote').replace("%{ver}",version);
+note_div.style.display="block";
+note_div.innerHTML="<span class=\"whiteSpacer\">&#160;</span><br/>";
+note_div.innerHTML+="<span class=\"whiteSpacer\">&#160;</span><br/>";
+note_div.innerHTML+="<em>"+message+"</em>";
+}
+});
+}
+});
+}else{
+var note_div=document.getElementById('vcmOaMinFwVerDisplay');
+if(note_div){
+note_div.style.display="none";
+note_div.innerHTML="";
+}
+}
+}
+function flashPending(result){
+if(displayMgr!=null){
+displayMgr.clearErrorContainers();
+displayMgr.showMainScreen();
+}
+if(hpem.getIsLocal()==true){
+top.mainPage.getHiddenFrame().startFlash(hpem,false);
+}else{
+var progressString=top.getString('activeOAFlashPending');
+resetProgressIndicator(progressString);
+}
+}
+function flashProgress(result){
+if(displayMgr!=null){
+displayMgr.clearErrorContainers();
+displayMgr.showMainScreen();
+}
+var type=(getElementValueXpath(result,"//hpoa:event")=='EVENT_STANDBY_FLASH_PROGRESS'?"Standby":"Active");
+if(top.mainPage.getHiddenFrame().getPerformingSync()){
+resetProgressIndicator("Synchronizing the "+type+" Onboard Administrator ...");
+}else{
+resetProgressIndicator("Flashing the "+type+" Onboard Administrator ...");
+}
+var pctComplete=getElementValueXpath(result,'//hpoa:numValue');
+ourProgressBarManager.updateProgressBar(PRG_BAR_ID,pctComplete);
+}
+function standbyRebooting(result){
+displayMgr=new DisplayManager('bodyContent','waitContainer');
+displayMgr.clearErrorContainers();
+displayMgr.createWaitContainer(top.getString('plsWaitStandbyOAReset'));
+displayMgr.showWaitScreen();
+}
+function standbyRebootComplete(result){
+if(!top.mainPage.getHiddenFrame().getPerformingSync()){
+var waitString=top.getString('plsWaitActiveOAFlashInit');
+displayMgr=new DisplayManager('bodyContent','waitContainer');
+displayMgr.clearErrorContainers();
+displayMgr.createWaitContainer(waitString);
+displayMgr.showWaitScreen();
+}else{
+top.mainPage.getHiddenFrame().setPerformingSync(false);
+deRegisterEventHandlers();
+loadContent();
+document.getElementById('standbySyncMessage').style.display='none';
+var msg=top.getString('firmwareSyncCompleted');
+msg+=top.getString('firmwareStatusUpdated');
+alert(msg);
+}
+}
+function flashSyncBuild(result){
+top.mainPage.getHiddenFrame().setPerformingSync(true);
+var waitString=top.getString('buildingFirmwareImageWait');
+displayMgr=new DisplayManager('bodyContent','waitContainer');
+displayMgr.clearErrorContainers();
+displayMgr.createWaitContainer(waitString);
+displayMgr.showWaitScreen();
+}
+function flashSyncBuildComplete(result){
+top.mainPage.getHiddenFrame().setPerformingSync(true);
+var waitString=top.getString('imageBuiltSuccessfully');
+displayMgr=new DisplayManager('bodyContent','waitContainer');
+displayMgr.clearErrorContainers();
+displayMgr.createWaitContainer(waitString);
+displayMgr.showWaitScreen();
+}
+function flashSyncFailed(result){
+top.mainPage.getHiddenFrame().setPerformingSync(false);
+displayMgr=new DisplayManager('bodyContent','waitContainer');
+displayMgr.showMainScreen();
+var flashErrorDisplay=document.getElementById('syncErrorDisplay');
+if(flashErrorDisplay){
+flashErrorDisplay.innerHTML=top.getString('firmwareSyncFailed');
+flashErrorDisplay.style.display='block';
+}
+}
+function standbyFlashPending(result){
+if(displayMgr!=null){
+displayMgr.clearErrorContainers();
+displayMgr.showMainScreen();
+}
+if(hpem.getIsLocal()==true&&!top.mainPage.getHiddenFrame().getPerformingSync()){
+top.mainPage.getHiddenFrame().startFlash(hpem,true);
+}else{
+var progressString=top.getString('standbyOAFlashStarted');
+resetProgressIndicator(progressString);
+}
+}
+function resetProgressIndicator(processName){
+var processor=new XsltProcessor('../Templates/progressBar.xsl');
+processor.addParameter('processName',processName);
+processor.addParameter('complete',top.getString('complete'));
+processor.addParameter('barId',PRG_BAR_ID);
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+if(ourProgressBarManager==null){
+ourProgressBarManager=new ProgressBarManager();
+}
+ourProgressBarManager.init();
+if(top.mainPage.getHiddenFrame().getPerformingSync()){
+document.getElementById('standbySyncMessage').style.display='block';
+}else{
+document.getElementById('flashMessage').style.display='block';
+}
+}
+function deRegisterEventHandlers(){
+try{
+hpem.removeRegisteredHandler(flashPending);
+hpem.removeRegisteredHandler(standbyFlashPending);
+hpem.removeRegisteredHandler(flashProgress);
+hpem.removeRegisteredHandler(standbyRebooting);
+hpem.removeRegisteredHandler(standbyRebootComplete);
+hpem.removeRegisteredHandler(flashSyncBuild);
+hpem.removeRegisteredHandler(flashSyncBuildComplete);
+hpem.removeRegisteredHandler(flashSyncFailed);
+hpem.removeRegisteredHandler(oaStatusChanged);
+hpem.removeRegisteredHandler(languageChanged);
+}
+catch(e){}
+}
+function initiateFlash(fileToken){
+var flashMgr=new FormManager(function(success){
+if(!success){
+top.mainPage.getHiddenFrame().setUserInitiatedFlash(false);
+}
+},false,'uploadErrorDisplay');
+var forceDowngradeChk=document.getElementById('chkForceDowngrade');
+if(forceDowngradeChk){
+var forceDowngrade=document.getElementById('chkForceDowngrade').checked;
+top.mainPage.getHiddenFrame().setUserInitiatedFlash(hpem.getIsLocal());
+flashMgr.makeCall(hpem.flashOaRomEnhanced,[fileToken,true,forceDowngrade]);
+}else{
+top.mainPage.getHiddenFrame().setUserInitiatedFlash(hpem.getIsLocal());
+flashMgr.makeCall(hpem.flashOaRom,[fileToken,true]);
+}
+}
+function postFrameLoaded(targetDocument){
+var postBackMgr=new PostBackManager(targetDocument,"firmwareUpdateForm","oaFileToken");
+if(postBackMgr.getIsPostBack()){
+displayMgr.setErrorContainer('uploadErrorDisplay');
+if(postBackMgr.getSuccess()){
+var oaFileToken=postBackMgr.getResponseValue("oaFileToken");
+if(oaFileToken!=''){
+initiateFlash(oaFileToken);
+}else{
+displayMgr.showErrors(top.getString('noUploadedFileToken'));
+displayMgr.showMainScreen();
+}
+}else{
+displayMgr.showErrors(postBackMgr.getErrorString());
+displayMgr.showMainScreen();
+}
+}
+}
+function postFrame2Loaded(targetDocument){
+var postBackMgr=new PostBackManager(targetDocument,"uploadLanguageForm","oaFileToken");
+if(postBackMgr.getIsPostBack()){
+displayMgr.setErrorContainer('uploadLangPackErrorDisplay');
+if(postBackMgr.getSuccess()){
+var oaFileToken=postBackMgr.getResponseValue("oaFileToken");
+if(oaFileToken!=''){
+langBatchInProgress=true;
+var formMgr=new FormManager(function(success){
+langBatchInProgress=false;
+if(success){
+top.mainPage.showNotice(top.getString("languagePackAdded"),top.getString("languagePack"),AlertMsgTypes.Normal,null,10);
+}
+if(langEventsIgnored>0){
+langEventsIgnored=0;
+setTabContent("languageUpdate")
+}
+},false,'uploadLangPackErrorDisplay','bodyContent','waitContainer');
+formMgr.createWaitContainer(top.getString("addingLanguagePack"),top.getString("installingFiles"));
+formMgr.startBatch();
+formMgr.queueCall(hpem.addLanguagePack,[oaFileToken]);
+formMgr.endBatch();
+}else{
+displayMgr.showErrors(top.getString('noUploadedFileToken'));
+displayMgr.showMainScreen();
+}
+}else{
+displayMgr.showErrors(postBackMgr.getErrorString());
+displayMgr.showMainScreen();
+}
+}
+}
+function selectusbFirmwareImage(){
+var win=window.open("","mywindow","width=400,height=200");
+win.location.href="../html/firmwareWindow.html?num="+escape(encNum);
+}
+function updateFirmwareEFM(){
+var forceDgCheck=document.getElementById('chkForceDowngrade');
+if(forceDgCheck.checked&&!confirm(confirmStringForce)){
+return;
+}
+if(!confirm(confirmStringUpdate)){
+return;
+}
+displayMgr.createWaitContainer(top.getString('activeOAFlashPending'));
+top.mainPage.getHiddenFrame().setUserInitiatedFlash(hpem.getIsLocal());
+var formMgr=new FormManager(function(success){
+if(!success){
+top.mainPage.getHiddenFrame().setUserInitiatedFlash(false);
+}
+},false,'fwMgmtErrorDisplay');
+formMgr.makeCall(hpem.flashOaRomFirmwareISO,[forceDgCheck.checked]);
+}
+</script>
+</head>
+<body style="margin:10px;" onload="loadContent();" onunload="deRegisterEventHandlers();">    
+  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+		<tr>
+			<td valign="bottom">
+				<div class="tabSet" id="tabSet">
+					<div class="tabOff" tabid="firmwareUpdate" context_id="FORM_OA_FIRMWARE_UPDATE" id="firmwareUpdate" content_location="/120814-042457/Forms/FirmwareUpdatePage.xsl"><script type="text/javascript">document.write(top.getString("firmwareUpdate"));</script></div>
+					<div class="tabOff" tabid="languageUpdate" context_id="FORM_OA_LANGUAGE_UPDATE" id="languageUpdate" content_location="/120814-042457/Forms/languageUpdate.xsl"><script type="text/javascript">document.write(top.getString("languagePack"));</script></div>
+					<div class="tabBottomLine">
+					</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td style="padding-top: 10px;">
+				<div id="bodyContent"></div>
+				<div id="waitContainer" class="waitContainer"></div>
+        <div id="flashMessage" style="display:none;">
+          <span class="whiteSpacer">&nbsp;</span>
+          <span class="whiteSpacer">&nbsp;</span>
+          <table cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td><img border="0" src="/120814-042457/images/status_informational_32.gif"/></td>
+              <td style="padding-left:10px;">
+                <script type="text/javascript">document.write(top.getString('oaFwFlashDesc'));</script>
+              </td>
+            </tr>			
+          </table>
+        </div>
+        <div id="standbySyncMessage" style="display:none;">
+          <span class="whiteSpacer">&nbsp;</span>
+          <span class="whiteSpacer">&nbsp;</span>
+          <table cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td><img border="0" src="/120814-042457/images/status_minor_32.gif"/></td>
+              <td style="padding-left:10px;">
+                <script type="text/javascript">document.write(top.getString('oaFwFlashNote'));</script>
+              </td>
+            </tr>			
+          </table>
+        </div>
+      </td>
+		</tr>
+	</table>
+  <script type="text/javascript">
+if(typeof(TabManager)!="undefined"){
+ourTabManager.init();
+}
+  </script>
+  <!-- Hidden IFrame for posting firmware images. -->
+  <iframe onload="try{postFrameLoaded(this.contentWindow.document);}catch(e){}" scrolling="auto" src="blank.html" id="ifrmFIRMWARE_UPLOAD" name="ifrmFIRMWARE_UPLOAD" width="0" height="0" frameborder="0"></iframe>
+  <!-- Hidden IFrame for posting language packs. -->
+  <iframe onload="try{postFrame2Loaded(this.contentWindow.document);}catch(e){}" scrolling="auto" src="blank.html" id="ifrmLANGUAGE_UPLOAD" name="ifrmLANGUAGE_UPLOAD" width="0" height="0" frameborder="0"></iframe>
+</body>
+</html>

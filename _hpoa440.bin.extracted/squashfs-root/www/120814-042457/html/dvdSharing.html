@@ -1,0 +1,386 @@
+<!--	(C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>HP BladeSystem Onboard Administrator</title>
+<link rel="stylesheet" type="text/css" href="../css/default.css"/>
+<link rel="stylesheet" type="text/css" href="../css/blue_theme.css"/>
+<link rel="stylesheet" type="text/css" href="../css/MxPortalEx.css"/>
+<script type="text/javascript" src="../js/EnvironConstants.js"></script>
+<script type="text/javascript" src="../js/buttonManager.js"></script>
+<script type="text/javascript" src="../js/tableManager.js"></script>
+<script type="text/javascript" src="../js/dropdownMenuManager.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/formManager.js"></script>
+<script type="text/javascript" src="../js/displayManager.js"></script>
+<script type="text/javascript" src="../js/browser.js"></script>
+<script type="text/javascript" src="../js/init.js"></script>
+<script type="text/javascript" src="../js/xml.js"></script>
+<script type="text/javascript" src="../js/xslt.js"></script>
+<script type="text/javascript" src="../js/inputValidator.js"></script>
+<script type="text/javascript" src="../js/iLO.js"></script>
+
+<style type="text/css">
+div.loading{
+	color:#666;
+	font-style:italic;
+}
+</style>
+
+<script type="text/javascript">
+var encNum;
+var hpem=null;
+var formMgr=null;
+var ourInputValidator=null;
+var bayNum=null;
+var mpInfoDoc=null;
+function DvdSettings(){
+this.bayNumber=0;
+this.reset=false;
+this.virtualMediaDevType='VM_DEV_CDROM';
+this.virtualMediaUrl='';
+}
+function loadContent(){
+try{
+encNum=parseInt(getSearchValue(location.search,'encNum'));
+if(!isNaN(encNum)&&(hpem=top.mainPage.getHiddenFrame().getProxy(encNum))!=null){
+loadSummaryTable();
+hpem.registerEventHandler(loadSummaryTable,['EVENT_BLADE_INFO']);
+hpem.registerEventHandler(mediaStatusChanged,['EVENT_VIRTUAL_MEDIA_STATUS','EVENT_MEDIA_DRIVE_INSERTED','EVENT_MEDIA_DRIVE_REMOVED']);
+hpem.registerEventHandler(powerStateChanged,['EVENT_BLADE_POWER_STATE']);
+top.mainPage.getHelpLauncher().setCurrentTopic("FORM_DVD_SHARING");
+}else{
+displayContentFailed('bodyContent',[top.getString('noOnboardAdmin')]);
+}
+}
+catch(e){
+displayContentFailed('bodyContent',[e.message]);
+}
+}
+function loadSummaryTable(fresh){
+if(typeof(fresh)=='undefined'){
+var fresh=false;
+}
+formMgr=new FormManager(function(success){
+var processor=new XsltProcessor('../Templates/dvdSharing.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('bladeInfoDoc',hpem.getBladeInfoDOM());
+processor.addParameter('bladeStatusDoc',hpem.getBladeStatusDOM());
+processor.addParameter('bladeMpInfoDoc',hpem.getBladeMpInfoDOM(true));
+processor.addParameter('numDeviceBays',hpem.getNumBlades());
+processor.addParameter('virtualMediaUrlListDoc',hpem.getVirtualMediaUrlList('VM_DEV_CDROM'));
+processor.addParameter('virtualMediaStatusDoc',hpem.getVirtualMediaStatusDOM(true));
+processor.addParameter('oaMediaDeviceList',hpem.getOaMediaDeviceDOM());
+processor.addParameter('firmwareManagementSettings',hpem.getFirmwareManagementSettings());
+processor.addParameter('serviceUserAcl',hpem.getUserAccessLevel());
+document.getElementById('bodyContent').innerHTML=processor.getOutput();
+reconcilePage();
+loadVmStatusAll(fresh);
+});
+formMgr.startBatch(true,fresh);
+formMgr.queueCall(hpem.getBladeMpInfoAll);
+formMgr.queueCall(hpem.getVirtualMediaUrlList,['VM_DEV_CDROM']);
+formMgr.queueCall(hpem.getFirmwareManagementSettings);
+formMgr.endBatch();
+}
+function vmStatusBeginLoad(bayNum){
+var bladeLabel=document.getElementById('bay'+bayNum+'VmStatus');
+if(bladeLabel){
+bladeLabel.className='loading';
+bladeLabel.innerHTML='loading ...';
+}
+}
+function loadVmStatusAll(fresh){
+var formMgr=new FormManager(null,false,'','');
+var neededElements=document.getElementsByName('vmStatusNeeded');
+if(neededElements.length==0&&!fresh)
+return;
+formMgr.startBatch(true,fresh);
+for(var i=0;i<neededElements.length;i++){
+var bayNum=neededElements[i].value;
+formMgr.queueCall(hpem.getVirtualMediaStatus,[bayNum,'VM_DEV_CDROM'],[],[],mediaStatusChanged,new Function("vmStatusBeginLoad("+bayNum+");"));
+}
+formMgr.endBatch();
+}
+function connectServers(vmUrl){
+if(!hasSelectedDevices()){
+return;
+}
+var baySelection=getSelectedDevices();
+if(vmUrl==' '){
+var confirmString=top.getString('bayConfirm1');
+confirmString+=top.getString('bayConfirm2');
+if(!confirm(confirmString)){
+return;
+}
+}
+var formMgr=new FormManager(function(success){
+if(success){
+for(var i=1;i<=baySelection.length;i++){
+if(typeof(baySelection[i])!='undefined'&&baySelection[i]){
+if(baySelection[i].selected){
+unCheckBayCheckbox(i);
+}
+}
+}
+}
+},false,'dvdErrorDisplay','bodyContent','waitContainer');
+if(vmUrl==' '){
+formMgr.createWaitContainer(top.getString('bayDisconnectingVirtualMedia'));
+}else{
+formMgr.createWaitContainer(top.getString('bayConnectingVirtualMedia'));
+}
+clearAllErrorMessages();
+formMgr.startBatch();
+for(var i=1;i<=baySelection.length;i++){
+if(typeof(baySelection[i])!='undefined'&&baySelection[i]){
+if(baySelection[i].selected){
+formMgr.queueCall(hpem.insertVirtualMedia,[i,'VM_DEV_CDROM',vmUrl]);;
+}
+}
+}
+formMgr.endBatch();
+}
+function updateMenuStatus(){
+var menusEnabled=false;
+var inputs=document.getElementsByTagName("INPUT");
+for(var i=0;i<inputs.length;i++){
+if(inputs[i].getAttribute("affectsMenus")=='true'&&inputs[i].checked){
+menusEnabled=true;
+break;
+}
+}
+ourDropdownMenuManager.setLocalMenuEnabled(menusEnabled);
+}
+function hasSelectedDevices(){
+var inputs=document.getElementsByTagName("INPUT");
+for(var i=0;i<inputs.length;i++){
+if(inputs[i].getAttribute("affectsMenus")=='true'&&inputs[i].checked){
+return true;
+}
+}
+return false;
+}
+function getSelectedDevices(){
+var summaryTable=document.getElementById('dvdSharingTable');
+var inputCollection=summaryTable.getElementsByTagName('input');
+var baySelection=new Array();
+for(var i=0;i<inputCollection.length;i++){
+if(inputCollection[i].getAttribute('type')=='checkbox'){
+var bayNumber=inputCollection[i].getAttribute('bayNumber');
+var baySelectObject=new Object();
+if(bayNumber){
+bayNumber=parseInt(bayNumber);
+baySelectObject.selected=inputCollection[i].checked;
+baySelectObject.bladeType=inputCollection[i].getAttribute('bladeType');
+baySelectObject.productId=inputCollection[i].getAttribute('productId');
+baySelectObject.checkboxRef=inputCollection[i];
+baySelection[bayNumber]=baySelectObject;
+}
+else{
+}
+}
+}
+return baySelection;
+}
+function setBladesPower(powerControl){
+var confirmString=top.getString('virButtonallSelSrvDesc')+'\n';
+if(confirm(confirmString)){
+clearAllErrorMessages();
+var baySelection=getSelectedDevices();
+for(var i=0;i<baySelection.length;i++){
+if(typeof(baySelection[i])!='undefined'&&baySelection[i]){
+if(baySelection[i].selected&&baySelection[i].bladeType=='BLADE_TYPE_SERVER'){
+if(powerControl=='COLD_BOOT'){
+var powerState=getElementValueXpath(hpem.getBladeStatus(i),'//hpoa:powered');
+powerControl=(powerState=='POWER_OFF')?'MOMENTARY_PRESS':powerControl;
+}
+hpem.setBladePower(i,powerControl,function(){});
+}
+else{
+if(baySelection[i].checkboxRef){
+baySelection[i].checkboxRef.checked=false;
+}
+}
+}
+}
+}
+}
+function setBladeFirstTimeBoot(bootDevice){
+var fwVersion=hpem.getActiveFirmwareVersion();
+var confirmString=top.getString('nextOnetimeBootAllSelSrvDesc')+'\n';
+confirmString+=top.getString('nextOnetimeBootAllSelSrvNote');
+if(confirm(confirmString)){
+var bootDeviceNoChange='ONE_TIME_BOOT_NO_CHANGE';
+var bootAgentNoChange='NORMAL_BOOT_OS';
+var bootAgent='';
+if(isBootAgent(bootDevice)){
+bootAgent=bootDevice;
+bootDevice=bootDeviceNoChange;
+}
+else{
+bootAgent=bootAgentNoChange;
+}
+if(bootDevice!=''){
+var baySelection=getSelectedDevices();
+var formMgr=new FormManager(function(success){
+var baySelection=getSelectedDevices();
+var masterSelect=document.getElementById('summaryMaster');
+if(masterSelect){masterSelect.checked=false;}
+for(var i=0;i<baySelection.length;i++){
+if(typeof(baySelection[i])!='undefined'&&baySelection[i]){
+if(baySelection[i].selected){
+unCheckBayCheckbox(i);
+}
+}
+}
+},false,'dvdErrorDisplay','bodyContent','waitContainer');
+formMgr.createWaitContainer(top.getString('completingFirstTimeBootSettings'));
+clearAllErrorMessages();
+formMgr.startBatch();
+for(var i=0;i<baySelection.length;i++){
+if(typeof(baySelection[i])!='undefined'&&baySelection[i]){
+if(baySelection[i].selected&&baySelection[i].bladeType=='BLADE_TYPE_SERVER'
+&&baySelection[i].productId=="8224"){
+formMgr.setCurrentEnclosureName(top.getString("bay")+" "+i);
+if(fwVersion>=4.30){
+formMgr.queueCall(hpem.setBladeOneTimeBootEx,[i,bootDevice,bootAgent,true,false]);
+}else{
+formMgr.queueCall(hpem.setBladeOneTimeBoot,[i,bootDevice,bootAgent,true]);
+}
+}
+else if(baySelection[i].checkboxRef){
+baySelection[i].checkboxRef.checked=false;
+}
+}
+}
+formMgr.endBatch();
+}
+else{
+var alertString=top.getString('chooseBootOption');
+alert(alertString);
+}
+}
+}
+function isBootAgent(bootOption){
+if(bootOption=='NORMAL_BOOT_OS'||bootOption=='SYS_PART'||bootOption=='QUICK_DIAGS'||bootOption=='RBSU'||bootOption=='PXE'){
+return true;
+}
+else{
+return false;
+}
+}
+function mediaStatusChanged(result){
+var bayNumber=getElementValueXpath(result,'//hpoa:virtualMediaStatus/hpoa:bayNumber');
+var fwMgmtUrl=getElementValueXpath(hpem.getFirmwareManagementSettings(),'//hpoa:firmwareManagementSettings/hpoa:isoUrl');
+var devUrlContainer=document.getElementById('bay'+bayNumber+'DevUrl');
+if(devUrlContainer){
+var devUrl=getElementValueXpath(result,'//hpoa:virtualMediaStatus/hpoa:cdromUrl');
+if(devUrl=='tray_open://'){
+devUrl=top.getString('trayOpenOrNoMedia');
+}
+else if(devUrl=='http://169.254.0.1/fcgi-bin/dvd.iso'){
+devUrl=top.getString('encDVD');
+}
+else if(devUrl=='http://169.254.0.2/fcgi-bin/dvd.iso'){
+devUrl=top.getString('encDVD');
+}
+else if(fwMgmtUrl!=null&&fwMgmtUrl!=''&&devUrl==fwMgmtUrl){
+devUrl='['+top.getString('firmwareManagement')+']';
+}
+devUrlContainer.innerHTML=devUrl;
+}
+var statusContainer=document.getElementById('bay'+bayNumber+'VmStatus');
+if(statusContainer){
+var cdRomStatus=getElementValueXpath(result,'//hpoa:virtualMediaStatus/hpoa:cdromStatus');
+var support=getElementValueXpath(result,'//hpoa:virtualMediaStatus/hpoa:support');
+if(support=='VM_FIRMWARE_UPDATE_NEEDED'){
+cdRomStatus=top.getString('incompatibleFirmware');
+}else if(support=='VM_ADVANCED_LICENSE_REQUIRED'){
+cdRomStatus=top.getString('iLoAdvancedLiceseRequired');
+}
+else{
+switch(cdRomStatus){
+case 'VM_DEV_STATUS_DISCONNECTED':
+cdRomStatus=top.getString('disconnected');
+break;
+case 'VM_DEV_STATUS_CONNECTED':
+cdRomStatus=top.getString('connected');
+break;
+case 'VM_DEV_STATUS_DISCONNECTING':
+cdRomStatus=top.getString('disconnecting');
+break;
+case 'VM_DEV_STATUS_CONNECTING':
+cdRomStatus=top.getString('connecting');
+break;
+default:
+cdRomStatus=top.getString('statusUnknown');
+break;
+}
+}
+statusContainer.innerHTML=cdRomStatus;
+statusContainer.className='';
+}
+unCheckBayCheckbox(bayNumber);
+}
+function powerStateChanged(result){
+var bayNumber=getElementValueXpath(result,'//hpoa:bayNumber');
+var powerState=getElementValueXpath(result,'//hpoa:powered');
+var powerContainer=document.getElementById('bay'+bayNumber+'powerState');
+if(powerContainer){
+if(powerState=='POWER_OFF'){
+powerContainer.innerHTML=top.getString('off');
+}
+else if(powerState=='POWER_ON'){
+powerContainer.innerHTML=top.getString('on');
+}
+else{
+powerContainer.innerHTML=top.getString('statusUnknown');
+}
+}
+unCheckBayCheckbox(bayNumber);
+}
+function unCheckBayCheckbox(bayNumber){
+var bladeSelect=document.getElementById('chk'+bayNumber);
+var masterSelect=document.getElementById('summaryMaster');
+if(bladeSelect){
+bladeSelect.checked=false;
+try{
+var tr=bladeSelect.parentNode.parentNode;
+var originalClass=tr.getAttribute('originalClass');
+if(originalClass=='altRowColor'){
+tr.className='altRowColor';
+}
+else{
+tr.className='';
+}
+}
+catch(e){}
+}
+if(masterSelect){
+masterSelect.checked=false;
+}
+}
+function startRcLaunch(bayNumber){
+var rcSelect=document.getElementById('bay'+bayNumber+'RcSelect');
+if(rcSelect){
+bayNum=bayNumber;
+mpInfoDoc=hpem.getBladeMpInfo(bayNumber)
+var rcOptionField=rcSelect.options[rcSelect.selectedIndex].value;
+var optionUrl=getElementValueXpath(mpInfoDoc,'//'+rcOptionField);
+var loginUrl=getElementValueXpath(mpInfoDoc,'//hpoa:bladeMpInfo/hpoa:loginUrl');
+doiLoSso(bayNumber,loginUrl,optionUrl);
+}
+}
+function refreshSummary(){
+loadSummaryTable(true);
+}
+	</script>
+</head>
+<body style="margin:10px;" onload="loadContent();">
+    <div id="bodyContent"></div>
+	<div id="waitContainer" class="waitContainer"></div>
+	<div id="iLoSsoContent" style="display:none;"></div>
+</body>
+</html>

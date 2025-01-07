@@ -1,0 +1,937 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><title >HP BladeSystem Onboard Administrator</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE9"/>
+  <meta http-equiv="cache-control" content="no-cache"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <link type="text/css" rel="stylesheet" href="../css/default.css"/>
+  <link type="text/css" rel="stylesheet" href="../css/blue_theme.css"/>
+  <link type="text/css" rel="stylesheet" href="../css/MxPortalEx.css"/>
+  <link type="text/css" rel="stylesheet" href="../css/widgets.css" />
+    
+  <script type="text/javascript" src="../js/EnvironConstants.js"></script>
+  <script type="text/javascript" src="../js/formManager.js"></script>
+  <script type="text/javascript" src="../js/displayManager.js"></script>
+  <script type="text/javascript" src="../js/progressBarManager.js"></script>
+  <script type="text/javascript" src="../js/global.js"></script>
+  <script type="text/javascript" src="../js/globalVars.js"></script>
+  <script type="text/javascript" src="../js/init.js"></script>
+  <script type="text/javascript" src="../js/urllib.js"></script>
+  <script type="text/javascript" src="../js/xml.js"></script>
+  <script type="text/javascript" src="../js/xslt.js"></script>
+  <script type="text/javascript" src="../js/descriptor.js" ></script>
+  <script type="text/javascript" src="../js/domBuilder.js" ></script>
+
+  <script type="text/javascript" src="../js/hpem.js"></script>
+  <script type="text/javascript" src="../js/events.js" ></script>
+  <script type="text/javascript">	
+var displayMgr=null;
+var resetReason='';
+var userInitiatedFlash=false;
+var performingSync=false;
+var resetDueToFlash=false;
+var ourProgressBarManager=new ProgressBarManager();
+var devNum=0;
+var devType='';
+var encNum=0;
+var contentSelectedFlag=false;
+function focusChangedListener(enclosureNumber){
+encNum=enclosureNumber;
+top.logEvent("HiddenFrame: Focus change listener notified.\tSELECTED ENCLOSURE: "+encNum,null,2,3);
+}
+top.getTopology().addFocusChangeListener(focusChangedListener,true);
+var devIdSelected='';
+var encIdSelected='';
+var deviceChangedHandlers=new Array();
+function getSelectedDeviceId(){
+var devId='';
+if(devNum!=0&&encNum!=0){
+devId=ENCLOSURE()+encNum+devType+devNum+'Select';
+}
+return devId;
+}
+function addDeviceChangedHandler(handler){
+deviceChangedHandlers.push(handler);
+}
+function selectDevice(deviceNumber,deviceType,enclosureNumber,selectContent,showTray,tabId){
+if(!isNonZeroInteger(enclosureNumber)){
+top.logEvent(["HiddenFrame: selectDevice received an invalid enclosure number: "+
+enclosureNumber,"deviceNumber: "+deviceNumber,"deviceType: "+deviceType],null,1,6);
+top.getTopology().setTopologyMode(TopologyModes.Linked);
+top.getTopology().clearCache();
+top.getTopology().updateTopology();
+return;
+}
+if(enclosureNumber!=encNum){
+setSelectedEnclosure(enclosureNumber);
+}
+top.mainPage.getStatusFrame().loadContent();
+devNum=deviceNumber;
+devType=deviceType;
+encNum=enclosureNumber;
+if(devType=='monarch'){
+var size=getDomainSize(encNum,devNum);
+if(size<=1){
+devType='bay';
+}
+}
+setDeviceTitle();
+if(selectContent!='undefined'&&selectContent==true){
+selectDeviceContent(tabId);
+}
+selectedDeviceChanged();
+if((encNum==0&&devNum==0)||showTray==false){
+top.mainPage.getStatusContainer().showStatus(false);
+}
+else if(encNum>0){
+top.mainPage.getStatusContainer().showStatus(true);
+}
+}
+function setSelectedEnclosure(enclosureNumber){
+top.getTopology().setSelectedEnclosureNumber(enclosureNumber);
+}
+function getSelectedEnclosure(){
+return top.getTopology().getSelectedEnclosureNumber();
+}
+function selectedDeviceChanged(){
+for(var i=0;i<deviceChangedHandlers.length;i++){
+var changedHandler=deviceChangedHandlers[i];
+try{
+if(changedHandler!=null){
+changedHandler('enc'+encNum+devType+devNum+'Select');
+}
+}
+catch(e){
+delete deviceChangedHandlers[i];
+}
+}
+}
+function selectDeviceContent(tabId){
+var tabRef=(isValidString(tabId)?"&tabid="+tabId:"");
+switch(devType){
+case BAY():
+if(devNum==0){
+top.mainPage.setContentLocation('../html/baySummary.html?encNum='+encNum);
+}
+else{
+top.mainPage.setContentLocation('../html/bayContent.htm?bayNum='+devNum+'&encNum='+encNum);
+}
+break;
+case 'monarch':
+top.mainPage.setContentLocation('../html/domainInfo.html?bayNum='+devNum+'&encNum='+encNum);
+break;
+case INTERCONNECT():
+if(devNum==0){
+top.mainPage.setContentLocation('../html/interconnectSummary.html?encNum='+encNum);
+}
+else{
+top.mainPage.setContentLocation('../html/ioBayContent.htm?bayNum='+devNum+'&encNum='+encNum);
+}
+break;
+case POWER_SUPPLY():
+if(devNum==0){
+top.mainPage.setContentLocation('../html/powerSubsystemOverview.html?encNum='+encNum);
+}
+else{
+top.mainPage.setContentLocation('../html/psContent.htm?psNum='+devNum+'&encNum='+encNum);
+}
+break;
+case FAN():
+if(devNum==0){
+top.mainPage.setContentLocation('../html/fanSummary.html?encNum='+encNum);
+}
+else{
+top.mainPage.setContentLocation('../html/fanContent.htm?fanNum='+devNum+'&encNum='+encNum);
+}
+break;
+case USER():
+if(devNum==0){
+top.mainPage.setContentLocation('../html/localUsers.html?encNum='+encNum);
+}
+break;
+case GROUP():
+if(devNum==0){
+top.mainPage.setContentLocation('../html/directoryGroups.html?encNum='+encNum);
+}
+break;
+case ENCLOSURE_MANAGER():
+top.mainPage.setContentLocation('../html/oaContent.html?emNum='+devNum+'&encNum='+encNum);
+break;
+case ENCLOSURE():
+top.mainPage.setContentLocation('../html/enclosureContent.htm?encNum='+encNum);
+break;
+case ENCLOSURE_NETWORK():
+top.mainPage.setContentLocation('../html/enclosureNetSettings.html?encNum='+encNum+tabRef);
+break;
+case 'net_access':
+top.mainPage.setContentLocation('../html/networkAccess.html?encNum='+encNum+tabRef);
+break;
+case "config_script":
+top.mainPage.setContentLocation('../html/configScript.html?emNum='+devNum+'&encNum='+encNum);
+break;
+case LCD():
+top.mainPage.setContentLocation('../LCD/lcd-display.html?encNum='+encNum+'&emNum='+devNum);
+break;
+case PIM():
+top.mainPage.setContentLocation('../html/pimContent.html?encNum='+encNum);
+break;
+case POWER_THERMAL():
+top.mainPage.setContentLocation('../html/ptOverview.html?encNum='+encNum);
+break;
+case MP():
+top.mainPage.setContentLocation('../html/bayManagementProcessor.html?encNum='+encNum+'&bayNum='+devNum);
+break;
+case PM_BLADE():
+top.mainPage.setContentLocation('../html/bayPortMapping.html?encNum='+encNum+'&bayNum='+devNum);
+break;
+case 'fw_blade':
+top.mainPage.setContentLocation('../html/bayFirmware.html?encNum='+encNum+'&bayNum='+devNum);
+break;
+case PM_INTERCONNECT():
+top.mainPage.setContentLocation('../html/interconnectPortMapping.html?encNum='+encNum+'&bayNum='+devNum);
+break;
+case DVD():
+top.mainPage.setContentLocation('../html/dvdSharing.html?encNum='+encNum+'&bayNum='+devNum);
+break;
+case REMOTE_SUPPORT():
+top.mainPage.setContentLocation('/120814-042457/html/remoteSupport.html?encNum='+encNum+'&bayNum='+devNum);
+break;
+case ACTIVE_HEALTH_SYSTEM():
+top.mainPage.setContentLocation('../html/activeHealthSystem.html?encNum='+encNum+'&bayNum='+devNum);
+break;
+default:
+break;
+}
+}
+function getSymbolicBladeNumber(devNum){
+var symDevNum='';
+var hpem=getProxy(encNum);
+var bladeInfo=hpem.getBladeInfo(devNum);
+try{
+symDevNum=getElementValueXpath(bladeInfo,"//hpoa:bladeInfo/hpoa:extraData[@hpoa:name='SymbolicBladeNumber']");
+}
+catch(e){}
+return symDevNum;
+}
+function getBladeProductName(devNum){
+var name='';
+var hpem=getProxy(encNum);
+var bladeInfo=hpem.getBladeInfo(devNum);
+try{
+name=getElementValueXpath(bladeInfo,"//hpoa:bladeInfo/hpoa:name");
+}
+catch(e){}
+return name;
+}
+function getDomainSize(encNum,domainNum){
+var hpem=getProxy(encNum);
+var domainInfo=hpem.getDomainInfo();
+var size=getElementValueXpath(domainInfo,"//hpoa:domains/hpoa:domain[hpoa:monarchBlade='"+domainNum+"']/hpoa:size");
+return parseInt(size);
+}
+function getMonarchBayList(){
+var bays='';
+var hpem=getProxy(encNum);
+var domainInfo=hpem.getDomainInfo();
+try{
+var first=getElementValueXpath(domainInfo,"//hpoa:domains/hpoa:domain[hpoa:monarchBlade='"+devNum+"']/hpoa:bays/hpoa:bay");
+var last=getElementValueXpath(domainInfo,"//hpoa:domains/hpoa:domain[hpoa:monarchBlade='"+devNum+"']/hpoa:bays/hpoa:bay[last()]");
+if(first==last){
+return '';
+}
+bays=first+'-'+last;
+}
+catch(e){}
+return bays;
+}
+function setDeviceTitle(){
+switch(devType){
+case BAY():
+case 'monarch':
+if(devNum!=0){
+var bayNum=getSymbolicBladeNumber(devNum);
+var bayName=getBladeProductName(devNum);
+if(bayName!=''){
+var bayList=getMonarchBayList();
+if(devType=='monarch'&&bayList!=''){
+top.mainPage.setMainTitle('Multi-Blade Server Information - '+bayName+' ('+top.getString('bays')+' '+bayList+')');
+}else{
+top.mainPage.setMainTitle(top.getString('serverBayInfo')+' - '+bayName+' ('+top.getString('bay')+' '+bayNum+')');
+}
+}else{
+top.mainPage.setMainTitle(top.getString('serverBayInfo')+' - '+top.getString('bay')+' '+bayNum);
+}
+}
+else{
+top.mainPage.setMainTitle(top.getString('serverBaySummary'));
+}
+break;
+case INTERCONNECT():
+if(devNum!=0){
+top.mainPage.setMainTitle(top.getString('interconnectBayInfo')+' - '+top.getString('bay')+' '+devNum);
+}
+else{
+top.mainPage.setMainTitle(top.getString('interconnectBaySummary'));
+}
+break;
+case POWER_SUPPLY():
+if(devNum!=0){
+top.mainPage.setMainTitle(top.getString('powerSupplyInfo')+' - '+top.getString('bay')+' '+devNum);
+}
+else{
+top.mainPage.setMainTitle(top.getString('powerSubsystem'));
+}
+break;
+case FAN():
+if(devNum!=0){
+top.mainPage.setMainTitle(top.getString('fanInfo')+' - '+top.getString('bay')+' '+devNum);
+}
+else{
+top.mainPage.setMainTitle(top.getString('thermalSubsystem'));
+}
+break;
+case ENCLOSURE_MANAGER():
+if(getOaRole(devNum)==ACTIVE()){
+top.mainPage.setMainTitle(top.getString('activeEM'));
+}
+else if(getOaRole(devNum)==STANDBY()){
+top.mainPage.setMainTitle(top.getString('standbyEM'));
+}
+else{
+top.mainPage.setMainTitle(top.getString('onboardAdministrator'));
+}
+break;
+case ENCLOSURE():
+case ENCLOSURE_NETWORK():
+case DVD():
+case "ers":
+case "ersCert":
+case "net_access":
+var enclosureName=getProxy(encNum).getEnclosureName();
+if(devNum==0){
+top.mainPage.setMainTitle(enclosureName);
+}
+else{
+top.mainPage.setMainTitle(top.getString('enclosureSettings')+' - '+enclosureName);
+}
+break;
+case LCD():
+top.mainPage.setMainTitle(top.getString('lcdScreen'));
+break;
+case USER():
+top.mainPage.setMainTitle(top.getString('userInfo'));
+break;
+case PIM():
+top.mainPage.setMainTitle(top.getString('pimInfo'));
+break;
+case POWER_THERMAL():
+top.mainPage.setMainTitle(top.getString('powerThermal'));
+break;
+case MP():
+try{
+var productId=getElementValueXpath(getProxyCurrent().getBladeInfo(devNum),'//hpoa:bladeInfo/hpoa:productId');
+if(parseInt(productId,10)==8213){
+top.mainPage.setMainTitle('Management Console - Device Bay '+getSymbolicBladeNumber(devNum));
+}
+else{
+top.mainPage.setMainTitle(top.getString('iLo-DeviceBay')+' '+getSymbolicBladeNumber(devNum));
+}
+}
+catch(e){
+top.mainPage.setMainTitle(top.getString('iLo-DeviceBay')+' '+getSymbolicBladeNumber(devNum));
+}
+break;
+case PM_BLADE():
+top.mainPage.setMainTitle(top.getString('portMapping-DeviceBay')+' '+getSymbolicBladeNumber(devNum));
+break;
+case 'fw_blade':
+top.mainPage.setMainTitle(top.getString('firmware-Bay')+' '+getSymbolicBladeNumber(devNum));
+break;
+case PM_INTERCONNECT():
+top.mainPage.setMainTitle(top.getString('portMapping-InterconnectBay')+' '+devNum);
+break;
+default:
+break;
+}
+}
+function getOaRole(bayNum){
+var oaRole='';
+var oaStatusDOM=getProxy(encNum).getOaStatusDOM(true);
+try{
+oaRole=getElementValueXpath(oaStatusDOM,'//hpoa:oaStatus[hpoa:bayNumber='+bayNum+']/hpoa:oaRole');
+}
+catch(e){}
+return oaRole;
+}
+function clearCurrentSelection(){
+deviceChangedHandlers=new Array();
+devNum=0;
+devType='';
+encNum=0;
+devIdSelected='';
+encIdSelected='';
+}
+function setResetReason(reason){
+resetReason=reason;
+}
+function getResetReason(){
+return resetReason;
+}
+function setUserInitiatedFlash(isUserInitiated){
+userInitiatedFlash=isUserInitiated;
+}
+function getUserInitiatedFlash(){
+return userInitiatedFlash;
+}
+function setPerformingSync(sync){
+performingSync=sync;
+}
+function getPerformingSync(){
+return performingSync;
+}
+  </script>
+      
+    <script type="text/javascript">
+var systemStatusDocument=null;
+var currentServiceObject=null;
+var rebootTimeout=OA_REBOOT_TIMEOUT();
+try{
+var xml=importModule("xml");
+}catch(e){}
+var objectsToLoad=0;
+var objectsLoaded=0;
+function checkRefresh(){
+return(getLocalEncKey()!='');
+}
+function getLocalEncKey(){
+return getCookieValue(LOCAL_ENC_COOKIE_NAME());
+}
+function getLocalEncUsername(){
+return getCookieValue(LOCAL_ENC_USER_NAME());
+}
+function resetHiddenFrame(killSessions,callback,loadLogin){
+var hpem=top.getTopology().getProxyLocal();
+var tfa=hpem.gettwofactorflag();
+top.logEvent("HiddenFrame: resetHiddenFrame(killSessions:"+killSessions+", loadLogin:"+assertFalse(loadLogin)+")",null,6,1);
+clearCurrentSelection();
+systemStatusDocument=null;
+objectsToLoad=0;
+objectsLoaded=0;
+rebootTimeout=OA_REBOOT_TIMEOUT();
+userInitiatedFlash=false;
+document.getElementById('flashMessage').style.display='none';
+if(killSessions){
+top.displayHiddenFrame();
+resetProgressIndicator(top.getString("signingOutSessions"));
+top.logEvent("HiddenFrame: requesting logoutAndDestroyAll in topology.",null,1,1);
+top.getTopology().logoutAndDestroyAll(true,function(success){
+if(assertTrue(loadLogin)){
+loadLoginPage(tfa);
+}
+if(!((assertTrue(loadLogin))&&(tfa=='true')))
+{
+if(isFunction(callback)){
+callback(success);
+}
+resetProgressIndicator('');
+}
+},function(percent){
+try{
+ourProgressBarManager.updateProgressBar('prgBar1',percent);
+}catch(e){}
+});
+}else{
+resetProgressIndicator('');
+if(isFunction(callback)){
+callback(killSessions);
+}
+}
+}
+function resetNoDestroy(processName){
+top.logEvent("HiddenFrame: resetNoDestroy(processName:"+processName+")",null,1,1);
+clearCurrentSelection();
+systemStatusDocument=null;
+objectsToLoad=0;
+objectsLoaded=0;
+rebootTimeout=OA_REBOOT_TIMEOUT();
+if(exists(processName)){
+resetProgressIndicator(processName);
+}else{
+resetProgressIndicator('');
+}
+}
+function loadLoginPage(tfa){
+if(tfa=='true')
+{
+var msgString=top.getString('userSignedOut')+'<br />';
+msgString+=top.getString('pleaseCloseBrowser');
+var bodyContent=document.getElementById('bodyContent');
+document.getElementById('flashMessage').style.display='none';
+bodyContent.innerHTML=msgString;
+}
+else
+{
+var loginPage="/120814-042457/html/login.html";
+try{
+if(top.mainPage.location.toString().indexOf('login.html')<0){
+top.mainPage.location.href=loginPage;
+}
+}catch(e){}
+}
+}
+function getSystemStatusDocument(reload){
+if(typeof(reload)=='undefined'){
+var reload=false;
+}
+if(systemStatusDocument==null||reload==true){
+loadSystemStatusDocument();
+}
+return systemStatusDocument;
+}
+function loadSystemStatusDocument(){
+var compiledDoc=xml.parseXML('<compiledSystemStatus xmlns:hpoa="hpoa.xsd" />');
+var hpems=getProxies();
+for(var i=0;i<hpems.length;i++){
+if(hpems[i]!=null&&hpems[i].getIsLoaded()){
+var enclosureElement=xml.parseXML('<enclosure />');
+enclosureElement.documentElement.setAttribute('enclosureNumber',hpems[i].getEnclosureNumber());
+enclosureElement.documentElement.setAttribute('enclosureName',hpems[i].getEnclosureName());
+enclosureElement.documentElement.setAttribute('activeFwVersion',hpems[i].getActiveFirmwareVersion());
+enclosureElement.documentElement.appendChild(hpems[i].getEnclosureInfo().documentElement.cloneNode(true));
+enclosureElement.documentElement.appendChild(hpems[i].getEnclosureStatus().documentElement.cloneNode(true));
+enclosureElement.documentElement.appendChild(hpems[i].getOaInfoDOM().documentElement.cloneNode(true));
+enclosureElement.documentElement.appendChild(hpems[i].getOaStatusDOM().documentElement.cloneNode(true));
+enclosureElement.documentElement.appendChild(hpems[i].getBladeInfoDOM(true).documentElement.cloneNode(true));
+enclosureElement.documentElement.appendChild(hpems[i].getBladeStatusDOM().documentElement.cloneNode(true));
+enclosureElement.documentElement.appendChild(hpems[i].getPsInfoDOM().documentElement.cloneNode(true));
+enclosureElement.documentElement.appendChild(hpems[i].getPsStatusDOM().documentElement.cloneNode(true));
+enclosureElement.documentElement.appendChild(hpems[i].getInterconnectTrayInfoDOM(true).documentElement.cloneNode(true));
+enclosureElement.documentElement.appendChild(hpems[i].getInterconnectTrayStatusDOM().documentElement.cloneNode(true));
+enclosureElement.documentElement.appendChild(hpems[i].getFanInfoDOM().documentElement.cloneNode(true));
+enclosureElement.documentElement.appendChild(hpems[i].getPowerSubsystemInfo().documentElement.cloneNode(true));
+enclosureElement.documentElement.appendChild(hpems[i].getThermalSubsystemInfo().documentElement.cloneNode(true));
+if(hpems[i].getActiveFirmwareVersion()>=3.50){
+enclosureElement.documentElement.appendChild(hpems[i].getErsConfigInfo().documentElement.cloneNode(true));
+}
+compiledDoc.documentElement.appendChild(enclosureElement.documentElement.cloneNode(true));
+}
+}
+var processor=new XsltProcessor('../Templates/systemStatusData.xsl');
+processor.addParameter('stringsDoc',top.getStringsDoc());
+processor.addParameter('compiledSystemStatusDoc',compiledDoc);
+try{
+var output=processor.getOutput();
+if(!processor.hasErrors()){
+systemStatusDocument=xml.parseXML(output);
+try{
+systemStatusDocument.xml=output;
+}
+catch(e){}
+}
+}
+catch(e){
+systemStatusDocument=null;
+}
+}
+function getProxy(encNum){
+return top.getTopology().getProxy(encNum);
+}
+function getProxyLocal(){
+return top.getTopology().getProxyLocal();
+}
+function getProxyCurrent(){
+return top.getTopology().getSelectedProxy();
+}
+function getProxies(){
+return top.getTopology().getProxies();
+}
+function getProxiesSelected(){
+return top.getTopology().getSelectedProxies();
+}
+function loadData(isStandby,uuid,previousContext){
+top.logEvent("HiddenFrame: loadData(isStandby:"+isStandby+", uuid:"+Nz(uuid)+")",null,1,1);
+top.getTopology().setLoadState(LoadStates.Loading);
+top.getEventManager().stopEventLoop();
+if(isStandby){
+var uuid=top.getTopology().getProxyLocal().getUuid();
+}
+top.getTopology().loadEnclosureData(assertNull(uuid),resetProgressIndicator,ourProgressBarManager,function(){
+top.getTopology().setLoadState(LoadStates.Complete);
+top.getEventManager().startEventLoop();
+setTimeout(function(){top.loadMainPage(previousContext+"")},300);
+});
+}
+function loadEnclosureCache(encNum,updateCallback,startCallback){
+var hpemObj=getProxy(encNum);
+var encObjectsToLoad=0;
+var encObjectsLoaded=0;
+var updateFunction=function(result){
+encObjectsLoaded++;
+if(encObjectsLoaded==encObjectsToLoad){
+try{
+updateCallback(result,encNum);
+}
+catch(e){}
+hpemObj.setIsLoaded(true);
+top.getEventManager().startEventLoop();
+setTimeout(function(){
+var leftFrame=top.mainPage.getNavigationFrame();
+if(leftFrame){
+leftFrame.addEnclosure(encNum,hpemObj.getUuid());
+}
+refreshSystemStatus();
+},100);
+}
+else{
+try{
+updateCallback(result,encNum);
+}
+catch(e){}
+}
+}
+hpemObj.registerForEvents(function(success){
+if(success){
+encObjectsToLoad=hpemObj.loadCache(updateFunction);
+startCallback(encObjectsToLoad);
+}
+else{
+alert(top.getString('eventRegistrationFailed'),AlertMsgTypes.Warning,30);
+if(top.getCurrentUserContext()==UserContextTypes.RackOverview){
+top.gotoContext(UserContextTypes.RackOverview);
+}
+}
+});
+}
+function refreshNavTree(autoHighlight){
+if(typeof(top.mainPage.getNavigationFrame)!='undefined'){
+var navFrame=top.mainPage.getNavigationFrame();
+if(navFrame){
+navFrame.loadTree(autoHighlight);
+}
+}
+}
+function refreshSystemStatus(){
+if(typeof(top.mainPage.getLeftSideFrame)!='undefined'){
+var leftFrame=top.mainPage.getLeftSideFrame();
+if(leftFrame){
+leftFrame.loadSystemStatus();
+}
+}
+}
+function refreshStrings(){
+setElementTextByKey("lang-key");
+}
+function setObjectsToLoad(num){
+objectsToLoad=num;
+}
+function resetProgressIndicator(processName){
+var body=document.getElementById('bodyContent');
+if(processName==''){
+body.innerHTML='';
+}else{
+try{
+var processor=new XsltProcessor('../Templates/progressBar.xsl');
+processor.addParameter('processName',processName);
+processor.addParameter('complete',top.getString('complete'));
+processor.addParameter('barId','prgBar1');
+body.innerHTML=(processor.hasErrors()?'':processor.getOutput());
+}
+catch(e){}
+}
+if(ourProgressBarManager==null){
+ourProgressBarManager=new ProgressBarManager();
+}
+ourProgressBarManager.init();
+}
+function updateLoadProgress(result){
+objectsLoaded++;
+var pctComplete=(objectsLoaded/objectsToLoad)*100;
+ourProgressBarManager.updateProgressBar('prgBar1',pctComplete);
+if(objectsToLoad==objectsLoaded){
+var hpems=top.getTopology().getAuthenticatedProxies();
+for(var index in hpems){
+if(hpems[index].getEventsOn()==true){
+hpems[index].setIsLoaded(true);
+}
+}
+top.getTopology().setLoadState(LoadStates.Complete);
+top.getEventManager().startEventLoop();
+setTimeout('top.loadMainPage()',300);
+}
+}
+function killProgressBar(){
+ourProgressBarManager.killAllProgressBars();
+ourProgressBarManager=null;
+}
+function startFlash(hpem,isStandby){
+if(displayMgr!=null){
+displayMgr.showMainScreen();
+}
+resetDueToFlash=true;
+if(typeof(isStandby)=='undefined'){
+var isStandby=false;
+}
+currentServiceObject=hpem;
+var progressString='';
+if(isStandby){
+progressString=top.getString('standbyOAFlashStarted');
+}
+else{
+progressString=top.getString('activeOAFlashPending');
+}
+top.displayHiddenFrame();
+resetProgressIndicator(progressString);
+document.getElementById('flashMessage').style.display='block';
+currentServiceObject.registerEventHandler(function(result){flashProgress(result,isStandby)},['EVENT_FLASH_PROGRESS','EVENT_STANDBY_FLASH_PROGRESS']);
+currentServiceObject.registerEventHandler(function(result){flashStarted(result,isStandby)},['EVENT_FLASH_STARTED']);
+currentServiceObject.registerEventHandler(function(result){flashCompleted(result,isStandby)},['EVENT_FLASH_COMPLETE','EVENT_STANDBY_FLASH_COMPLETE']);
+currentServiceObject.registerEventHandler(standbyRebooting,['EVENT_STANDBY_FLASH_BOOTING']);
+currentServiceObject.registerEventHandler(standbyRebootComplete,['EVENT_STANDBY_FLASH_BOOTED']);
+}
+function flashStarted(result,isStandby){
+if(displayMgr!=null){
+displayMgr.showMainScreen();
+}
+var progressString='';
+if(isStandby){
+progressString=top.getString('flashingStandbyOA');
+}
+else{
+progressString=top.getString('flashingActiveOA');
+}
+resetProgressIndicator(progressString);
+}
+function standbyRebooting(result){
+displayMgr=new DisplayManager('bodyContent','waitContainer');
+displayMgr.clearErrorContainers();
+displayMgr.createWaitContainer(top.getString('plsWaitStandbyOAReset'));
+displayMgr.showWaitScreen();
+}
+function standbyRebootComplete(result){
+var waitString=top.getString('plsWaitActiveOAFlashInit');
+displayMgr=new DisplayManager('bodyContent','waitContainer');
+displayMgr.clearErrorContainers();
+displayMgr.createWaitContainer(waitString);
+displayMgr.showWaitScreen();
+}
+function flashProgress(result,isStandby){
+if(displayMgr!=null){
+displayMgr.showMainScreen();
+}
+var progressString='';
+if(isStandby){
+var standbyCompleted=(getElementValueXpath(result,"//hpoa:event")=='EVENT_FLASH_PROGRESS');
+if(standbyCompleted==true){
+flashCompleted(result,true);
+}else{
+progressString=top.getString('flashingStandbyOA');
+}
+}
+else{
+progressString=top.getString('flashingActiveOA');
+}
+resetProgressIndicator(progressString);
+var pctComplete=getElementValueXpath(result,'//hpoa:numValue');
+ourProgressBarManager.updateProgressBar('prgBar1',pctComplete);
+}
+function flashCompleted(result,isStandby){
+if(displayMgr!=null){
+displayMgr.showMainScreen();
+}
+if(isStandby){
+startFlash(currentServiceObject,false);
+}
+else{
+destroyApplication(true);
+var bodyContent=document.getElementById('bodyContent');
+document.getElementById('flashMessage').style.display='none';
+var waitString=top.getString('firmwareUpdateCompletedActiveOAReset')+'<br />';
+waitString+=top.getString('firmwareUpdateCompletedDesc1')+'<span id="rebootTimeout">'+rebootTimeout+'</span>&#160;'+top.getString('seconds');
+bodyContent.innerHTML=waitString;
+setTimeout('updateTimer()',1000);
+}
+}
+function displayResetTimer(killSessions,callback,msg,seconds,context,reload){
+if(displayMgr!=null){
+displayMgr.showMainScreen();
+}
+resetHiddenFrame(assertTrue(killSessions),function(killSessions){
+if(!resetDueToFlash){
+var msgString='';
+if(exists(seconds)&&!isNaN(seconds)&&seconds>0){
+rebootTimeout=seconds;
+}
+if(exists(msg)&&msg!=''){
+msgString=msg+'<br />';
+}else{
+msgString=top.getString('oaBeenReset')+'<br />';
+}
+msgString+=top.getString('firmwareUpdateCompletedDesc1')+'<span id="rebootTimeout">'+rebootTimeout+'</span>&#160;'+top.getString('seconds');
+var bodyContent=document.getElementById('bodyContent');
+document.getElementById('flashMessage').style.display='none';
+bodyContent.innerHTML=msgString;
+setTimeout(function(){updateTimer(killSessions,context,reload)},1000);
+if(isFunction(callback)){
+callback();
+}
+}
+},false);
+}
+function startFailover(hpem){
+currentServiceObject=hpem;
+top.displayHiddenFrame();
+top.makeGuiActive();
+document.getElementById('flashMessage').style.display='none';
+document.getElementById('bodyContent').innerHTML=top.getString('oatransitionStarted')+'<br />'+top.getString('pleaseWait')+' ..';
+hpem.registerEventHandler(failoverComplete,['EVENT_OA_TRANSITION_COMPLETE']);
+}
+function failoverComplete(result){
+document.getElementById('flashMessage').style.display='none';
+top.makeGuiActive();
+top.getTopology().setTopologyMode(TopologyModes.Linked);
+top.getTopology().getTopology(function(result,fname,changed){
+top.hiddenPageLoadData(false);
+},true,function(){});
+}
+function updateTimer(killSessions,context,reload){
+if(rebootTimeout!=0){
+var rebootTimeoutContainer=document.getElementById('rebootTimeout');
+if(rebootTimeoutContainer){
+rebootTimeout--;
+rebootTimeoutContainer.innerHTML=rebootTimeout;
+setTimeout(function(){updateTimer(killSessions,context,reload);},1000);
+}
+}else{
+top.primaryWebRestart=false;
+if(killSessions==false&&reload==true){
+var hpems=top.getTopology().getProxies(true);
+for(var i=0;i<hpems.length;i++){
+hpems[i].setIsConnected(true);
+}
+setTimeout(function(){loadData(top.isStandby,null,context)},300);
+}else{
+top.getTopology().logoutAndDestroyAll(assertTrue(killSessions),function(){
+if(resetDueToFlash||userInitiatedFlash){
+setCookieValue('fwVersion','');
+setCookieValue('buildDate','');
+displayCacheWarning();
+}else{
+setCookieValue("sessionUrl","");
+top.location.replace(encodeURI(top.location.href));
+}
+});
+}
+}
+}
+function displayCacheWarning(){
+var bodyContent=document.getElementById('bodyContent');
+var msg=top.getString('clearBrowserCacheDesc1');
+msg+=top.getString('clearBrowserCacheDesc2')+'<br /><br />';
+msg+=top.getString('click')+'<a href="javascript:top.location.replace(encodeURI(top.location.href));">'+top.getString('here')+'</a> '+top.getString('reloadApplication');
+bodyContent.innerHTML=msg;
+}
+function destroyApplication(killSession){
+top.getTopology().logoutAndDestroyAll(killSession,function(){
+top.getTransport().unload();
+});
+}
+function myOnLoad(){
+top.getTopology().registerDisplayFrame(this);
+}
+function myOnUnload(){
+top.getTopology().unregisterDisplayFrame(this);
+destroyApplication(false);
+}
+function setIconVisible(iconType,visible){
+switch(iconType){
+case OA_FIPS_MODE_ON():
+document.getElementById("iconFipsMode").style.display=(visible?"block":"none");
+document.getElementById("iconFipsMode").title=top.getString('fipsEnabled');
+break;
+case OA_FIPS_MODE_DEBUG():
+document.getElementById("iconFipsDebug").style.display=(visible?"block":"none");
+document.getElementById("iconFipsDebug").title=top.getString('fipsDebugEnabled');
+break;
+case OA_FIPS_MODE_SECURE_DEGRADED():
+document.getElementById("iconFipsSecureDegraded").style.display=(visible?"block":"none");
+document.getElementById("iconFipsSecureDegraded").title=top.getString('fipsErrorLdapCertSize');
+break;
+case OA_FIPS_MODE_DEBUG_DEGRADED():
+document.getElementById("iconFipsDebugDegraded").style.display=(visible?"block":"none");
+document.getElementById("iconFipsDebugDegraded").title=top.getString('fipsErrorLdapCertSize');
+break;
+case "OTHER":
+break;
+default:
+}
+}
+    </script>
+  </head>
+<body class="body-flush-fit" style="overflow:hidden;" onLoad="myOnLoad();" onunload="myOnUnload();">
+  <table cellpadding="0" cellspacing="0" border="0" style="width:100%;height:100%;margin:0px;">
+    <tr style="height:39px;padding:0px;">
+      <td>
+        <table border="0" cellpadding="0" cellspacing="0" class="applicationMastheadSmall" style="width:100%;margin:0px;">
+          <tr>
+            <td class="mastheadIcon">
+              <img src="/120814-042457/images/themes/blue/logo_hp_smallmasthead.gif" alt="HP" width="30" height="19" />
+            </td>
+            <td class="mastheadTitle" style="width: 70%;">
+              <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
+                <td style="width:99%">
+                  <h1 style="color: white;" lang-key="mainTitle"><script>document.write(top.getString('mainTitle'));</script></h1>
+                </td>
+                <td id="headerIcons" style="padding-right:5px;width:1%;white-space:nowrap;vertical-align:middle;">
+                    <img id="iconFipsMode" style="display:none;margin-right:2px;" src="/120814-042457/images/secure.gif" border="0"title="FIPS"/>
+                    <img id="iconFipsDebug" style="display:none;margin-right:2px;" src="/120814-042457/images/fips-debug.gif" title="FIPS" border="0" />
+                    <img id="iconFipsSecureDegraded" style="display:none;margin-right:2px;" src="/120814-042457/images/secure_degraded.gif" title="FIPS" border="0" />
+                    <img id="iconFipsDebugDegraded" style="display:none;margin-right:2px;" src="/120814-042457/images/debug_degraded.gif" title="FIPS" border="0" />
+                </td>
+              </table>
+            </td>
+            <td>
+              <div class="mastheadPhoto"><img src="/120814-042457/images/masthead_photo_small.jpg" alt="" border="0" /></div>
+            </td>
+            <td class="mastheadlinks" width="30%">&nbsp;</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr style="padding: 0px;">
+      <td style="width: 100%; padding: 5px; vertical-align: top;">
+        <!-- 
+              We're using a 70/30 split to make the progress bar appear above center.
+              To center vertically, remove the bottom row and set top row to height:100%
+        -->
+        <table style="width:100%;height:100%;border:3px solid #cccccc;padding:0px;">
+          <tr>
+            <td style="height:70%;width:25%;">&nbsp;</td>
+            <td style="height:70%;width:50%;vertical-align:middle;">
+              <div id="bodyContent" style="text-align:center;"></div>
+              <div id="waitContainer" class="waitContainer" style="text-align:center;"></div>
+              <div id="blankContent" style="text-align: center;"></div>
+              <div id="flashMessage" style="display: none;">
+                <span class="whiteSpacer">&nbsp;</span> <span class="whiteSpacer">&nbsp;</span>
+                <table cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td>
+                      <img border="0" src="/120814-042457/images/status_informational_32.gif" />
+                    </td>
+                    <td style="padding-left:10px;" lang-key="flashProcessSuccessOAReset">
+                      <script type="text/javascript">document.write(top.getString('flashProcessSuccessOAReset'));</script>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </td>
+            <td style="height:70%;width:25%;">&nbsp;</td>
+          </tr>
+          <tr>
+            <td style="height:30%;" colspan="3">&nbsp;</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+  <div id="sizerDiv" style="width:210px;top:0px;position:absolute;visibility:hidden;"></div>
+  </body>
+</html>

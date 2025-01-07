@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/120814-042457/Help/stylesheets/help-topic.xsl"?>
+<topic topic-id="DPowerandThermal" xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  <title>Power and Thermal</title>
+  <source>/120814-042457/Help/en/topics/DPowerandThermal.xml</source>
+  <keywords>AC redundant lost Dynamic Enclosure Cap Power and Thermal screen power cap power redundancy lost</keywords>
+  <intro />
+  <sections>
+    <section>
+      <desc />
+      <content>
+        <p class="tablespacerbefore" />
+        <table width="100%" style="border-collapse:collapse;" cellspacing="0" cellpadding="2">
+          <tr>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Row
+</th>
+            <th class="tableheading" style="border:1px solid #010101;text-align:left;">Description
+</th>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Enclosure Ambient Temperature
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">This field displays the highest ambient temperature being reported by the installed blade devices. If no blade devices are installed, then this field displays the temperature of the Onboard Administrator module as an approximation of the ambient temperature.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Thermal Subsystem Status
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The overall thermal status of the enclosure. Possible values are Unknown, OK, Degraded, or Critical Error.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Power Subsystem Status
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The overall power status of the enclosure. Possible values are Unknown, OK, Degraded, or Critical Error.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Power Mode
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">A user setting to configure the enclosure DC power capacity and the input power redundancy mode of the enclosure. See Power Management for possible values.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Present Power
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The amount of watts being consumed by all devices in the enclosure.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Power Limit
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">The maximum amount of power available for consumption by the enclosure measured in watts.
+</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">Enclosure Dynamic Power Cap
+</p>
+            </td>
+            <td style="border:1px solid #010101;" align="left">
+              <p class="tablebodytext">A power cap on a group of servers in the enclosure. As the servers run, the demand for power varies for each server. A power cap for each server is set to provide the server with enough power to meet its workload demands while still conforming to the Enclosure Dynamic Power Cap. Continuous monitoring of power demands and automatic adjustments to server power caps ensure there is minimal performance degradation. Information for the Enclosure Dynamic Power Cap appears only if a cap has been defined.
+</p>
+            </td>
+          </tr>
+        </table>
+        <p class="bodytext">
+          <b>Present Power/Enclosure Dynamic Power Cap/Power Limit</b>
+        </p>
+        <p class="bodytext">The Present Power is the number of watts being consumed by all the devices in the enclosure. The Enclosure Dynamic Power Cap automatically adjusts power caps on servers in the enclosure to meet workload demands on the servers while still conforming to the Enclosure Dynamic Power Cap. The Power Limit is the maximum amount of input power available for consumption by the enclosure. The Power Limit is dependent on the enclosure power redundancy setting and the number and location of the power supplies in the enclosure. If a Static Power Limit has been specified, the Power Limit displays that limit.</p>
+      </content>
+    </section>
+  </sections>
+</topic>
