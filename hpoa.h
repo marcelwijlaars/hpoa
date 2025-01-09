@@ -83,6 +83,10 @@ uint verify_signature(int, __off_t *, unsigned char *, int);
 int write_initrd(void);
 int verify_initrd(void);
 int get_free_loop(void);
+void do_analysis(partition, char *, bool);
+
+
+
 
 
 #if 0

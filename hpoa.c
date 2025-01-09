@@ -40,12 +40,6 @@ int main(int argc,char **argv){
 
   unsigned int      partition_nr;  //was unsigned char, was uVar9
 
-  /* dit moet een struct worden */
-  uint8_t  partition_nr_array[0x10]; 
-  uint8_t  partition_md5_array[0x10*MD5_DIGEST_LENGTH];
-  uint32_t partition_jump_size_array[0x10]; 
-  uint32_t partition_header_crc_array[0x10]; 
-  uint32_t partition_data_crc_array[0x10];
 
 
 
@@ -377,6 +371,37 @@ int main(int argc,char **argv){
   }
 
 
+
+
+ analyse_only:
+  if(analyse){
+    partition p;
+    strcpy(file_name,argv[optind]);
+    p= malloc(0x10*sizeof(partition));
+    do_analysis(p,file_name,1);
+  }
+
+
+  return 0;
+}
+
+/******************************************************************************************/
+/*                                  End of main                                           */
+/******************************************************************************************/
+
+
+
+void do_analysis(partition p, char *file_name, bool print) {
+
+  int fd;
+  int i, j, n, m;
+  uint32_t partition_offset=0xD5;
+  int s,data_len=0x1000;
+  unsigned char *data;
+  data=calloc(data_len,sizeof(char));
+  /* dit moet een struct worden */
+
+  uint32_t file_size=0;
   
   /*
    * We only need to verify the header and data crc32 are ok
@@ -402,99 +427,75 @@ int main(int argc,char **argv){
    * where n the the mtd partition number, starting at 0 (kind of)
    */
 
- analyse_only:
+  
+  fd=open(file_name,O_RDONLY);
+  file_size=lseek(fd,0,SEEK_END);
 
-  if(analyse){
-    data=calloc(HEADER_SIZE,sizeof(char));
-    strcpy(file_name,argv[optind]);
-    fd=open(file_name,O_RDONLY);
-    ret=read(fd,data,HEADER_SIZE);
-    for(j=0;j<0x40;j++){
-      printf("%02X ", *(data+j));
-      if(((j+1)%0x10)==0)printf("\n");
-    }
-    printf("\n");
-
+  lseek(fd,0,SEEK_SET);
+  read(fd,data,HEADER_SIZE);
     
-    uint32_t partition_offset=0xD5;
-    
-    partition p;
-    p= malloc(0x10*sizeof(partition));
+  /* offset is eigenlijk jumpsize vermoed ik */
+  n=0, m=0;
+  do{
+    //    printf("n: %i, m: %i\n",n,m);
 
-    int n=0;
-    /* offset is eigenlijk jumpsize vermoed ik */
-    do{
-      (p+n)->nr              = *(data + n*0x15 + 1);
-      (p+n)->jump_size       = *(uint32_t*)(data + n*0x15 + 2); 
-      if(!is_bigendian()) (p+n)->jump_size = __htobe32((p+n)->jump_size);
-      for(i=0;i<MD5_DIGEST_LENGTH;i++){
-	(p+n)->md5[i] = *(data + n*0x15 + 6 + i);  // gaat niet goed
-      }
-      (p+n)->header_crc32      = 0; 
-      (p+n)->data_crc32       = 0; 
-      n++;
-    }while(*(data + n*0x15 +1)>0);
-
-    for(i=0;i<n;i++){
-      printf("partition: %i: %s, offset: 0x%08X, ",
-	     (p+i)->nr,
-	     partition_selector(partition_nr_array[i]),
-	     partition_offset
-	     );
-      printf("md5: 0x");
-      for(j=0;j<MD5_DIGEST_LENGTH;j++)
-	printf("%02X", (p+i)->md5[j]);
-      printf("\n");
-      partition_offset+=(p+i)->jump_size;
+    (p+n)->nr              = *(data + n*0x15 + 1);
+    (p+n)->jump_size       = *(uint32_t*)(data + n*0x15 + 2); 
+    if(!is_bigendian()) (p+n)->jump_size = __htobe32((p+n)->jump_size);
+    for(i=0;i<MD5_DIGEST_LENGTH;i++){
+      (p+n)->md5[i] = *(data + n*0x15 + 6 + i);  // gaat niet goed
     }
-    //printf("last jump_size: 0x%08X\n",(p+i-1)->jump_size);
-    printf("next offset: 0x%08X\n",partition_offset);
+    (p+n)->header_crc32      = 0; 
+    (p+n)->data_crc32       = 0; 
+    partition_offset+=(p+n)->jump_size;
+    n++;
+  }while(strlen(partition_selector(*(data + n*0x15 + 1))) >0);
 
-    lseek(fd,partition_offset,SEEK_SET);
-    ret=read(fd,data,HEADER_SIZE);
-    for(j=0;j<0x40;j++){
-      printf("%02X ", *(data+j));
-      if(((j+1)%0x10)==0)printf("\n");
-    }
-    printf("\n");
-    
-    printf("Partition header offset discrepency: 0x%08X\n", 0xCD7CFC - partition_offset);
-    printf("Partition data offset discrepency: 0x%08X\n", 0xCD7D3C - partition_offset);
-    n=0;
-    do{
-      partition_nr_array[n]              = *(data + n*0x15 + 1 + 13);
-      partition_jump_size_array[n]       = *(uint32_t*)(data + n*0x15 + 2 + 13); 
-      if(!is_bigendian()) partition_jump_size_array[n] = __htobe32(partition_jump_size_array[n]);
-      for(i=0;i<MD5_DIGEST_LENGTH;i++)
-	partition_md5_array[n*MD5_DIGEST_LENGTH+i] = *(data + n*0x15 + 6 + i + 13); 
-      partition_header_crc_array[n]      = 0; 
-      partition_data_crc_array[n]        = 0; 
-      n++;
-    }while(*(data + n*0x15 +1)>0);
+  lseek(fd,partition_offset,SEEK_SET);
+  read(fd,data,HEADER_SIZE);
 
-    for(i=0;i<n;i++){
-      printf("partition: %i: %s, offset: 0x%08X, ",
-	     partition_nr_array[i],
-	     partition_selector(partition_nr_array[i]),
-	     partition_offset
-	     );
-      printf("md5: 0x");
-      for(j=0;j<MD5_DIGEST_LENGTH;j++)
-	printf("%02X", partition_md5_array[i*MD5_DIGEST_LENGTH+j]);
-      printf("\n");
-      partition_offset+=partition_jump_size_array[i];
-    }
-
-    // 0x00CD7CD9 - 0x00CD7CFC == -35 is new hpoa bin file header size and offset to next partition
-    close(fd);
-
+#if 0
+  for(i=0;i<HEADER_SIZE;i++){
+    printf("%02X ",*(data+i));
+    if(((i+1)%0x10)==0) printf("\n");
   }
-  return 0;
+  printf("\n");
+#endif
+  
+  m=0;  
+  do{
+    (p+n+m)->nr              = *(data + m*0x15 + 1 + 13);
+    (p+n+m)->jump_size       = *(uint32_t*)(data + m*0x15 + 2 + 13); 
+    if(!is_bigendian()) (p+n+m)->jump_size = __htobe32((p+n+m)->jump_size);
+    for(i=0;i<MD5_DIGEST_LENGTH;i++)
+      (p+n+m)->md5[i] = *(data + m*0x15 + 6 + i + 13); 
+    (p+n+m)->header_crc32      = 0; 
+    (p+n+m)->data_crc32        = 0; 
+    m++;
+  }while(strlen(partition_selector(*(data + m*0x15 + 1 + 13))) >0);
+
+
+  partition_offset=0xD5;
+
+  //printf("n: %i, m: %i\n",n,m);
+  for(i=0;i<(n+m);i++){
+    printf("partition: 0x%02X: %8.8s, offset: 0x%08X, ",
+	   (p+i)->nr,
+	   partition_selector((p+i)->nr),
+	   partition_offset
+	   );
+    printf("md5: 0x");
+    for(j=0;j<MD5_DIGEST_LENGTH;j++)
+      printf("%02X", (p+i)->md5[j]);
+    printf("\n");
+    partition_offset+=(p+i)->jump_size;
+  }
+
+  // 0x00CD7CD9 - 0x00CD7CFC == -35 is new hpoa bin file header size and offset to next partition
+  close(fd);
+
 }
 
-/******************************************************************************************/
-/*                                  End of main                                           */
-/******************************************************************************************/
 
 
 /* FUN_10008100 */
