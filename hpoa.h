@@ -17,6 +17,8 @@
 //#include "data_0x10010100.h"
 
 #define HEADER_SIZE 0xD5
+#define NEW_SECONDARY_HEADER_SIZE 0x38
+#define OLD_SECONDARY_HEADER_SIZE 0x23
 #define MAX_FILE_SIZE 0xFFFFFF
 #define C7000 2
 #define C3000 1 //actually 1 or 3
@@ -57,9 +59,15 @@ const int __i__ = 1;
 #define CYAN    "\x1b[1;36m"
 #define DEFAULT "\x1b[1;0m"
 
+
+#define UBOOT_MAGIC	0x27051956
+#define SQUASHFS_MAGIC  0x73717368
+#define PEM_MAGIC       0x2d2d2d2d //not official magic numver, but I think this works
+
 typedef struct partition{
   uint8_t  nr; 
-  uint32_t jump_size; 
+  uint32_t jump_size;
+  uint32_t offset;
   uint8_t  md5[MD5_DIGEST_LENGTH];
   uint32_t header_crc32; 
   uint32_t data_crc32;

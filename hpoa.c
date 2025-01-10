@@ -231,7 +231,7 @@ int main(int argc,char **argv){
 
       /* verify the writen mtd partition */
       /* (read_nuffer + 1 + iVar5 +5) is where the MD5sum of the partition is stored */
-      printf("read_buffer localtion: 0x%X\n", 1+iVar5+5);
+      //printf("read_buffer localtion: 0x%X\n", 1+iVar5+5);
       local_5c[0] = open_mtd_for_input_internal(partition_name,jump_size,(read_buffer + 1 + iVar5 + 5));
     }
     printf("\n");
@@ -372,7 +372,6 @@ int main(int argc,char **argv){
 
 
 
-
  analyse_only:
   if(analyse){
     partition p;
@@ -390,12 +389,64 @@ int main(int argc,char **argv){
 /******************************************************************************************/
 
 
+uint32_t  *read_crc32(int fd,uint32_t offset){
+  uint32_t *crc=0;
+  uint32_t magic;
+  uint8_t *data;
+  data=calloc(HEADER_SIZE,sizeof(uint8_t));
+  crc=calloc(0x02,sizeof(uint32_t));
+  
+  lseek(fd,offset,SEEK_SET);
+  read(fd,data,0x40);
+#if 0
+  int i;
+  for(i=0;i<0x40;i++){
+    printf("%02X ",*(data+i));
+    if(((i+1)%0x10)==0) printf("\n");
+  }
+  printf("\n");
+#endif
+  magic = *(uint32_t*)((uint32_t*)data);
+  if(!is_bigendian()) magic = __htobe32(magic);
+  switch(magic){
+  case UBOOT_MAGIC:
+    *(crc+0)=*((uint32_t*)data+1);
+    if(!is_bigendian()) *(crc+0) = __htobe32(*(crc+0));
+    *(crc+1)=*((uint32_t*)data+6);
+    if(!is_bigendian()) *(crc+1) = __htobe32(*(crc+1));
+
+    break;
+  case SQUASHFS_MAGIC:
+    *(crc+0)=0;
+    *(crc+1)=0;
+
+    break;
+  case PEM_MAGIC:
+    printf("Found PEM magic.\n");
+    *(crc+0)=0;
+    *(crc+1)=0;
+
+    break;
+  default:
+    printf("No magic.\n");
+    *(crc+0)=0;
+    *(crc+1)=0;
+    break;
+  }
+  /*   go to offset check partition type and read crc from partition and return data */
+  
+  lseek(fd,offset,SEEK_SET);
+
+  free(data);
+  return crc;
+}
 
 void do_analysis(partition p, char *file_name, bool print) {
 
   int fd;
   int i, j, n, m;
-  uint32_t partition_offset=0xD5;
+  uint32_t partition_offset=0;
+  //  uint32_t secondary_partition_offset=0;
   int s,data_len=0x1000;
   unsigned char *data;
   data=calloc(data_len,sizeof(char));
@@ -433,65 +484,81 @@ void do_analysis(partition p, char *file_name, bool print) {
 
   lseek(fd,0,SEEK_SET);
   read(fd,data,HEADER_SIZE);
-    
+  if( ( (*(data+0)==0x01) || (*(data +0)==0x02) )  && (*(data+1)==0x01) ) {
+    partition_offset=HEADER_SIZE;
+  }else{
+    printf("Wrong header!");
+    exit(-1);
+  }
+
   /* offset is eigenlijk jumpsize vermoed ik */
   n=0, m=0;
   do{
-    //    printf("n: %i, m: %i\n",n,m);
-
     (p+n)->nr              = *(data + n*0x15 + 1);
     (p+n)->jump_size       = *(uint32_t*)(data + n*0x15 + 2); 
     if(!is_bigendian()) (p+n)->jump_size = __htobe32((p+n)->jump_size);
     for(i=0;i<MD5_DIGEST_LENGTH;i++){
       (p+n)->md5[i] = *(data + n*0x15 + 6 + i);  // gaat niet goed
     }
-    (p+n)->header_crc32      = 0; 
-    (p+n)->data_crc32       = 0; 
+    (p+n)->offset = partition_offset;
     partition_offset+=(p+n)->jump_size;
+    (p+n)->header_crc32      = 0;
+    (p+n)->data_crc32       = 0; 
     n++;
   }while(strlen(partition_selector(*(data + n*0x15 + 1))) >0);
 
   lseek(fd,partition_offset,SEEK_SET);
   read(fd,data,HEADER_SIZE);
 
-#if 0
-  for(i=0;i<HEADER_SIZE;i++){
-    printf("%02X ",*(data+i));
-    if(((i+1)%0x10)==0) printf("\n");
+  if( (*(data+0)==0x01) && (*(data+1)==0x02)  ) {
+    partition_offset+=NEW_SECONDARY_HEADER_SIZE;
+  }else if( (*(data+0)==0x01) && (*(data+1)==0x01)  ) {
+    partition_offset+=OLD_SECONDARY_HEADER_SIZE;
+  }else{
+    printf("Wrong secondary header!\n");
+    exit(-1);
   }
-  printf("\n");
-#endif
-  
+
   m=0;  
   do{
     (p+n+m)->nr              = *(data + m*0x15 + 1 + 13);
-    (p+n+m)->jump_size       = *(uint32_t*)(data + m*0x15 + 2 + 13); 
+    (p+n+m)->jump_size       = *(uint32_t*)(data + m*0x15 + 2 + 13);
     if(!is_bigendian()) (p+n+m)->jump_size = __htobe32((p+n+m)->jump_size);
     for(i=0;i<MD5_DIGEST_LENGTH;i++)
-      (p+n+m)->md5[i] = *(data + m*0x15 + 6 + i + 13); 
-    (p+n+m)->header_crc32      = 0; 
+      (p+n+m)->md5[i] = *(data + m*0x15 + 6 + i + 13);
+    (p+n+m)->offset = partition_offset;    
+    partition_offset+=(p+n+m)->jump_size;
+    (p+n+m)->header_crc32      = 0;
     (p+n+m)->data_crc32        = 0; 
     m++;
   }while(strlen(partition_selector(*(data + m*0x15 + 1 + 13))) >0);
 
 
+
+
+  printf("nr   Partition  offset     md5                               header crc32  data crc32\n");
   partition_offset=0xD5;
-
-  //printf("n: %i, m: %i\n",n,m);
-  for(i=0;i<(n+m);i++){
-    printf("partition: 0x%02X: %8.8s, offset: 0x%08X, ",
-	   (p+i)->nr,
-	   partition_selector((p+i)->nr),
-	   partition_offset
-	   );
-    printf("md5: 0x");
-    for(j=0;j<MD5_DIGEST_LENGTH;j++)
-      printf("%02X", (p+i)->md5[j]);
-    printf("\n");
-    partition_offset+=(p+i)->jump_size;
+  if(print){
+    for(i=0;i<(n+m);i++){
+      /* Partition nr*/
+      printf("0x%02X ", (p+i)->nr);
+      /* Partition name*/
+      printf("%-10s ", partition_selector((p+i)->nr));
+      /* offset */
+      printf("0x%08X ",(p+i)->offset);
+      /* md5*/
+      for(j=0;j<MD5_DIGEST_LENGTH;j++)
+	printf("%02X", (p+i)->md5[j]);
+      printf(", ");
+      /* header crc32 */
+      (p+i)->header_crc32      = *( read_crc32(fd,(p+i)->offset) + 0);
+      printf("0x%08X    ",(p+i)->header_crc32);
+      /* data crc32 */
+      (p+i)->data_crc32        = *( read_crc32(fd,(p+i)->offset) + 1);
+      printf("0x%08X",(p+i)->data_crc32);
+      printf("\n");
+    }
   }
-
-  // 0x00CD7CD9 - 0x00CD7CFC == -35 is new hpoa bin file header size and offset to next partition
   close(fd);
 
 }
@@ -1866,7 +1933,7 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   printf(DEFAULT);
 
   sprintf(loopname, "/dev/loop%i", get_free_loop());
-  printf("loopname = %s\n", loopname);
+  //printf("loopname = %s\n", loopname);
 
   memset(cmd,'\0',0x100);
   strcpy(cmd,"mkdir dev/mnt-");
