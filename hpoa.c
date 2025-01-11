@@ -40,9 +40,6 @@ int main(int argc,char **argv){
 
   unsigned int      partition_nr;  //was unsigned char, was uVar9
 
-
-
-
   unsigned int jump_size=0;             //mag uiteindelijk ook weg  /* _Var12*/
   unsigned int jump_size_array[0x10];     // mag weg, ook hier boven gedefineerd
   unsigned int image_data_size_array[0x10];   //dubbel up denk ik
@@ -58,15 +55,17 @@ int main(int argc,char **argv){
 
   int opt=0;
   int modify=0;
-  int rw_test=0;
   int burn=0;
   int firmware=0;
   int verify=0;
-  int analyse=0;
   int have_fingerprint=0;
 
   char *md5_sum;
 
+  partition p;
+  
+  int nr_partitions=0;
+  p= malloc(0x10*sizeof(*p)); // must be sizeof *p otherwise size of the address of p
 
   if (geteuid() != 0) {
     fprintf(stderr, "%s needs root privileges!\n",argv[0]);
@@ -77,24 +76,23 @@ int main(int argc,char **argv){
     printf("No firmware file. Usage: %s [option] <filename>\n",argv[0]);
     return -1;
   }else{
-  
-    while ( opt = getopt(argc,argv,"afbmtv"), opt != -1) {
+    //printf("Endianness: ");
+    //if(is_bigendian()) printf("big.\n"); else printf("little.\n");
+    opt = getopt(argc,argv,"afbmtv");
+    nr_partitions = do_analysis(p,argv[optind]);
+    //printf("found: %i partitions\n",nr_partitions);
+    print_partition_info(p, nr_partitions);
+
+    
+    while(opt != -1) {
       if (true) {
 	switch(opt) {
 	case 'a':
-	  analyse=1;
-	  if( (analyse==1) && (modify==0) && (burn==0) && (firmware==0) ){
-	    goto analyse_only;
-	    //printf("Choosen option: %c, analyse the hp oa binary file\n",opt);
-	  }
+
 	  break;
 	case 'm':
 	  modify=1;
 	  //printf("Choosen option: %c, will modify rc.sysinit\n",opt);
-	  break;
-	case 't':
-	  rw_test=1;
-	  //printf("Choosen option: %c, will test write data to /dev/mtd7:0x4000\n",opt);
 	  break;
 	case 'b':
 	  burn=1;
@@ -125,47 +123,16 @@ int main(int argc,char **argv){
     }
   }
 
-
-
-
-#if 0 //SHA stuff works
-  do_sha256_tests();
-#endif
-
-
-  printf("Endianness: ");
-  if(is_bigendian()) printf("big.\n"); else printf("little.\n");
-
-    
-  if(!burn || !rw_test) {
+  if(!burn){
     do_housekeeping();
   }
 
   
-  if ( rw_test && !modify ) {
-    if( do_rw_test() < 0) return -1;
-  }
-
   
   strcpy(file_name,argv[optind]);
   
-  fd=open(file_name,O_RDONLY);                 /*file_name = local_c48 */
-  ret=read(fd,read_buffer,HEADER_SIZE);     /* read_buffer = local_d28 */
-
-  /* check value at address (read_buffer+0) */
-  if ((ret < HEADER_SIZE) || (0x01 < (*(read_buffer+0) -1)) ) { 
-    printf("Not valid OA firmware image");
-    close(fd);
-    return -1;
-  }
-
-  i = 0;
-  j = 0;
-  do {
-    if ( *(read_buffer -1 + i) == 0 ) break;
-    j = j + 1;
-    i = i + 0x15;
-  } while (j < 4);
+  fd=open(file_name,O_RDONLY);                 /* file_name = local_c48 */
+  ret=read(fd,read_buffer,HEADER_SIZE);        /* read_buffer = local_d28 */
 
 
   //have_fingerprint = verify_signature(fd,(__off_t *)&DAT_10022c28,read_buffer,0);
@@ -174,13 +141,36 @@ int main(int argc,char **argv){
   /****************************************************************************************/
   /*                              main while loop                                         */
   /****************************************************************************************/
+
+  char *new_name;
+  new_name = malloc(0x80*sizeof(char));
+
+  int md5_check=0;
+  
+  for(i=0;i<nr_partitions;i++){
+    partition_name = partition_selector((p+i)->nr);
+    //copy_partition_to_mtd_device(fd, (p+i)->name,(p+i)->jump_size);
+    copy_partition_to_mtd_device(fd, (p+i));
+    
+    if((p+i)->nr==0x05){
+      memset(new_name,0,0x80);
+      strcpy(new_name,partition_name);
+      strcat(new_name,"-udog");
+      md5_check=verify_mtd_md5sum(new_name,(p+i)->md5);
+    }else{
+      md5_check=verify_mtd_md5sum(partition_name,(p+i)->md5);
+    }
+    if(md5_check!=0) printf("md5 error\n");
+  }
+
+#if 0  
   int jsa_index=0;
-  while( true ) {
+  while( false ) {
     current_location = lseek(fd,0,SEEK_CUR);
     current_location_array[index]=current_location;
     index++;
 
-    printf("current location: 0x%X\n",current_location);
+    //printf("current location: 0x%X\n",current_location);
     
     iVar5 = iVar8;
     bVar1 = (3 < iVar9);
@@ -213,29 +203,20 @@ int main(int argc,char **argv){
 
       sprintf(mtd_name,"dev/mtd-%s",partition_name);
 
-
       fp=fopen(mtd_name,"r");
       partition_size=fseek(fp,0, SEEK_END);
       partition_size = ftell(fp);
-      //printf("%s size: %i\n",mtd_name,partition_size);
       fclose(fp);
-
-      
-      //modify=0;
-      //goto write_modified_initrd;
     }
 
     if (local_5c[0] == 0) {
-      //jump_size = *(__off_t*)(read_buffer+1+iVar5+1);
-      //if(!is_bigendian()) jump_size = __htobe32(jump_size);
-
-      /* verify the writen mtd partition */
-      /* (read_nuffer + 1 + iVar5 +5) is where the MD5sum of the partition is stored */
-      //printf("read_buffer localtion: 0x%X\n", 1+iVar5+5);
       local_5c[0] = open_mtd_for_input_internal(partition_name,jump_size,(read_buffer + 1 + iVar5 + 5));
     }
     printf("\n");
   }
+#endif
+
+  
   close(fd);
 
 
@@ -245,8 +226,7 @@ int main(int argc,char **argv){
   }
 
 
-  
-  unsigned char *data;
+    unsigned char *data;
   
   if(firmware){
     unsigned int crc=0;
@@ -363,7 +343,7 @@ int main(int argc,char **argv){
   }
 
  burn_only:
-  printf("em_type: %i\n",em_type());
+  //printf("em_type: %i\n",em_type());
   if(burn){
     printf("start writing initrd\n");
     write_initrd();
@@ -371,16 +351,7 @@ int main(int argc,char **argv){
   }
 
 
-
- analyse_only:
-  if(analyse){
-    partition p;
-    strcpy(file_name,argv[optind]);
-    p= malloc(0x10*sizeof(partition));
-    do_analysis(p,file_name,1);
-  }
-
-
+  free(p);
   return 0;
 }
 
@@ -441,10 +412,12 @@ uint32_t  *read_crc32(int fd,uint32_t offset){
   return crc;
 }
 
-void do_analysis(partition p, char *file_name, bool print) {
+int do_analysis(partition p, char *file_name) {
 
   int fd;
-  int i, j, n, m;
+  int i, j, k, m, n, o;
+  uint32_t jump_size;
+  uint32_t old_partition_offset=0;
   uint32_t partition_offset=0;
   //  uint32_t secondary_partition_offset=0;
   int s,data_len=0x1000;
@@ -453,18 +426,20 @@ void do_analysis(partition p, char *file_name, bool print) {
   /* dit moet een struct worden */
 
   uint32_t file_size=0;
+
+  char *udog;
+
+  //printf(RED);
+  //printf("do_analysis.\n");
+  //printf(DEFAULT);
+
+
   
   /*
    * We only need to verify the header and data crc32 are ok
    * to prevent the "Invalid OS checksum." message.
    * how does the crc check know its ist finished reading the partition data,
    * where/what is the EOF marker?
-   */
-
-  /*
-   * Below is what we should start with,
-   * find out where all the partition chunks are and
-   * know there md5 and crc32 values etc.
    */
   
   /*
@@ -480,88 +455,142 @@ void do_analysis(partition p, char *file_name, bool print) {
 
   
   fd=open(file_name,O_RDONLY);
-  file_size=lseek(fd,0,SEEK_END);
-
-  lseek(fd,0,SEEK_SET);
   read(fd,data,HEADER_SIZE);
   if( ( (*(data+0)==0x01) || (*(data +0)==0x02) )  && (*(data+1)==0x01) ) {
     partition_offset=HEADER_SIZE;
   }else{
-    printf("Wrong header!");
+    printf("Wrong header!\n");
     exit(-1);
   }
 
   /* offset is eigenlijk jumpsize vermoed ik */
-  n=0, m=0;
+  n=0, m=0, o=0;
   do{
-    (p+n)->nr              = *(data + n*0x15 + 1);
-    (p+n)->jump_size       = *(uint32_t*)(data + n*0x15 + 2); 
-    if(!is_bigendian()) (p+n)->jump_size = __htobe32((p+n)->jump_size);
+    (p+n)->nr = *(data + n*0x15 + 1);
+    strcpy( (p+n)->name, partition_selector((p+n)->nr));
+    jump_size = *(uint32_t*)(data + n*0x15 + 2); 
+    if(!is_bigendian()) jump_size = __htobe32(jump_size);
+    (p+n)->jump_size       = jump_size; 
     for(i=0;i<MD5_DIGEST_LENGTH;i++){
       (p+n)->md5[i] = *(data + n*0x15 + 6 + i);  // gaat niet goed
     }
     (p+n)->offset = partition_offset;
     partition_offset+=(p+n)->jump_size;
-    (p+n)->header_crc32      = 0;
-    (p+n)->data_crc32       = 0; 
+    (p+n)->header_crc32      = *( read_crc32(fd,(p+n)->offset) + 0);
+    (p+n)->data_crc32        = *( read_crc32(fd,(p+n)->offset) + 1);
     n++;
   }while(strlen(partition_selector(*(data + n*0x15 + 1))) >0);
 
-  lseek(fd,partition_offset,SEEK_SET);
+  uint32_t ret;
+  ret=lseek(fd,partition_offset,SEEK_SET);
+  //printf("file_location: 0x%08X\n",ret);
   read(fd,data,HEADER_SIZE);
+  //printf("file_location: 0x%08X\n",lseek(fd,));
 
-  if( (*(data+0)==0x01) && (*(data+1)==0x02)  ) {
+  if( (*(data+0)==0x01) && (*(data+1)==0x02) ) {
     partition_offset+=NEW_SECONDARY_HEADER_SIZE;
-  }else if( (*(data+0)==0x01) && (*(data+1)==0x01)  ) {
+  }else if( (*(data+0)==0x01) && (*(data+1)==0x01) ) {
     partition_offset+=OLD_SECONDARY_HEADER_SIZE;
   }else{
     printf("Wrong secondary header!\n");
     exit(-1);
   }
 
+#if 0
+  for(i=0;i<0x40;i++){
+    printf("%02X ",*(data+i));
+    if(((i+1)%0x10)==0) printf("\n");
+  }
+  printf("\n");
+#endif
+
   m=0;  
   do{
     (p+n+m)->nr              = *(data + m*0x15 + 1 + 13);
-    (p+n+m)->jump_size       = *(uint32_t*)(data + m*0x15 + 2 + 13);
-    if(!is_bigendian()) (p+n+m)->jump_size = __htobe32((p+n+m)->jump_size);
+    if((p+n+m)->nr==0x05){
+      udog=calloc(0x20, sizeof(char));
+      strcpy(udog,partition_selector((p+n+m)->nr));
+      strcat(udog,"-udog");
+      strcpy( (p+n+m)->name, udog);
+    }else {
+      strcpy( (p+n+m)->name, partition_selector((p+n+m)->nr));
+    }
+
+    jump_size = *(uint32_t*)(data + m*0x15 + 2 + 13);
+    if(!is_bigendian()) jump_size = __htobe32(jump_size);
+    (p+n+m)->jump_size       = jump_size; 
+    //printf("jump_size: 0x%08X\n",(p+n+m)->jump_size);
+    
     for(i=0;i<MD5_DIGEST_LENGTH;i++)
       (p+n+m)->md5[i] = *(data + m*0x15 + 6 + i + 13);
-    (p+n+m)->offset = partition_offset;    
+
+    (p+n+m)->offset = partition_offset;
     partition_offset+=(p+n+m)->jump_size;
-    (p+n+m)->header_crc32      = 0;
-    (p+n+m)->data_crc32        = 0; 
+    (p+n+m)->header_crc32      = *( read_crc32(fd,(p+n+m)->offset) + 0);
+    (p+n+m)->data_crc32        = *( read_crc32(fd,(p+n+m)->offset) + 1);
     m++;
+
   }while(strlen(partition_selector(*(data + m*0x15 + 1 + 13))) >0);
 
 
+  ret=lseek(fd,partition_offset,SEEK_SET);
+  //printf("file_location: 0x%08X\n",ret);
+  read(fd,data,HEADER_SIZE);
+  //printf("file_location: 0x%08X\n",lseek(fd,));
 
+  o=0;
+  if( (*(data+0)==0x2d) && (*(data+1)==0x2d) && (*(data+2)==0x3d) && (*(data+3)==0x3c) ) {
+    //printf("Have Fingerprint file!\n");
 
-  printf("nr   Partition  offset     md5                               header crc32  data crc32\n");
-  partition_offset=0xD5;
-  if(print){
-    for(i=0;i<(n+m);i++){
-      /* Partition nr*/
-      printf("0x%02X ", (p+i)->nr);
-      /* Partition name*/
-      printf("%-10s ", partition_selector((p+i)->nr));
-      /* offset */
-      printf("0x%08X ",(p+i)->offset);
-      /* md5*/
-      for(j=0;j<MD5_DIGEST_LENGTH;j++)
-	printf("%02X", (p+i)->md5[j]);
-      printf(", ");
-      /* header crc32 */
-      (p+i)->header_crc32      = *( read_crc32(fd,(p+i)->offset) + 0);
-      printf("0x%08X    ",(p+i)->header_crc32);
-      /* data crc32 */
-      (p+i)->data_crc32        = *( read_crc32(fd,(p+i)->offset) + 1);
-      printf("0x%08X",(p+i)->data_crc32);
-      printf("\n");
-    }
+    (p+n+m+o)->nr              = 0x0A;
+    strcpy( (p+n+m+o)->name, partition_selector((p+n+m+o)->nr));
+    jump_size = 0xFFFFFFFF; //until EOF
+    
+    (p+n+m+o)->offset = partition_offset;
+    partition_offset+=(p+n+m+o)->jump_size;
+    (p+n+m+o)->header_crc32      = 0;
+    (p+n+m+o)->data_crc32        = 0;
+    o++;
   }
-  close(fd);
 
+#if 0
+  for(i=0;i<0x40;i++){
+    printf("%02X ",*(data+i));
+    if(((i+1)%0x10)==0) printf("\n");
+  }
+  printf("\n");
+#endif
+
+  
+  
+  close(fd);
+  //printf("nr of partitions: %i\n",n+m+o);
+  return (n+m+o);
 }
+
+void print_partition_info(partition p, int nr_partitions){
+  int i,j;
+  printf("Nr   partition   offset     md5                              header crc32  data crc32\n");
+  for(i=0;i<nr_partitions;i++){
+    /* Partition nr*/
+    printf("0x%02X ", (p+i)->nr);
+    /* Partition name*/
+    printf("%-11s ", (p+i)->name);
+    /* offset */
+    printf("0x%08X ",(p+i)->offset);
+    /* md5*/
+    for(j=0;j<MD5_DIGEST_LENGTH;j++)
+      printf("%02X", (p+i)->md5[j]);
+    printf(" ");
+    /* header crc32 */
+    printf("0x%08X    ",(p+i)->header_crc32);
+    /* data crc32 */
+    printf("0x%08X",(p+i)->data_crc32);
+    printf("\n");
+  }
+  printf("\n");
+}
+
 
 
 
@@ -1488,7 +1517,12 @@ uint64_t FUN_1000f6bc(uint param_1){
 
 
 /* FUN_10002160 */
-int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
+/*
+ * name should bew something like:
+ * int verify_mtd_md5sum(char *partition_name,int param_2,void *param_3){
+ */
+//int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
+int verify_mtd_md5sum(char *partition_name,void *param_3){
   
   int i;
   size_t len;
@@ -1508,9 +1542,9 @@ int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
   md5sum=calloc(0x20,sizeof(char));
 
 
-  printf(RED);
-  printf("open_mtd_for_input_internal, FUN_10002160.\n");
-  printf(DEFAULT);
+  //printf(RED);
+  //printf("open_mtd_for_input_internal, FUN_10002160.\n");
+  //printf(DEFAULT);
 
   char *full_path;
   full_path=calloc(0x80,sizeof(char));
@@ -1536,7 +1570,7 @@ int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
     free(full_path);
   }
   else {
-    printf("Open partition: %s for MD5 input\n",full_path);
+    printf("Verify partition: %s, md5sum: ",full_path);
 
     md5Init(&ctx);
     while((input_size = fread(input_buffer, 1, 1024, file)) > 0){
@@ -1549,25 +1583,18 @@ int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
 
     fclose(file);
 
-#if 1
-    printf(BLUE);
-    printf("Comparing result of FUN_10006944 with param_3\n");
-    printf(DEFAULT);
-
-    printf("param_3: ");
-    for(i=0; i<MD5_DIGEST_LENGTH; i++){
-      printf("%2.2X",*(unsigned char*)((unsigned char*)param_3+i));
-    }
-    printf("\n");
-
-    printf("md5sum:  ");
     for(i=0; i<MD5_DIGEST_LENGTH; i++){
       printf("%2.2X",md5sum[i]);
     }
     printf("\n");
 
-#endif
 
+    /*
+     * Comparing result of FUN_10006944 with param_3
+     * both shoudl have identical md5sum and
+     * iVar2 should return 0
+     * do_analysis should also have found the md5sum in the partition header
+     */
     iVar2 = memcmp((unsigned char*)param_3,md5sum,0x10);
 
 
@@ -1581,10 +1608,14 @@ int open_mtd_for_input_internal(char *partition_name,int param_2,void *param_3){
 }
 
 
-
-
 /* FUN_10001edc */
-unsigned int open_mtd_for_output_internal(int fd,char *partition_name,int param_3) {
+/*
+ * name should be something like: 
+ * unsigned int copy_partition_to_mtd_device(int fd,char *partition_name,int param_3) {
+ */
+//unsigned int open_mtd_for_output_internal(int fd,char *partition_name,int param_3) {
+unsigned int copy_partition_to_mtd_device(int fd,partition p) {
+
   int iVar1;
   size_t len;
   int __fd;
@@ -1603,13 +1634,15 @@ unsigned int open_mtd_for_output_internal(int fd,char *partition_name,int param_
   unsigned char  data[65536];
   unsigned int local_38[5];
 
-  printf(RED);
-  printf("open_mtd_for_output_internal, FUN_10001edc.\n");
-  printf(DEFAULT);
+  //printf(RED);
+  //printf("open_mtd_for_output_internal, FUN_10001edc.\n");
+  //printf(DEFAULT);
 
   char *full_path;
   full_path=calloc(0x80,sizeof(char));
 
+  char* partition_name = p->name;
+  
   dev = "dev";  
   mtd = "/mtd";
   dash = "-\0\0\0";
@@ -1621,26 +1654,36 @@ unsigned int open_mtd_for_output_internal(int fd,char *partition_name,int param_
   strncat(full_path,dash,len);
   len = strlen(partition_name);
   strncat(full_path,partition_name,len);
-  
 
   uVar5 = 0xfffffff6;
 
+
+  lseek(fd,p->offset,SEEK_SET);
+
+  if(access((char*)full_path,F_OK) == -1)
+    __fd = open((char *)full_path,O_WRONLY | O_APPEND | O_CREAT, 0666);
+  else
     __fd = open((char *)full_path,O_SYNC|O_RDWR);
+
+  
   if (__fd == -1) {
-    printf("error opening %s for output\n",full_path);
+    printf("error opening %s\n",full_path);
   }
   else {
-    printf("Open partition: %s for output\n",full_path);
+    printf("Copy partition data to: %s.\n",full_path);
     iVar7 = 0;
     iVar6 = 0;
-    if (0 < param_3) {
+    if (0 < p->jump_size) {
       do {
-        len = param_3 - iVar6;
+        len = p->jump_size - iVar6;
         if (0x10000 < (int)len) {
           len = 0x10000;
         }
-        len = read(fd,data,len);
-        if (len == 0) break;
+        len = read(fd,data,len);  // read data form hpoa bin file
+        if (len == 0) {
+	  break;
+	}
+	
         if (len == 0xffffffff) {
           __s = "em_flash: read";
 LAB_10001f7c:
@@ -1648,7 +1691,7 @@ LAB_10001f7c:
           break;
         }
         iVar6 = iVar6 + len;
-        sVar3 = write(__fd,data,len);
+        sVar3 = write(__fd,data,len); // write data to mtd device
         if (sVar3 == -1) {
           __s = "em_flash: write";
           goto LAB_10001f7c;
@@ -1688,15 +1731,15 @@ LAB_10001f7c:
           //fflush(stdout);
         }
         fsync(__fd);
-      } while (iVar7 < param_3);
+      } while (iVar7 < p->jump_size);
       //printf("\n");
     }
     close(__fd);
 
-    if (param_3 <= iVar7 && param_3 <= iVar6) {
+    if (p->jump_size <= iVar7 && p->jump_size <= iVar6) {
       return 0;
     }
-    printf("error tr %d tw %d nbytes %d\n",iVar6,iVar7,param_3);
+    printf("error tr %d tw %d nbytes %d\n",iVar6,iVar7,p->jump_size);
   }
   return 0xffffffff;
 }
@@ -1844,50 +1887,6 @@ void do_housekeeping(void){
   system("touch dev/mtd-fwmgmt");
   system("touch dev/mtd-certs");
   system("touch dev/mtd-config");
-
-}
-
-
-void do_sha256_tests(void){
-    
-  printf(BLUE);
-  printf("/*********************************/\n");
-  printf("/*   start MD5 and SHA256 test   */\n");
-  printf("/*********************************/\n");
-  printf(DEFAULT);
-
-  sha256_ctx ctx;
-  
-  u_int8_t *results;
-
-
-  char *buf;
-  buf=calloc(0x200,1);
-  int n;
-
-  results = calloc(SHA256_DIGEST_SIZE,sizeof(u_int8_t));  
-  strcpy(buf,"Marcel is gek! Wie is er nog meer gek?");
-  printf("sha256 of '%s'\n",buf);
-  n = strlen(buf);
-  
-  sha256_init(&ctx);
-  sha256_update(&ctx, (u_int8_t *)buf, n);
-  sha256_final(&ctx, results);
-
-  /* Print the digest as one long hex value */
-  for (n = 0; n < SHA256_DIGEST_SIZE; n++)
-    printf("%02x", results[n]);
-  putchar('\n');
-
-
-  printf("https://emn178.github.io/online-tools/sha256.html says: \n");
-  printf("8879886cd88241725cfb3af4b25fd2110c553c9e58d193b8b622a9479c761ff8\n");
-
-  printf(BLUE);
-  printf("/*********************************/\n");
-  printf("/*   end  MD5 and SHA256 test    */\n");
-  printf("/*********************************/\n");
-  printf(DEFAULT);
 
 }
 
@@ -2184,43 +2183,6 @@ int  write_initrd(void){
   close(fd_initrd);
   
   return(0);
-}
-
-
-int  do_rw_test(void){
-
-  if( (em_type()==C3000) || (em_type()==C7000) ){
-    
-    int fd;
-    char data[0x100];
-    char ret[0x100];
-    memset(data,0,0x100);
-
-
-    fd=open("/dev/mtd7", O_SYNC|O_RDWR);
-    if(fd<0){
-      printf("could not open /dev/mtd7\n");
-      return(-1);
-    }
-    
-    lseek(fd,0x00008000,SEEK_SET);
-    read(fd,ret,0x10);
-    if(memcmp(data,ret,0x10)==0){
-      lseek(fd,0x00008000,SEEK_SET);
-      strcat(data,"Hello world!");
-      write(fd,data,12);
-    }else{
-      printf("Data range is not all zeros!\n");
-    }
-    close(fd);
-
-    printf("only tested writing to /dev/mtd7\n");
-    return(0);
-
-  }else{
-    printf("No physical enclosure, can't do rw_test\n");
-    return -1;
-  }
 }
 
 

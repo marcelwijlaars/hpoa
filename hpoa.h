@@ -65,16 +65,14 @@ const int __i__ = 1;
 #define PEM_MAGIC       0x2d2d2d2d //not official magic numver, but I think this works
 
 typedef struct partition{
-  uint8_t  nr; 
+  uint8_t  nr;
+  char name[0x40];
   uint32_t jump_size;
   uint32_t offset;
   uint8_t  md5[MD5_DIGEST_LENGTH];
   uint32_t header_crc32; 
   uint32_t data_crc32;
 }*partition;
-
-
-
 
 
 uint open_mtd_for_output_internal(int,char*,int); /* FUN_10001edc */
@@ -91,11 +89,10 @@ uint verify_signature(int, __off_t *, unsigned char *, int);
 int write_initrd(void);
 int verify_initrd(void);
 int get_free_loop(void);
-void do_analysis(partition, char *, bool);
-
-
-
-
+int do_analysis(partition, char *);
+void print_partition_info(partition, int);
+int verify_mtd_md5sum(char *, void *);
+unsigned int copy_partition_to_mtd_device(int, partition);
 
 #if 0
 unsigned char check_something(int,int);
