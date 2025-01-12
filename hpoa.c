@@ -60,8 +60,6 @@ int main(int argc,char **argv){
   int verify=0;
   int have_fingerprint=0;
 
-  char *md5_sum;
-
   partition p;
   
   int nr_partitions=0;
@@ -76,23 +74,12 @@ int main(int argc,char **argv){
     printf("No firmware file. Usage: %s [option] <filename>\n",argv[0]);
     return -1;
   }else{
-    //printf("Endianness: ");
-    //if(is_bigendian()) printf("big.\n"); else printf("little.\n");
-    opt = getopt(argc,argv,"afbmtv");
-    nr_partitions = do_analysis(p,argv[optind]);
-    //printf("found: %i partitions\n",nr_partitions);
-    print_partition_info(p, nr_partitions);
-
-    
-    while(opt != -1) {
+    while(opt = getopt(argc,argv,"fbmtv"),opt != -1) {
       if (true) {
 	switch(opt) {
-	case 'a':
-
-	  break;
 	case 'm':
 	  modify=1;
-	  //printf("Choosen option: %c, will modify rc.sysinit\n",opt);
+	  printf("Choosen option: %c, will modify rc.sysinit\n",opt);
 	  break;
 	case 'b':
 	  burn=1;
@@ -123,33 +110,25 @@ int main(int argc,char **argv){
     }
   }
 
-  if(!burn){
-    do_housekeeping();
-  }
+  //printf("Endianness: ");
+  //if(is_bigendian()) printf("big.\n"); else printf("little.\n");
 
   
-  
-  strcpy(file_name,argv[optind]);
-  
-  fd=open(file_name,O_RDONLY);                 /* file_name = local_c48 */
+  fd=open(argv[optind],O_RDONLY);                 /* file_name = local_c48 */
   ret=read(fd,read_buffer,HEADER_SIZE);        /* read_buffer = local_d28 */
 
-
-  //have_fingerprint = verify_signature(fd,(__off_t *)&DAT_10022c28,read_buffer,0);
-
   
-  /****************************************************************************************/
-  /*                              main while loop                                         */
-  /****************************************************************************************/
+  nr_partitions = do_analysis(p,argv[optind]);
+  //printf("found: %i partitions\n",nr_partitions);
+  print_partition_info(p, nr_partitions);
 
   char *new_name;
   new_name = malloc(0x80*sizeof(char));
-
   int md5_check=0;
+
   
   for(i=0;i<nr_partitions;i++){
     partition_name = partition_selector((p+i)->nr);
-    //copy_partition_to_mtd_device(fd, (p+i)->name,(p+i)->jump_size);
     copy_partition_to_mtd_device(fd, (p+i));
     
     if((p+i)->nr==0x05){
@@ -163,6 +142,42 @@ int main(int argc,char **argv){
     if(md5_check!=0) printf("md5 error\n");
   }
 
+  char *md5_sum;
+  
+  if(modify) {
+    nr_partitions=modify_partition(p, "initrd",nr_partitions);
+    printf("Modified partition dev/mtd-initrd.modified, md5sum:  ");
+    for(i=0;i<MD5_DIGEST_LENGTH;i++) printf("%02X",(unsigned char)(p+nr_partitions)->md5[i]);
+    printf("\n");
+  }
+
+  if(burn && modify) {
+    for(i=0;i<nr_partitions;i++);
+
+   }
+  
+
+  
+  if(!burn){
+    //system("rm -rf dev/*");
+  }
+
+
+
+  return 0;
+  
+
+
+  //have_fingerprint = verify_signature(fd,(__off_t *)&DAT_10022c28,read_buffer,0);
+
+  
+  /****************************************************************************************/
+  /*                                 main code                                            */
+  /****************************************************************************************/
+
+  
+
+  
 #if 0  
   int jsa_index=0;
   while( false ) {
@@ -194,7 +209,7 @@ int main(int argc,char **argv){
     if(modify && strcmp(partition_name,"initrd")==0) {
 
       md5_sum  = calloc( 0x10,sizeof(char));
-      modify_initrd(partition_name,&partition_size,md5_sum);
+      modify_partition(partition_name,&partition_size);
       /* update md5sum int read_buffer, should also be updated in firmware file */
 
       for(i=0;i<MD5_DIGEST_LENGTH;i++){
@@ -227,6 +242,9 @@ int main(int argc,char **argv){
 
 
     unsigned char *data;
+
+    strcpy(file_name,argv[optind]);
+
   
   if(firmware){
     unsigned int crc=0;
@@ -590,7 +608,6 @@ void print_partition_info(partition p, int nr_partitions){
   }
   printf("\n");
 }
-
 
 
 
@@ -1873,23 +1890,23 @@ int em_type(void){  // not used right now
   }
   return DAT_000cbb58;
 }
-
-void do_housekeeping(void){
+#if 0
+//void do_housekeeping(void){
   /* Start with houskeeping */
 
-  system("rm -rf dev");
-  system("mkdir dev");
-  system("touch dev/mtd-kernel");
-  system("touch dev/mtd-initrd");
-  system("touch dev/mtd-squashfs");
-  system("touch dev/mtd-uboot");
-  system("touch dev/mtd-storage");
-  system("touch dev/mtd-fwmgmt");
-  system("touch dev/mtd-certs");
-  system("touch dev/mtd-config");
+  //system("rm -rf dev/*");
+  //system("mkdir dev");
+  //system("touch dev/mtd-kernel");
+  //system("touch dev/mtd-initrd");
+  //system("touch dev/mtd-squashfs");
+  //system("touch dev/mtd-uboot");
+  //system("touch dev/mtd-storage");
+  //system("touch dev/mtd-fwmgmt");
+  //system("touch dev/mtd-certs");
+  //system("touch dev/mtd-config");
 
 }
-
+#endif
 
 void my_md5sum(char *file_name, char *md5_sum){
   int i;
@@ -1912,13 +1929,12 @@ void my_md5sum(char *file_name, char *md5_sum){
 
     free(input_buffer);
     memcpy(md5_sum, ctx.digest, MD5_DIGEST_LENGTH);
-
     fclose(file);
   }
 }
 
 
-int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
+int modify_partition(partition p,char *partition_name,int nr_partitions){
   int i;
   char *cmd;
   cmd=calloc(0x100,sizeof(char));
@@ -1927,9 +1943,9 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   long devnr;
   char loopname[0x100];
 
-  printf(RED);
-  printf("modify_initrd.\n");
-  printf(DEFAULT);
+  //printf(RED);
+  //printf("modify_initrd.\n");
+  //printf(DEFAULT);
 
   sprintf(loopname, "/dev/loop%i", get_free_loop());
   //printf("loopname = %s\n", loopname);
@@ -1962,7 +1978,7 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd,partition_name);
   //printf("%s\n",cmd);
   system(cmd);
-    
+
   memset(cmd,'\0',0x100);
   strcpy(cmd, "mount -o loop ");
   strcat(cmd, loopname);
@@ -2068,7 +2084,7 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd, partition_name);
   strcat(cmd, " 141208-0921 build\"\' -T ramdisk dev/mtd-");
   strcat(cmd, partition_name);
-  //strcat(cmd, ".modified");
+  strcat(cmd, ".modified");
   strcat(cmd," >& /dev/null");
   strcat(cmd, " ; ");
   strcat(cmd,"sync");  
@@ -2085,22 +2101,26 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   //printf("%s\n",cmd);
   system(cmd);
 
-  /* must do md5 of gzipped partition before mkimage adds header */
+#if 0
   memset(cmd,'\0',0x100);
   strcpy(cmd, "md5sum dev/mtd-");
   strcat(cmd, partition_name);
-  strcat(cmd, " >/dev/null");
+  strcat(cmd, ".modified");
+  //  strcat(cmd, " >/dev/null");
   strcat(cmd, " ; ");
   strcat(cmd, "sync");
-  //printf("%s\n",cmd);
+  printf("\n\n%s\n\n",cmd);
   system(cmd);
+#endif
 
+  char* md5_sum;
+  md5_sum=calloc(MD5_DIGEST_LENGTH, sizeof(unsigned char));
   char *filename = calloc(0x100,sizeof(char));
   strcpy(filename,"dev/mtd-");
   strcat(filename,partition_name);
+  strcat(filename, ".modified");
   my_md5sum(filename,md5_sum);
 
-  free(filename);
   
   memset(cmd,'\0',0x100);
   strcpy(cmd,"rm ");
@@ -2110,8 +2130,28 @@ int modify_initrd(char *partition_name, uint32_t *mtd_size,char *md5_sum){
   strcat(cmd,"sync");  
   //printf("%s\n",cmd);
   system(cmd);
+
+
+  md5_sum=calloc(MD5_DIGEST_LENGTH, sizeof(unsigned char));
+  strcpy(filename,"dev/mtd-");
+  strcat(filename,partition_name);
+  strcat(filename, ".modified");
+  my_md5sum(filename,md5_sum);
+  nr_partitions++;
+  memcpy((p+nr_partitions)->md5, md5_sum, MD5_DIGEST_LENGTH);
+  //  printf("\n\nNew md5_sum: ");
+  //for(i=0;i<MD5_DIGEST_LENGTH;i++) printf("%02X",(unsigned char)(p+nr_partitions)->md5[i]);
+  //printf("\n\n");
+
   
-  return 0;
+  memset(filename,'\0',0x100);
+  strcpy(filename,partition_name);
+  strcat(filename, ".modified");
+  strcpy(p->name, filename);
+
+  free(filename);
+    
+  return nr_partitions;
 }
 
 

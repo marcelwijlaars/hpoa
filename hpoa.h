@@ -64,6 +64,13 @@ const int __i__ = 1;
 #define SQUASHFS_MAGIC  0x73717368
 #define PEM_MAGIC       0x2d2d2d2d //not official magic numver, but I think this works
 
+#define INDEX_KERNEL        0x01
+#define INDEX_INITRD        0x02
+#define INDEX_SQUASHFS      0x03
+#define INDEX_KERNEL_UDOG   0x04
+#define INDEX_STORAGE       0x05
+#define INDEX_CERTS         0x06
+
 typedef struct partition{
   uint8_t  nr;
   char name[0x40];
@@ -81,7 +88,7 @@ int FUN_1000f7dc(unsigned int, unsigned int);
 char *partition_selector(unsigned char); /* FUN_100033a8 */
 void do_housekeeping(void);
 void do_sha256_tests(void);
-int modify_initrd(char*,uint32_t*,char*);
+int modify_partition(partition, char*,int);
 int em_type(void);
 int do_rw_test(void);
 uint64_t fw_with_fingerprint(char*);                       /* FUN_1000cb68 ish */ 
@@ -93,6 +100,7 @@ int do_analysis(partition, char *);
 void print_partition_info(partition, int);
 int verify_mtd_md5sum(char *, void *);
 unsigned int copy_partition_to_mtd_device(int, partition);
+
 
 #if 0
 unsigned char check_something(int,int);
