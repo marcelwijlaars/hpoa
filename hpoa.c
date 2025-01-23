@@ -1,26 +1,30 @@
 #include "hpoa.h"
 
+
 /* glocal variables */
-//unsigned char *DAT_10022a68;
-unsigned char *DAT_10012738=0;  //doesn't change anywhere
-unsigned int   DAT_000cbb58=-1;
-//char *DAT_10022c2c; // waarschijnlijk naam van flash image 
-unsigned int DAT_10022c20=0;
-unsigned int DAT_10022c24=0;
-//unsigned char *DAT_10022c28;
+unsigned char *DAT_10012738=0;  //doesn't change anywhere should be calloced
+unsigned char *DAT_10022c28;
+
+
 
 
 int main(int argc,char **argv){
   
-  int fd,fw;
+  int fd, fw, fh;
   FILE *fp;
   off_t offset;                                                 /* __offset */
 
   char file_name[128];
+  char *new_name;
+  new_name = malloc(0x80*sizeof(char));
+
   ssize_t ret;                                                  /* uVar10 */
+
   unsigned char *read_buffer;                                   /* local_d28 */
   read_buffer=calloc(MAX_FILE_SIZE,sizeof(unsigned char));
 
+  int md5_check=0;
+  
   int i,j;                                                      /* iVar16 and iVar27 */
   int index=0;
 
@@ -31,27 +35,12 @@ int main(int argc,char **argv){
   char *partition_name;
   partition_name=calloc(0x80,sizeof(unsigned char));
 
-  //unsigned char *DAT_10022c28;
-  //DAT_10022c28=calloc(0x80,sizeof(unsigned char));
-
   
-  unsigned int *local_5c;
-  local_5c=calloc(6,sizeof(uint));
-
-  unsigned int      partition_nr;  //was unsigned char, was uVar9
-
-  unsigned int jump_size=0;             //mag uiteindelijk ook weg  /* _Var12*/
   unsigned int jump_size_array[0x10];     // mag weg, ook hier boven gedefineerd
   unsigned int image_data_size_array[0x10];   //dubbel up denk ik
-  unsigned int current_location=0;
   unsigned int fw_location=0;
   unsigned int fw_location_array[0x10];
   unsigned int current_location_array[0x10];
-
-  int iVar5 = 0;
-  int iVar8 = 0;
-  int iVar9 = 0;
-  bool bVar1;
 
   int opt=0;
   int modify=0;
@@ -63,13 +52,22 @@ int main(int argc,char **argv){
   partition p;
   
   int nr_partitions=0;
+  DAT_10022c28=calloc(0x80,sizeof(unsigned char));
+
+
+#if 0 //SHA stuff works
+  do_sha256_test();
+#endif
+  
   p= malloc(0x10*sizeof(*p)); // must be sizeof *p otherwise size of the address of p
 
   if (geteuid() != 0) {
     fprintf(stderr, "%s needs root privileges!\n",argv[0]);
     exit(1);
   }
-  
+
+
+  /*  handle commandline options */
   if(argc <= 1){
     printf("No firmware file. Usage: %s [option] <filename>\n",argv[0]);
     return -1;
@@ -93,7 +91,7 @@ int main(int argc,char **argv){
 	  break;
 	case 'f':
 	  firmware=1;
-	  //printf("Choosen option: %c, will compose new firmware image\n",opt);
+	  printf("Choosen option: %c, will compose new firmware image\n",opt);
 	  break;
 	case 'v':
 	  verify=1;
@@ -110,22 +108,42 @@ int main(int argc,char **argv){
     }
   }
 
-  //printf("Endianness: ");
-  //if(is_bigendian()) printf("big.\n"); else printf("little.\n");
+  /****************************************************************************************/
+  /*                                 main code                                            */
+  /****************************************************************************************/
+  
 
   
   fd=open(argv[optind],O_RDONLY);                 /* file_name = local_c48 */
-  ret=read(fd,read_buffer,HEADER_SIZE);        /* read_buffer = local_d28 */
+  ret=read(fd,read_buffer,HEADER_SIZE);           /* read_buffer = local_d28 */
+
+  char pcVar22 = 0x00000001 & 0xFFFFFFFF;
+  // should be have_signature */
+  have_fingerprint = verify_signature(fd,(__off_t *)&DAT_10022c28,read_buffer,0,pcVar22);
+  //if(have_fingerprint)
+  printf("have_fingerprint: %i\n", have_fingerprint);
+  //fw_with_fingerprint(argv[optind]);
+		       
+
 
   
+  /* analyse partitions */
   nr_partitions = do_analysis(p,argv[optind]);
-  //printf("found: %i partitions\n",nr_partitions);
-  print_partition_info(p, nr_partitions);
 
-  char *new_name;
-  new_name = malloc(0x80*sizeof(char));
-  int md5_check=0;
+  /*
+   * Verifying signature...
+   * on success (NEW_HEADER==0)  successful! Key1
+   * on failure (NEW_HEADER==1)  Firmware image is an unofficial and unsupported release.
+   */
+  
+#define NEW_HEADER 0
+#if NEW_HEADER  
 
+  fh= open("hpoa444.bin",O_WRONLY |O_CREAT, 0666);
+  write_hpoa_header(fh, p, nr_partitions,read_buffer);
+  close(fh);
+
+#endif
   
   for(i=0;i<nr_partitions;i++){
     partition_name = partition_selector((p+i)->nr);
@@ -142,98 +160,25 @@ int main(int argc,char **argv){
     if(md5_check!=0) printf("md5 error\n");
   }
 
-  char *md5_sum;
+
+
   
   if(modify) {
     nr_partitions=modify_partition(p, "initrd",nr_partitions);
-    printf("Modified partition dev/mtd-initrd.modified, md5sum:  ");
-    for(i=0;i<MD5_DIGEST_LENGTH;i++) printf("%02X",(unsigned char)(p+nr_partitions)->md5[i]);
-    printf("\n");
   }
+
+  /* print partitions */
+  print_partition_info(p, nr_partitions);
+
+
+  
 
   if(burn && modify) {
     for(i=0;i<nr_partitions;i++);
-
-   }
-  
-
-  
-  if(!burn){
-    //system("rm -rf dev/*");
   }
-
-
-
-  return 0;
-  
-
-
-  //have_fingerprint = verify_signature(fd,(__off_t *)&DAT_10022c28,read_buffer,0);
-
-  
-  /****************************************************************************************/
-  /*                                 main code                                            */
-  /****************************************************************************************/
-
-  
-
-  
-#if 0  
-  int jsa_index=0;
-  while( false ) {
-    current_location = lseek(fd,0,SEEK_CUR);
-    current_location_array[index]=current_location;
-    index++;
-
-    //printf("current location: 0x%X\n",current_location);
-    
-    iVar5 = iVar8;
-    bVar1 = (3 < iVar9);
-    iVar9 = iVar9 + 1;
-
-    if ( ( bVar1 || (local_5c[0] != 0) ) || ( *(read_buffer+1+iVar5) == '\0') ) break;
-
-    partition_nr = (unsigned int) *(read_buffer+1+iVar5);  
-    partition_name = partition_selector(partition_nr);      
-
-    jump_size= *(__off_t*)(read_buffer+1+iVar5+1);
-    if(!is_bigendian()) jump_size = __htobe32(jump_size);
-    jump_size_array[jsa_index]=jump_size;
-    jsa_index++;
-    
-    /* write mtd partition */
-    local_5c[0] = open_mtd_for_output_internal(fd, partition_name,jump_size);
-
-    iVar8 = iVar5 + 0x15;
-
-    if(modify && strcmp(partition_name,"initrd")==0) {
-
-      md5_sum  = calloc( 0x10,sizeof(char));
-      modify_partition(partition_name,&partition_size);
-      /* update md5sum int read_buffer, should also be updated in firmware file */
-
-      for(i=0;i<MD5_DIGEST_LENGTH;i++){
-	*(uint8_t*)(read_buffer + 1 + iVar5 + 5 + i)= *(uint8_t*)(md5_sum+i);
-	}
-
-      sprintf(mtd_name,"dev/mtd-%s",partition_name);
-
-      fp=fopen(mtd_name,"r");
-      partition_size=fseek(fp,0, SEEK_END);
-      partition_size = ftell(fp);
-      fclose(fp);
-    }
-
-    if (local_5c[0] == 0) {
-      local_5c[0] = open_mtd_for_input_internal(partition_name,jump_size,(read_buffer + 1 + iVar5 + 5));
-    }
-    printf("\n");
-  }
-#endif
-
   
   close(fd);
-
+  
 
   if(burn && ((em_type()==C3000) || (em_type()==C7000)) ){
     printf("start writing initrd\n");
@@ -241,12 +186,17 @@ int main(int argc,char **argv){
   }
 
 
-    unsigned char *data;
+  unsigned char *data;
 
-    strcpy(file_name,argv[optind]);
+  strcpy(file_name,argv[optind]);
 
   
   if(firmware){
+    printf(RED);
+    printf("doing the firmware stuff\n");
+    printf(DEFAULT);
+
+
     unsigned int crc=0;
     uint32_t image_data_size=0;
     char cmd[0x100];
@@ -256,15 +206,19 @@ int main(int argc,char **argv){
 
     data=calloc(data_len,sizeof(char));
 
+#if !NEW_HEADER
     strcpy(cmd, "cp ");
     strcat(cmd, file_name);
-    strcat(cmd, " hpoa999.bin");
-    printf("%s\n",cmd);
+    strcat(cmd, " hpoa444.bin");
+    //printf("%s\n",cmd);
     system(cmd);
-    fw=open("hpoa999.bin",O_RDWR);
-    s=write(fw,read_buffer,HEADER_SIZE);
+#endif
+    fw=open("hpoa444.bin",O_RDWR);
+    s=lseek(fw,HEADER_SIZE,SEEK_SET);
     fw_location+=s;
-    fw_location_array[0]=fw_location;
+    printf("file_location s: 0x%X\n", s);
+
+    fw_location_array[0]=s;
     
     fd=open("dev/mtd-kernel",O_RDONLY);
     while(data_len=read(fd,data,data_len),data_len>0){
@@ -348,10 +302,10 @@ int main(int argc,char **argv){
       printf("current: 0x%06X, fw: 0x%06X, header_crc: 0x%08X, crc: 0x%08X\n",current_location_array[i],fw_location_array[i], header_crc_array[i], crc_array[i]);
     }
 
-    for(i=0;i<4;i++){
+        for(i=0;i<4;i++){
       printf("jump_size: 0x%08X, image_data_size: 0x%08X\n", jump_size_array[i], image_data_size_array[i+1]);
     }
-  }
+  } // end of doing the firmware stuff
 
  verify_only:
   if(verify){
@@ -368,6 +322,8 @@ int main(int argc,char **argv){
     return(1);
   }
 
+  //print_keys();
+
 
   free(p);
   return 0;
@@ -376,6 +332,41 @@ int main(int argc,char **argv){
 /******************************************************************************************/
 /*                                  End of main                                           */
 /******************************************************************************************/
+
+
+void write_hpoa_header(int fd, partition p, int nr_partitions, unsigned char* data){
+
+  
+  int i,j;
+    int remaining_partitions=0;
+  uint32_t jump_size;
+  char *new_version;
+  new_version=calloc(0x10,sizeof(unsigned char));
+  strcpy(new_version,"444");
+  j=0;
+  data[j]=0x01;
+  remaining_partitions=nr_partitions-3;
+  nr_partitions=3;
+  j+=1;      
+  for(i=0;i<nr_partitions;i++){
+    *(data+j)=(p+i)->nr;
+    j+=sizeof(unsigned char);;      
+    jump_size=(p+i)->jump_size;
+    if(!is_bigendian())
+      jump_size = __htobe32(jump_size);
+    memcpy((data+j), &jump_size, sizeof(uint32_t));
+    j+=sizeof(uint32_t);
+    memcpy((data+j), (p+i)->md5, MD5_DIGEST_LENGTH);
+    j+=MD5_DIGEST_LENGTH;
+  }
+
+  j+=7;
+  *(data+j+1)=atoi((new_version+1));
+  *(new_version+1)=0;
+  *(data+j)=atoi((new_version+0));
+  j+=2*sizeof(unsigned char);
+  write(fd,data,HEADER_SIZE);
+}
 
 
 uint32_t  *read_crc32(int fd,uint32_t offset){
@@ -499,6 +490,22 @@ int do_analysis(partition p, char *file_name) {
     n++;
   }while(strlen(partition_selector(*(data + n*0x15 + 1))) >0);
 
+  unsigned int local_b48 = *(uint32_t*)(data+(n+1)*15+6 +0 +4 -1 );
+  unsigned int local_b44 = *(uint32_t*)(data+(n+1)*15+6 +4 +4 -1 );
+  unsigned int local_b40 = *(uint32_t*)(data+(n+1)*15+6 +8 +4 -1);
+
+  if(!is_bigendian()) {
+    local_b48 = __htobe32(local_b48);
+    local_b44 = __htobe32(local_b44);
+    local_b40 = __htobe32(local_b40);
+  }
+
+  
+  //printf("local_b48: 0x%08X\n",local_b48);
+  //printf("local_b44: 0x%08X\n",local_b44);
+  //printf("local_b40: 0x%08X\n",local_b40);
+
+  
   uint32_t ret;
   ret=lseek(fd,partition_offset,SEEK_SET);
   //printf("file_location: 0x%08X\n",ret);
@@ -681,7 +688,10 @@ uint64_t fw_with_fingerprint (char *filename){
       }
       memset(acStack_420,0,0x400);
     }
-    if(uVar1==1)printf("fingerprint Lenghth found\n"); else printf("No Fingerprint Length found\n");
+    if(uVar1==1)
+      printf("fingerprint Lenghth found\n");
+    else
+      printf("No Fingerprint Length found\n");
 
     fclose(file);
   }
@@ -690,8 +700,23 @@ uint64_t fw_with_fingerprint (char *filename){
 
 
 
+int partition_nr_selector(char *name){
+
+  if(strcmp(name,"kernel")==0)      return 0x01;
+  if(strcmp(name,"initrd")==0)      return 0x02;
+  if(strcmp(name,"initrd.mod")==0)  return 0x02;
+  if(strcmp(name,"squashfs")==0)    return 0x03;
+  if(strcmp(name,"uboot")==0)       return 0x04;
+  if(strcmp(name,"kernel-udog")==0) return 0x05;
+  if(strcmp(name,"storage")==0)     return 0x08;
+  if(strcmp(name,"fwmgmt")==0)      return 0x09;
+  if(strcmp(name,"certs")==0)       return 0x0A;
+  if(strcmp(name,"config")==0)      return 0x0B;
+  return -1;
+}
+
 /* FUN_100033a8 */
-char * partition_selector(unsigned char p){
+char * partition_selector(unsigned char p){ //should be partition_name_selector
   char *s;
   /*
   printf(RED);
@@ -1560,7 +1585,7 @@ int verify_mtd_md5sum(char *partition_name,void *param_3){
 
 
   //printf(RED);
-  //printf("open_mtd_for_input_internal, FUN_10002160.\n");
+  //printf("verify_mtd_md5sum, FUN_10002160.\n");
   //printf(DEFAULT);
 
   char *full_path;
@@ -1587,7 +1612,7 @@ int verify_mtd_md5sum(char *partition_name,void *param_3){
     free(full_path);
   }
   else {
-    printf("Verify partition: %s, md5sum: ",full_path);
+    //printf("Verify partition: %s, md5sum: ",full_path);
 
     md5Init(&ctx);
     while((input_size = fread(input_buffer, 1, 1024, file)) > 0){
@@ -1652,7 +1677,7 @@ unsigned int copy_partition_to_mtd_device(int fd,partition p) {
   unsigned int local_38[5];
 
   //printf(RED);
-  //printf("open_mtd_for_output_internal, FUN_10001edc.\n");
+  //printf("copy_partition_to_mtd_device, FUN_10001edc.\n");
   //printf(DEFAULT);
 
   char *full_path;
@@ -1687,7 +1712,7 @@ unsigned int copy_partition_to_mtd_device(int fd,partition p) {
     printf("error opening %s\n",full_path);
   }
   else {
-    printf("Copy partition data to: %s.\n",full_path);
+    //printf("Copy partition data to: %s.\n",full_path);
     iVar7 = 0;
     iVar6 = 0;
     if (0 < p->jump_size) {
@@ -1715,7 +1740,7 @@ LAB_10001f7c:
         }
         iVar7 = iVar7 + sVar3;
 
-	  
+	unsigned int DAT_10022c24=0;
         uVar4 = DAT_10022c24 + sVar3;
         DAT_10022c24 = uVar4;
         if (uVar4 != 0) {
@@ -1723,6 +1748,7 @@ LAB_10001f7c:
           if ((int)uVar4 < 0) {
             uVar8 = FUN_1000ebfc((int)((unsigned long long int)uVar8 >> 0x20),(int)uVar8,0x41f00000,0);
           }
+	  unsigned int DAT_10022c20=0;
 	  iVar1 = DAT_10022c20;
           uVar9 = FUN_1000f6bc(DAT_10022c20);  /* was 1000fbbc */
           if (iVar1 < 0) {
@@ -1882,14 +1908,13 @@ int find_tag_in_file(char *file_name, char *tag, char *param_3, size_t param_4, 
 int em_type(void){  // not used right now
   char local_28 [32];
   int emtype=0;
-  if (DAT_000cbb58 == -1) {
-    local_28[0] = '\0';
-    //find_tag_in_file("/etc/gpio_states","OABOARDTYPE",local_28,0x10,0);
-    emtype=find_tag_in_file("gpio_states","OABOARDTYPE",local_28,0x10,'=');
-    DAT_000cbb58 = emtype;
-  }
-  return DAT_000cbb58;
+  local_28[0] = '\0';
+  //find_tag_in_file("/etc/gpio_states","OABOARDTYPE",local_28,0x10,0);
+  emtype=find_tag_in_file("gpio_states","OABOARDTYPE",local_28,0x10,'=');
+  return emtype;
 }
+
+
 #if 0
 //void do_housekeeping(void){
   /* Start with houskeeping */
@@ -1943,9 +1968,9 @@ int modify_partition(partition p,char *partition_name,int nr_partitions){
   long devnr;
   char loopname[0x100];
 
-  //printf(RED);
-  //printf("modify_initrd.\n");
-  //printf(DEFAULT);
+  printf(RED);
+  printf("modify_partition.\n");
+  printf(DEFAULT);
 
   sprintf(loopname, "/dev/loop%i", get_free_loop());
   //printf("loopname = %s\n", loopname);
@@ -2084,7 +2109,7 @@ int modify_partition(partition p,char *partition_name,int nr_partitions){
   strcat(cmd, partition_name);
   strcat(cmd, " 141208-0921 build\"\' -T ramdisk dev/mtd-");
   strcat(cmd, partition_name);
-  strcat(cmd, ".modified");
+  strcat(cmd, ".mod");
   strcat(cmd," >& /dev/null");
   strcat(cmd, " ; ");
   strcat(cmd,"sync");  
@@ -2101,24 +2126,12 @@ int modify_partition(partition p,char *partition_name,int nr_partitions){
   //printf("%s\n",cmd);
   system(cmd);
 
-#if 0
-  memset(cmd,'\0',0x100);
-  strcpy(cmd, "md5sum dev/mtd-");
-  strcat(cmd, partition_name);
-  strcat(cmd, ".modified");
-  //  strcat(cmd, " >/dev/null");
-  strcat(cmd, " ; ");
-  strcat(cmd, "sync");
-  printf("\n\n%s\n\n",cmd);
-  system(cmd);
-#endif
-
   char* md5_sum;
   md5_sum=calloc(MD5_DIGEST_LENGTH, sizeof(unsigned char));
   char *filename = calloc(0x100,sizeof(char));
   strcpy(filename,"dev/mtd-");
   strcat(filename,partition_name);
-  strcat(filename, ".modified");
+  strcat(filename, ".mod");
   my_md5sum(filename,md5_sum);
 
   
@@ -2135,22 +2148,53 @@ int modify_partition(partition p,char *partition_name,int nr_partitions){
   md5_sum=calloc(MD5_DIGEST_LENGTH, sizeof(unsigned char));
   strcpy(filename,"dev/mtd-");
   strcat(filename,partition_name);
-  strcat(filename, ".modified");
-  my_md5sum(filename,md5_sum);
-  nr_partitions++;
-  memcpy((p+nr_partitions)->md5, md5_sum, MD5_DIGEST_LENGTH);
-  //  printf("\n\nNew md5_sum: ");
-  //for(i=0;i<MD5_DIGEST_LENGTH;i++) printf("%02X",(unsigned char)(p+nr_partitions)->md5[i]);
-  //printf("\n\n");
+  strcat(filename, ".mod");
 
+  // need partition_size to calculate offset and recalculate the header and data crc32
+  // all needs to be put in the patrition struct
+
+  printf("filename: %s\n",filename);
+  int fd;
+  if(fd=open(filename,O_RDONLY), fd<0){
+    printf("error fd: %i\n",fd);
+    exit(-1);
+  }  
+  int file_location;   //moet hier nog 0x40 van af?
+  if(file_location = lseek(fd,0,SEEK_END), file_location <0){
+    printf("file location error: %i\n",file_location);
+    exit(-1);
+  }
+
+  (p+nr_partitions)->offset= (p+1)->offset;
+  (p+nr_partitions)->jump_size=file_location;
+
+  uint32_t crc;
+
+  lseek(fd,1*sizeof(unsigned int),SEEK_SET);
+  read(fd, &crc, sizeof(unsigned int));
+  if(!is_bigendian()) crc = __htobe32(crc);
+  (p+nr_partitions)->header_crc32=crc;
+
+  lseek(fd,6*sizeof(unsigned int),SEEK_SET);
+  read(fd, &crc, sizeof(unsigned int));
+  if(!is_bigendian()) crc = __htobe32(crc);
+  (p+nr_partitions)->data_crc32=crc;
   
+  close(fd);
+  printf("dev/mtd-initrd.mod jumpsize: 0x%X\n", (p+nr_partitions)->jump_size);
+  my_md5sum(filename,md5_sum);
+
+  memcpy((p+nr_partitions)->md5, md5_sum, MD5_DIGEST_LENGTH);
+
   memset(filename,'\0',0x100);
   strcpy(filename,partition_name);
-  strcat(filename, ".modified");
-  strcpy(p->name, filename);
+  strcat(filename, ".mod");
+  strcpy((p+nr_partitions)->name, filename);
+  (p+nr_partitions)->nr = partition_nr_selector((p+nr_partitions)->name);
 
   free(filename);
-    
+
+  nr_partitions++;
   return nr_partitions;
 }
 
@@ -2227,26 +2271,72 @@ int  write_initrd(void){
 
 
 
-size_t FUN_10005d64(int fd,void *param_2,size_t param_3,sha256_ctx *ctx){
-  size_t sVar1;
 
-  printf(RED);
-  printf("FUN_10005d64\n");
+void do_sha256_test(void){
+    
+  printf(BLUE);
+  printf("/*********************************/\n");
+  printf("/*       Start SHA256 test       */\n");
+  printf("/*********************************/\n");
   printf(DEFAULT);
 
+  sha256_ctx ctx;
+  
+  u_int8_t *results;
+
+
+  char *buf;
+  buf=calloc(0x200,1);
+  int n;
+
+  results = calloc(SHA256_DIGEST_SIZE,sizeof(u_int8_t));  
+  strcpy(buf,"Marcel is gek! Wie is er nog meer gek?");
+  printf("sha256 of '%s'\n",buf);
+  n = strlen(buf);
+  
+  sha256_init(&ctx);
+  sha256_update(&ctx, (u_int8_t *)buf, n);
+  sha256_final(&ctx, results);
+
+  /* Print the digest as one long hex value */
+  for (n = 0; n < SHA256_DIGEST_SIZE; n++)
+    printf("%02x", results[n]);
+  putchar('\n');
+
+
+  printf("https://emn178.github.io/online-tools/sha256.html says: \n");
+  printf("8879886cd88241725cfb3af4b25fd2110c553c9e58d193b8b622a9479c761ff8\n");
+
+  printf(BLUE);
+  printf("/*********************************/\n");
+  printf("/*       End SHA256 test         */\n");
+  printf("/*********************************/\n");
+  printf(DEFAULT);
+
+}
+
+size_t FUN_10005d64(int fd,void *buffer,size_t len,sha256_ctx *ctx){
+  size_t sVar1;
+
+  //printf(RED);
+  //printf("FUN_10005d64, len: 0x%lX\n", len);
+  //printf(DEFAULT);
   
   sVar1 = 0xffffffff;
-  if (0 < (int)param_3) {
+  if ((int)len > 0) {
     do {
-      sVar1 = read(fd,param_2,param_3);
+      sVar1 = read(fd,buffer,len);
       if ((int)sVar1 < 1) {
-        return param_3;
+        return len;
       }
-      sha256_update(ctx,param_2,sVar1);
-      param_3 = param_3 - sVar1;
-      param_2 = (void *)((int*)param_2 + sVar1);
-    } while (0 < (int)param_3);
+      sha256_update(ctx,buffer,sVar1);
+      len = len - sVar1;
+      buffer = (void *)((int*)buffer + sVar1);
+    } while ((int)len > 0);
+    //printf("len is not > 0, sha256_update should be finished!\n");
     sVar1 = 0;
+  }else{
+    printf("len is not > 0");
   }
   return sVar1;
 }
@@ -2258,12 +2348,12 @@ uint FUN_10005cdc(int fd,uint param_2,sha256_ctx *ctx){
   size_t sVar2;
   unsigned char auStack_2018 [0x2008];
 
-  printf(RED);
-  printf("FUN_10005cdc\n");
-  printf(DEFAULT);
+  //printf(RED);
+  //printf("FUN_10005cdc\n");
+  //printf(DEFAULT);
   
   uVar1 = 0xffffffff;
-  if (0 < (int)param_2) {
+  if ((int)param_2 >0) {
     do {
       sVar2 = 0x2000;
       if (param_2 < 0x2000) {
@@ -2271,134 +2361,1049 @@ uint FUN_10005cdc(int fd,uint param_2,sha256_ctx *ctx){
       }
       sVar2 = read(fd,auStack_2018,sVar2);
       if ((int)sVar2 < 1) {
+	//printf("return param_2 is 0x%X, is sha256_update finished?\n",param_2);
         return param_2;
       }
       sha256_update(ctx,auStack_2018,sVar2);
       param_2 = param_2 - sVar2;
-    } while (0 < (int)param_2);
+    } while ((int)param_2 > 0);
     uVar1 = 0;
+    //printf("param_2 is not > 0, sha256_update should be finished.\n");
+  }else{
+    printf("param_2 is not > 0\n");
   }
   return uVar1;
 }
 
 
-uint32_t FUN_10005de8(int param_1,unsigned char *param_2,unsigned char *param_3){
+
+/* this dunction does the actual sha256 hash */
+uint32_t FUN_10005de8(int fd,unsigned char *sha256_buffer,unsigned char *digest){
   int n;
+  int len=0;
   bool bVar1;
-  uint32_t uVar2;
+  uint32_t uVar2=0xFFFFFFFF;
   int iVar3;
   size_t sVar4;
-  int *piVar5;
+  int *piVar5=0;
   unsigned char *pbVar6;
-  uint uVar7;
+  uint jump_size_sum;
   int iVar8;
   sha256_ctx ctx;
   uint8_t results[SHA256_DIGEST_SIZE];
-  unsigned char uStack_58[0x10]; // ustack_58[0], only need 0x0e bytes
-  //  unsigned char  local_57;   // uStack_58[1]
-  unsigned char uStack_48[20];   // uStack_48[0], only need 0x15 bytes
-  //int local_47;                // uStack_48[1] 
+  unsigned char buffer[0x20];      // ustack_58[0], only need 0x0e bytes
+  //  unsigned char  local_57;     // uStack_58[1]
+  unsigned int uStack_48[0x30];    // uStack_48[0], only need 0x15 bytes
+  //int local_47;                  // uStack_48[1] 
 
-  printf(RED);
-  printf("FUN_10005de8\n");
-  printf(DEFAULT);
+  //printf(RED);
+  //printf("FUN_10005de8\n");
+  //printf(DEFAULT);
 
+  //line_print_16_bytes(sha256_buffer,HEADER_SIZE);
   
+#if 0
+  printf("file_location: 0x%lX\n",lseek(fd,0,SEEK_CUR));
+  sha256_init(&ctx);
+  while(len=read(fd,buffer,0x0E),len>0){
+    sha256_update(&ctx,buffer, len);
+  }
+
+  printf("file_location: 0x%lX\n",lseek(fd,0,SEEK_CUR));
+  sha256_final(&ctx,digest); //was sha256_Final(param_3,&SStack_c8);
+  //line_print_16_bytes(digest,4*SHA256_DIGEST_SIZE);
+  //line_print_16_bytes(sha256_buffer+0x55,4*SHA256_DIGEST_SIZE);
+
+#endif
+
+#if 1 
   pbVar6 = (unsigned  char *)0x0;
   uVar2 = 0xffffffff;
-  if (((-1 < param_1) && (param_2 != (unsigned char *)0x0)) && (*param_2 - 1 < 2)) {
+  /* the if case below should alwase be true */
+  if (((fd > -1) && (sha256_buffer != (unsigned char *)0x0)) && (*sha256_buffer - 1 < 2)) {
     iVar8 = 0;
     sha256_init(&ctx);
     bVar1 = false;
+
     do {
       iVar8 = iVar8 + 1;
-      if ((bVar1) && (param_2[0x40] == 0)) {
-        pbVar6 = param_2 + 0x45;
+      if ((bVar1) && (sha256_buffer[0x40] == 0)) {
+        pbVar6 = sha256_buffer + 0x45;
         break;
       }
       bVar1 = iVar8 == 3;
     } while (iVar8 < 4);
-    piVar5 = (int *)(param_2 + 2);
+
+    piVar5 = (int *)(sha256_buffer + 2); // jump_size location
     iVar8 = 4;
-    uVar7 = 0;
+    jump_size_sum = 0;
+
     do {
       iVar3 = *piVar5;
-      piVar5 = (int *)((int*)piVar5 + 0x15);
-      uVar7 = uVar7 + iVar3;
+      if(!is_bigendian()) iVar3 = __htobe32(iVar3);
+      piVar5 = (int *)((char*)piVar5 + 0x15); // goto next jump_size location
+      jump_size_sum = jump_size_sum + iVar3;  // sum of jump size
       iVar8 = iVar8 + -1;
-    } while (iVar8 != 0);
-    uVar7 = FUN_10005cdc(param_1,uVar7,&ctx);
+      //printf("piVar5: 0x%08X, iVar3: 0x%08X, uVar7: 0x%X\n",piVar5, iVar3, jump_size_sum);
+    } while (iVar8 != 0);  //loops 4 times, same as in analysis
+
+    /* i can get jumpsize sum from partition struct */
+
+    //printf("\njump_size_sum: 0x%X\n",jump_size_sum);
+    jump_size_sum = FUN_10005cdc(fd,jump_size_sum,&ctx);  //do the sha256_update over size uVar7
+    //printf("after FUN_10005cdc jump_size_sum: 0x%X\n",jump_size_sum); // should be 0
+
     uVar2 = 0xffffffff;
-    if (uVar7 == 0) {
-      if ((pbVar6 != (unsigned char *)0x0) && (*(int *)(pbVar6 + 8) != 0)) {
+
+    int pbVar6_plus_8 = *(int *)(pbVar6 + 8);
+    if(!is_bigendian()) pbVar6_plus_8 = __htobe32(pbVar6_plus_8);
+    //printf("jump_size_sum: 0x%X, pbVar6_plus_8: 0x%X\n",jump_size_sum,pbVar6_plus_8 );
+    //printf("pbVar6: 0x%08X\n",pbVar6);
+    
+    if (jump_size_sum == 0) {
+      if ((pbVar6 != (unsigned char *)0x0) && (pbVar6_plus_8 != 0)) {
 	/* read 0xe bytes and store them at uStack_58 */
-        sVar4 = FUN_10005d64(param_1,&uStack_58[0],0xe,&ctx);
+	/* do the sha256_update */
+        sVar4 = FUN_10005d64(fd,&buffer[0],0xe,&ctx);
         if (sVar4 != 0) {
+	  printf("sVar4 is not 0\n");
           return 0xffffffff;
         }
-        uVar7 = 0;
+        jump_size_sum = 0;
         iVar8 = 0;
-        if (uStack_58[1] != 0) {
+        if (buffer[1] != 0) {
+
           do {
             iVar8 = iVar8 + 1;
-            sVar4 = FUN_10005d64(param_1,&uStack_48[0],0x15,&ctx);
-            if (sVar4 != 0) {
-              return 0xffffffff;
-            }
-            uVar7 = uVar7 + uStack_48[1];
-          } while (iVar8 < (int)(uint)uStack_58[1]);
+	    /* do the sha256_update */
+            sVar4=FUN_10005d64(fd,&uStack_48[0],0x15,&ctx); 
+	    if (sVar4 != 0) {
+	      printf("sVar4 is not 0\n");
+	      return 0xffffffff;
+	    }
+
+	    unsigned int new_jump_size = *(uint*)((uint8_t*)uStack_48+1);
+	    if(!is_bigendian()) new_jump_size = __htobe32(new_jump_size);
+	    //printf("new jump_size: 0x%08X\n", new_jump_size);
+            jump_size_sum = jump_size_sum + new_jump_size; 
+	    //printf("iVar8: %i, (int)(uint)buffer[i]: 0x%X\n",iVar8,(int)(uint)buffer[1]);
+          } while ((int)(uint)buffer[1] > iVar8);
+	  
         }
-        uVar7 = FUN_10005cdc(param_1,uVar7,&ctx);
-        if (uVar7 != 0) {
+
+	/* jump_size_sum should be >0 otherwise 5cdc returns 0xFFFFFFFF */
+        jump_size_sum = FUN_10005cdc(fd,jump_size_sum,&ctx);
+	//printf("jump_size_sum: 0x%X, need to be zero!!!, otherwise return -1\n",jump_size_sum);
+
+        if (jump_size_sum != 0) {
+	  printf("jump_size_sum is not 0\n");
           return 0xffffffff;
         }
       }
-      sha256_final(&ctx,param_3); //was sha256_Final(param_3,&SStack_c8);
 
-      /* Print the digest as one long hex value */
-      for (n = 0; n < SHA256_DIGEST_SIZE; n++)
-	printf("%02x", param_3[n]);
-      putchar('\n');
-
-      
+      sha256_final(&ctx,digest); //was sha256_Final(param_3,&SStack_c8);
       uVar2 = 0;
-    }
+    }else{
+      printf("jump_size_sum is not 0!!!\n");
+    }// end of if (jump_size_sum == 0)
   }
+#endif
+
   return uVar2;
 }
 
 
 
-uint verify_signature(int fd ,__off_t *param_2,unsigned char *param_3,int param_4){
+void line_print_16_bytes(unsigned char * data,int len){
+  int i;
+
+  printf(RED);
+  printf("line_print_16_bytes\n");
+  printf(DEFAULT);
+
+  for(i=0;i<len;i++){
+    printf("%02X ",*(data+i));
+    if(((i+1)%0x10)==0) printf("\n");
+  }
+  printf("\n");
+}
+
+
+void FUN_10008f90(void *param_1,int param_2,size_t param_3){
+
+  printf(RED);
+  printf("FUN_10008f90\n");
+  printf(DEFAULT);
+
+  if (param_3 != 0) {
+    memset(param_1,param_2,param_3);
+  }
+  return;
+}
+
+
+uint32_t FUN_1000a4c0(int *param_1,int *param_2,int param_3){
+  int i;
+  printf(RED);
+  printf("FUN_1000a4c0\n");
+  printf(DEFAULT);
+  
+  i=  param_3 -1;
+  while( true ) {
+    if (i < 0) {
+      return 0;
+    }
+    if (*(uint *)(param_2 + i*4) < *(uint *)(param_1 + i*4)) break;
+    if (*(uint *)(param_1 + i*4) < *(uint *)(param_2 + i*4)) return 0xffffffff;
+    i= i -1;
+  }
+  return 1;
+}
+
+
+int FUN_1000a6bc(int *param_1,int param_2){  //very starnge function
+  int i;
+
+  printf(RED);
+  printf("FUN_1000a6bc\n");
+  printf(DEFAULT);
+  
+  for(i = param_2 + -1; ( (-1 < i) && ((i * 4 + param_1) == 0)); i = i -1) {
+  }
+  return i + 1;
+}
+
+
+
+uint FUN_10009824(int *param_1,int *param_2,uint param_3,uint param_4){
+  uint local_24;
+  uint i;
+  
+  uint local_18;
+  uint local_14;
+  
+  printf(RED);
+  printf("FUN_10009824\n");
+  printf(DEFAULT);
+
+  if (param_3 < 0x20) {
+    local_24 = 0;
+    for (i = 0; i < param_4; i = i + 1) {
+      
+      local_14 = *(uint *)(i*4 + param_2);
+      *(uint *)(i*4 + param_1) = local_14 << (param_3 & 0x3f) | local_24;
+      
+      if (param_3 == 0) {
+        local_14 = 0;
+      }
+      else {
+        local_14 = local_14 >> (0x20 - param_3 & 0x3f);
+      }
+      local_24 = local_14;
+    }
+    local_18 = local_24;
+  }
+  else {
+    local_18 = 0;
+  }
+  return local_18;
+}
+
+
+uint FUN_10009924(int param_1,int param_2,uint param_3,int param_4){
+  uint local_24;
+  int  local_20;
+  uint local_18;
+  uint local_14;
+  
+  printf(RED);
+  printf("FUN_10009924\n");
+  printf(DEFAULT);
+
+  if (param_3 < 0x20) {
+    local_24 = 0;
+    for (local_20 = param_4 + -1; -1 < local_20; local_20 = local_20 + -1) {
+      local_14 = *(uint *)(local_20 * 4 + param_2);
+      *(uint *)(local_20 * 4 + param_1) = local_14 >> (param_3 & 0x3f) | local_24;
+      if (param_3 == 0) {
+        local_14 = 0;
+      }
+      else {
+        local_14 = local_14 << ((0x20 - param_3) & 0x3f);
+      }
+      local_24 = local_14;
+    }
+    local_18 = local_24;
+  }
+  else {
+    local_18 = 0;
+  }
+  return local_18;
+}
+
+void FUN_1000b104(int *param_1,int *param_2,uint param_3) {
+  ushort uVar1;
+  uint uVar2;
+  int iVar3;
+  uint     local_28;
+  uint32_t local_24;
+  ushort   local_18;
+  ushort   local_16;
+  
+  printf(RED);
+  printf("FUN_1000b104\n");
+  printf(DEFAULT);
+
+  uVar1 = (ushort)(param_3 >> 0x10);
+  local_24 = param_2[1];
+  if (uVar1 == 0xffff) {
+    local_18 = (ushort)(local_24 >> 0x10);
+  }
+  else {
+    local_18 = (ushort)(local_24 / (uVar1 + 1));
+  }
+  uVar2 = (uint)local_18 * (param_3 & 0xffff);
+  local_28 = *param_2 + uVar2 * -0x10000;
+  if (uVar2 * -0x10000 - 1 < local_28) {
+    local_24 = local_24 - 1;
+  }
+  local_24 = (local_24 - (uVar2 >> 0x10)) - (uint)local_18 * (uint)uVar1;
+  while ((uVar1 < local_24 || ((local_24 == uVar1 && (param_3 << 0x10 <= local_28))))) {
+    local_28 = local_28 + (param_3 & 0xffff) * -0x10000;
+    if ((param_3 & 0xffff) * -0x10000 - 1 < local_28) {
+      local_24 = local_24 - 1;
+    }
+    local_24 = local_24 - uVar1;
+    local_18 = local_18 + 1;
+  }
+  if (uVar1 == 0xffff) {
+    local_16 = (local_24>>16)&0xFFFF;
+  }
+  else {
+    local_16 = (ushort)((local_24 * 0x10000 + (local_28 >> 0x10)) / (uVar1 + 1));
+  }
+  iVar3 = (uint)local_16 * (param_3 & 0xffff);
+  uVar2 = (uint)local_16 * (uint)uVar1;
+  local_28 = local_28 - iVar3;
+  if (-iVar3 - 1U < local_28) {
+    local_24 = local_24 - 1;
+  }
+  local_28 = local_28 + uVar2 * -0x10000;
+  if (uVar2 * -0x10000 - 1 < local_28) {
+    local_24 = local_24 - 1;
+  }
+  local_24 = local_24 - (uVar2 >> 0x10);
+  while ((local_24 != 0 || ((true && (param_3 <= local_28))))) {
+    local_28 = local_28 - param_3;
+    if (-param_3 - 1 < local_28) {
+      local_24 = local_24 + -1;
+    }
+    local_16 = local_16 + 1;
+  }
+  *param_1 = (uint)local_18 * 0x10000 + (uint)local_16;
+  return;
+}
+
+
+
+int FUN_10009580(int *param_1,int *param_2,int *param_3,uint param_4){
+  uint local_28;
+  int  local_24;
+  uint i;
+  static int once=0;
+
+  if(once==0){
+    printf(RED);
+    printf("FUN_10009580\n");
+    printf(DEFAULT);
+    once=1;
+  }
+  local_24 = 0;
+  for (i= 0; i < param_4; i = i + 1) {
+    local_28 = *(int *)(i*4 + param_2) - local_24;
+    if (-local_24 - 1U < local_28) {
+      local_28 = -*(int *)(i*4 + param_3) - 1;
+    }
+    else {
+      local_28 = local_28 - *(int *)(i*4 + param_3);
+      if (-*(int *)(i*4 + param_3) - 1U < local_28) {
+        local_24 = 1;
+      }
+      else {
+        local_24 = 0;
+      }
+    }
+    *(uint *)(i*4 + param_1) = local_28;
+  }
+  return local_24;
+}
+
+
+void FUN_1000af94(uint *param_1,uint param_2,uint param_3){
+  ushort uVar1;
+  ushort uVar2;
+  uint uVar3;
+  uint uVar4;
+  
+  //printf(RED);
+  //printf("FUN_1000af94\n");
+  //printf(DEFAULT);
+
+  uVar1 = (ushort)(param_2 >> 0x10);
+  uVar2 = (ushort)(param_3 >> 0x10);
+  *param_1 = (param_2 & 0xffff) * (param_3 & 0xffff);
+  uVar3 = (uint)uVar1 * (param_3 & 0xffff);
+  param_1[1] = (uint)uVar1 * (uint)uVar2;
+  uVar4 = (param_2 & 0xffff) * (uint)uVar2 + uVar3;
+  if (uVar4 < uVar3) {
+    param_1[1] = param_1[1] + 0x10000;
+  }
+  uVar3 = *param_1 + uVar4 * 0x10000;
+  *param_1 = uVar3;
+  if (uVar3 < uVar4 * 0x10000) {
+    param_1[1] = param_1[1] + 1;
+  }
+  param_1[1] = param_1[1] + (uVar4 >> 0x10);
+  return;
+}
+
+int FUN_1000a8a4(int *param_1,int *param_2,uint param_3,int *param_4,uint len){
   uint uVar1;
-  __off_t _Var2;
+  uint local_24;
+  uint local_20[0x100];  // local_20[0]
+  int local_1c;      // local_20[1]
+  uint i;
+  int local_14;
+  
+  printf(RED);
+  printf("FUN_1000a8a4\n");
+  printf(DEFAULT);
+
+  if (param_3 == 0) {
+    local_14 = 0;
+  }else {
+    local_24 = 0;
+    for (i= 0; i < len; i = i + 1) {
+      //printf("before af94\n");
+      FUN_1000af94(&local_20[0],param_3,*(uint *)(param_4 + i*4));
+      //printf("after af94\n");
+
+      uVar1 = *(int *)(param_2 + i*4) - local_24;
+      //printf("test\n");
+      *(uint *)(param_1 + i*4) = uVar1;
+      local_24 = (uint)(-local_24 - 1 < uVar1);
+      uVar1 = *(int *)(param_1 + i*4) - local_20[0];
+      *(uint *)(param_1 + i*4) = uVar1;
+      if (-local_20[0] - 1 < uVar1) {
+        local_24 = local_24 + 1;
+      }
+      //printf("after for loop\n");
+      local_24 = local_24 + local_20[1];
+    }
+    local_14 = local_24;
+  }
+  return local_14;
+}
+
+
+uint FUN_1000aa18(uint param_1){
+  uint i;
+  uint local_14;
+  
+  printf(RED);
+  printf("FUN_1000aa18\n");
+  printf(DEFAULT);
+
+  local_14 = 0;
+  printf("param_1: %i\n",param_1);
+
+  for (i = param_1; ((local_14 < 0x20) && (i != 0)); i = i >> 1) {
+    //printf("i: %i\n",i);
+    local_14 = local_14 + 1;
+  }
+  return local_14;
+}
+
+
+
+void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *param_5,uint param_6){
+  int iVar1;
+  int iVar2;
+  uint uVar3;
+  int iVar4;
+  uint local_1d0;
+  uint auStack_1cc [0x100];
+  int iStack_bc;
+  unsigned char auStack_b8 [144];
+  int local_28;
+  int i;
+  uint local_20;
+  uint local_1c;
+  
+  printf(RED);
+  printf("FUN_10009a24\n");
+  printf(DEFAULT);
+
+  local_20 = FUN_1000a6bc(param_5,param_6);
+  printf("9a24 after FUN_1000a6bc\n");  
+  
+  if (local_20 != 0) {
+    
+    //printf("9a24 before FUN_1000aa18\n");
+    //printf("local_20: %i\n",local_20);
+
+    local_1c = FUN_1000aa18(*(uint *)(local_20 * 4 + param_5 + -4));
+
+    
+    //printf("9a24 after FUN_1000aa18\n");  
+        local_1c = 0x20 - local_1c;
+    FUN_10009374((auStack_1cc + 1),local_20);
+    //printf("9a24 after FUN_10009374\n");  
+    uVar3 = FUN_10009824((auStack_1cc + 1),param_3,local_1c,param_4);
+    //printf("9a24 after FUN_10009824\n");  
+    auStack_1cc[param_4 + 1] = uVar3;
+    FUN_10009824(auStack_b8,param_5,local_1c,local_20);
+    local_28 = (&iStack_bc)[local_20];
+    FUN_10009374(param_1,param_4);
+    printf("9a24 param_4: %i\n",param_4);
+    for (i = param_4 - local_20; i > -1; i = i -1) {
+      if (local_28 == -1) {
+        local_1d0 = auStack_1cc[i + local_20 + 1];
+      }
+      else {
+        FUN_1000b104((int *)&local_1d0,(int *)(auStack_1cc + i + local_20),local_28 + 1);
+	printf("9a24 after FUN_1000b104\n");  
+
+      }
+      iVar1 = i + local_20;
+      iVar2 = i + local_20;
+      iVar4 = FUN_1000a8a4((auStack_1cc + i + 1),(auStack_1cc + i + 1),local_1d0,auStack_b8,local_20);
+      auStack_1cc[iVar1 + 1] = auStack_1cc[iVar2 + 1] - iVar4;
+      //printf("i: %i\n",i);
+
+      
+      /* while loops takes infinite to finish */
+      while ((auStack_1cc[i + local_20 + 1] != 0 || (iVar1 = FUN_1000a4c0((auStack_1cc + i + 1),auStack_b8,local_20), -1 < iVar1))) {
+        local_1d0 = local_1d0 + 1;
+        iVar1 = i + local_20;
+        iVar2 = i + local_20;
+        iVar4 = FUN_10009580((auStack_1cc + i + 1),(auStack_1cc + i + 1),auStack_b8,local_20);
+        auStack_1cc[iVar1 + 1] = auStack_1cc[iVar2 + 1] - iVar4;
+      }
+
+
+      
+      *(uint *)(param_1 + i*4) = local_1d0;
+    }
+    FUN_10009374(param_2,param_6);
+    FUN_10009924(param_2,(int)(auStack_1cc + 1),local_1c,local_20);
+    FUN_10008f90(auStack_1cc + 1,0,0x10c);
+    FUN_10008f90(auStack_b8,0,0x84);
+  }
+  return;
+}
+
+
+
+void FUN_10009db8(int *param_1,int *param_2,uint param_3,int *param_4,uint param_5){
+  unsigned char auStack_120 [284];
+
+  printf(RED);
+  printf("FUN_10009db8\n");
+  printf(DEFAULT);
+  
+  //printf("9db8 param_4: %i\n",param_4);
+
+  FUN_10009a24(auStack_120,param_1,param_2,param_3,param_4,param_5);
+  printf("9db8 after FUN_10009a24\n");
+  FUN_10008f90(auStack_120,0,0x108);
+  printf("9db8 after FUN_10008f90\n");
+
+  return;
+}
+
+
+// both two functions below are almost the same ??????????????????
+uint FUN_1000a738(int *param_1,int *param_2,uint param_3,int *param_4,uint param_5){
+  uint uVar1;
+  uint local_24;
+  uint local_20[2]; // local_20[0]
+  //int local_1c;   // local_20[1]
+  uint i;
+  uint local_14;
+  
+  //printf(RED);
+  //printf("FUN_1000a738\n");
+  //printf(DEFAULT);
+
+  if (param_3 == 0) {
+    local_14 = 0;
+  }
+  else {
+    local_24 = 0;
+    //printf("param_5: %i\n",param_5);
+    for (i = 0; i < param_5; i = i + 1) {
+      //printf("i: 0x%04X, ",i);
+      FUN_1000af94(&local_20[0],param_3,*(uint *)(i * 4 + param_4));
+      uVar1 = *(int *)(param_2 + i*4) + local_24;
+      *(uint *)(param_1 + i*4) = uVar1;
+      local_24 = (uint)(uVar1 < local_24);
+      uVar1 = *(int *)(param_1 + i*4) + local_20[0];
+      *(uint *)(param_1 + i*4) = uVar1;
+      if (uVar1 < local_20[0]) {
+        local_24 = local_24 + 1;
+      }
+      local_24 = local_24 + local_20[1];
+    }
+    local_14 = local_24;
+  }
+  return local_14;
+}
+
+
+void FUN_100096ac(int *param_1,int *param_2,int *param_3,int param_4){
+  int iVar1;
+  int iVar2;
+  uint uVar3;
+  int aiStack_138 [0x100]; // was 68
+  uint local_28;
+  uint local_24;
+  uint i;
+  
+  printf(RED);
+  printf("FUN_100096ac\n");
+  printf(DEFAULT);
+
+  FUN_10009374(aiStack_138,param_4 << 1);
+  local_28 = FUN_1000a6bc(param_2,param_4);
+  local_24 = FUN_1000a6bc(param_3,param_4);
+  //printf("local_28: %i\n",local_28);
+  for (i = 0; i < local_28; i = i + 1) {
+    //printf("96ac, i: %i, ",i);
+    iVar1 = local_24 + i;
+    iVar2 = local_24 + i;
+    uVar3 = FUN_1000a738((aiStack_138 + i),(aiStack_138 + i),(i * 4 + param_2),param_3,local_24);
+    aiStack_138[iVar1] = aiStack_138[iVar2] + uVar3;
+  }
+  FUN_100092f8(param_1,aiStack_138,param_4 << 1);
+  FUN_10008f90(aiStack_138,0,0x108);
+  return;
+}
+
+
+void FUN_10009e2c(int *param_1,int *param_2,int *param_3,int *param_4,uint param_5){
+  unsigned char auStack_120 [284];
+  
+  printf(RED);
+  printf("FUN_10009e2c\n");
+  printf(DEFAULT);
+
+  FUN_100096ac(auStack_120,param_2,param_3,param_5);
+  //printf("9e2c after FUN_100096ac\n");
+  //printf("9e2c param_4: %i\n",param_4);
+
+  FUN_10009db8(param_1,auStack_120,param_5 << 1,param_4,param_5);
+  printf("9e2c after FUN_10009db8\n");
+  FUN_10008f90(auStack_120,0,0x108);
+  printf("9e2c after FUN_10008f90\n");
+
+  return;
+}
+
+
+
+
+/* FUN_10008264 */
+void kind_of_memset(unsigned int *p1,unsigned char value,uint len){
+  unsigned int i;
+  //printf(RED);
+  //printf("kind_of_memset, FUN_10008264.\n");
+  //printf(DEFAULT);
+  
+  for (i=0; i < len; i=i+1) {
+    *(unsigned char*)((unsigned char*)p1 + i) = value;
+  }
+  return;
+}
+
+
+/* FUN_100081f0 */
+void kind_of_memcpy(unsigned int *p1,unsigned int *p2,uint len){
+  unsigned int i;
+
+  //printf(RED);
+  //printf("kind_of_memcpy, FUN_100081f0.\n");
+  //printf(DEFAULT);
+
+  for (i=0; i<(int)len; i++) {
+    *(p1 + i) = *(p2 + i);
+  }
+  return;
+}
+
+
+void FUN_100092f8(int *param_1,int *param_2,uint param_3){
+  uint i;
+
+  printf(RED);
+  printf("FUN_100092f8\n");
+  printf(DEFAULT);
+
+  for (i = 0; i < param_3; i = i + 1) {
+    *(uint32_t *)(param_1 + i*4) = *(uint32_t *)(param_2 + i*4 );
+  }
+  return;
+}
+
+
+void FUN_10009374(int *param_1,uint len){
+  uint i;
+  
+  printf(RED);
+  printf("FUN_10009374\n");
+  printf(DEFAULT);
+
+  for (i= 0; i< len; i = i + 1) {
+    *(uint32_t *)(param_1 + i*4) = 0;
+  }
+  return;
+}
+
+
+void FUN_10009ebc(int *param_1,int *param_2,int *param_3,int param_4,int *param_5,uint param_6){
+  int iVar1;
+  unsigned char auStack_2d4[100];
+  unsigned char auStack_250[132];
+  unsigned char auStack_1cc[132];
+  unsigned char auStack_148[136];
+  uint local_c0;
+  uint32_t local_b8 [36];
+  int local_28;
+  uint local_24;
+  uint local_20;
+  uint local_1c;
+
+  printf(RED);
+  printf("FUN_10009edc\n");
+  printf(DEFAULT);
+  
+  //printf("9ebc param_5: %i\n",param_5);
+  FUN_100092f8(auStack_250,param_2,param_6);
+
+  FUN_10009e2c(auStack_1cc,auStack_250,param_2,param_5,param_6);
+  //printf("after FUN_10009e2c\n");
+  FUN_10009e2c(auStack_148,auStack_1cc,param_2,param_5,param_6);
+  //printf("after FUN_10009e2c\m");
+
+  FUN_10009374(local_b8,param_6);
+  local_b8[0] = 1;
+  iVar1 = FUN_1000a6bc(param_3,param_4);
+  local_28 = iVar1;
+  while (local_28 = local_28 + -1, -1 < local_28) {
+    local_c0 = *(uint *)(local_28 * 4 + param_3);
+    local_24 = 0x20;
+    if (local_28 == iVar1 + -1) {
+      for (; local_c0 >> 0x1e == 0; local_c0 = local_c0 << 2) {
+        local_24 = local_24 - 2;
+      }
+    }
+
+    for (local_20 = 0; local_20 < local_24; local_20 = local_20 + 2) {
+
+      FUN_10009e2c((int)local_b8,(int)local_b8,(int)local_b8,param_5,param_6);
+      FUN_10009e2c((int)local_b8,(int)local_b8,(int)local_b8,param_5,param_6);
+      local_1c = local_c0 >> 0x1e;
+      if (local_1c != 0) {
+        FUN_10009e2c((int)local_b8,(int)local_b8,(int)(auStack_2d4 + local_1c * 0x84),param_5,param_6);
+      }
+      local_c0 = local_c0 << 2;
+    }
+  }
+  FUN_100092f8(param_1,local_b8,param_6);
+  FUN_10008f90(auStack_250,0,0x18c);
+  FUN_10008f90(local_b8,0,0x84);
+  return;
+}
+
+
+void FUN_100091dc(int param_1,int param_2,int param_3,uint param_4){
+  uint uVar1;
+  int local_24;
+  uint local_20;
+  uint local_1c;
+
+  printf(RED);
+  printf("FUN_100091dc\n");
+  printf(DEFAULT);
+
+  local_20 = 0;
+  local_24 = param_2 + -1;
+  while ((local_20 < param_4 && (-1 < local_24))) {
+    uVar1 = *(uint *)(local_20 * 4 + param_3);
+    for (local_1c = 0; (-1 < local_24 && (local_1c < 0x20)); local_1c = local_1c + 8) {
+      *(char *)(param_1 + local_24) = (char)(uVar1 >> (local_1c & 0x3f));
+      local_24 = local_24 + -1;
+    }
+    local_20 = local_20 + 1;
+  }
+  for (; -1 < local_24; local_24 = local_24 + -1) {
+    *(unsigned char *)(param_1 + local_24) = 0;
+  }
+  return;
+}
+
+
+void FUN_100090a4(int *param_1,uint param_2,int *key,int len){
+  uint local_28;
+  int local_24;
+  uint local_20;
+  uint local_1c;
+
+  printf(RED);
+  printf("FUN_100090a4\n");
+  printf(DEFAULT);
+
+  local_20 = 0;
+  local_24 = len - 1;
+  while ((local_20 < param_2 && (-1 < local_24))) {
+    local_28 = 0;
+    for (local_1c = 0; (-1 < local_24 && (local_1c < 0x20)); local_1c = local_1c + 8) {
+      local_28 = local_28 | (uint)*(unsigned char *)(key + local_24) << (local_1c & 0x3f);
+      local_24 = local_24 + -1;
+    }
+    *(uint *)(param_1 + local_20 * 4) = local_28;
+    local_20 = local_20 + 1;
+  }
+  for (; local_20 < param_2; local_20 = local_20 + 1) {
+    *(uint32_t*)(param_1 + local_20 * 4 ) = 0;
+  }
+  return;
+}
+
+
+uint32_t FUN_100089b8(unsigned char *param_1,uint *param_2,unsigned char *sha256_buffer,int len,int *key_address){
+  int iVar1;
+  unsigned char auStack_260[144];
+  unsigned char auStack_1d0[144];
+  unsigned char auStack_140[144];
+  unsigned char auStack_0b0[144];
+  int local_20;
+  uint local_1c;
+  uint32_t local_18;
+  
+  printf(RED);
+  printf("FUN_100089b8\n");
+  printf(DEFAULT);
+
+  FUN_100090a4(auStack_140, 0x21,sha256_buffer            ,len);
+  FUN_100090a4(auStack_0b0, 0x21,(int)(key_address + 1)   ,0x80);
+  FUN_100090a4(auStack_1d0, 0x21,(int)(key_address + 0x21),0x80);
+  
+  local_1c = FUN_1000a6bc(auStack_0b0,0x21);
+  local_20 = FUN_1000a6bc(auStack_1d0,0x21);
+
+  iVar1 = FUN_1000a4c0(auStack_140,auStack_0b0,local_1c);
+
+  if (iVar1 < 0) {
+    FUN_10009ebc(auStack_260,auStack_140,auStack_1d0,local_20,auStack_0b0,local_1c);
+    unsigned int ui = 7;
+    *param_2 = (*key_address + ui) >> 3;  
+    FUN_100091dc(param_1,*param_2,(int)auStack_260,local_1c);
+    FUN_10008f90(auStack_260,0,0x84);
+    FUN_10008f90(auStack_140,0,0x84);
+    local_18 = 0;
+  }
+  else {
+    local_18 = 0x401;
+  }
+  return local_18;
+}
+
+
+
+
+
+#if 1
+
+int FUN_10008474(void *param_1,size_t *len_1,unsigned char *sha256_buffer,uint len_2,int *key_address){
+  uint uVar1;
+  unsigned char *pcVar2;
+  
+  unsigned char local_a0[128]; //probably key because of length
+  uint local_20;
+  uint local_1c;
+  uint local_18;
+  int  local_14;
+
+  unsigned int ui=7;
+  printf(RED);
+  printf("FUN_10008474\n");
+  printf(DEFAULT);
+  
+  local_1c = (*key_address + ui) >> 3;
+  if (local_1c < len_2) {
+    local_14 = 0x406;
+  }else{
+    local_14 = FUN_100089b8(local_a0,&local_18,sha256_buffer,len_2,key_address);
+    if (local_14 == 0) {
+      printf("local_14==0\n");
+      exit(-1);
+      if (local_18 == local_1c) {
+        if ((local_a0[0] == '\0') && (local_a0[1] == '\x01')) {
+          for (local_20 = 2; (uVar1 = local_20, local_20 < local_1c - 1 && (local_a0[local_20] == -1)); local_20 = local_20 + 1) {
+          }
+          pcVar2 = &local_a0[0] + local_20;
+          local_20 = local_20 + 1;
+          if (*pcVar2 == '\0') {
+            *len_1 = local_1c - local_20;
+            if (local_1c < *len_1 + 0xb) {
+              local_14 = 0x401;
+            }
+            else {
+              FUN_10008fe4(param_1,local_a0 + uVar1 + 1,*len_1);
+              FUN_10008f90(local_a0,0,0x80);
+              local_14 = 0;
+            }
+          }
+          else {
+            local_14 = 0x401;
+          }
+        }
+        else {
+          local_14 = 0x401;
+        }
+      }
+      else {
+        local_14 = 0x406;
+      }
+    }
+  }
+  return local_14;
+}
+
+#endif
+
+
+unsigned char FUN_10005f64(unsigned char *sha256_buffer,uint len,unsigned char *digest,size_t digest_len,int add_dev_key,int param_6) {
+  bool bVar1=false;
+  int param2=0;
+  int iVar2;
+  int nr_keys;
+  int iVar4;
+  int *key_address[8];
+  unsigned char abStack_58 [32];
+  size_t len_0[3];
+
+  printf(RED);
+  printf("FUN_10005f64\n");
+  printf(DEFAULT);
+  
+
+  memset(key_address,0,0x20);
+  nr_keys = 2; 
+  key_address[0] = (int *)data_10022860;
+  key_address[1] = (int *)data_10022964;
+  if (add_dev_key != 0) {
+    nr_keys = 3;
+    printf("Adding the developer key to the keyring. ");
+    printf("Do not do this on production releases!\n");
+    key_address[2] = (int *)data_1002275c;  //must be key!!
+  }
+  
+  bVar1 = false;
+  len_0[0] = 0x20;
+  iVar2 = 0;
+  do {
+    memset(abStack_58,0,len_0[0]);  // abStack_58 all zeors
+    
+    param2 = FUN_10008474(abStack_58,len_0,sha256_buffer,len,key_address[iVar2]);
+    
+    iVar4 = iVar2 + 1;
+    if (param_6 > 2) {
+      printf("[%d] - %d, digest_size=%ld \n",iVar2,param2,len_0[0]);
+      /* should print below to the keyring i guess */
+      line_print_16_bytes(sha256_buffer,len);
+      line_print_16_bytes(abStack_58,len_0[0]);  
+      line_print_16_bytes(digest,digest_len);
+    }
+
+    if (param2 == 0) {
+      iVar2 = memcmp(abStack_58,digest,digest_len); // compare digest with abStack_58
+      bVar1 = iVar2 == 0;                           // digest is equal to abStack_58
+    }
+    iVar2 = iVar4;
+  } while (!bVar1 && iVar4 < nr_keys);
+  
+  if (param_6 != 0) {
+    if (!bVar1) {
+      printf("digest does not match abStack_58!\n");
+    }else {
+      printf("successful! Key%d\n",iVar4);
+    }
+  }
+
+  return bVar1 ^ 1;
+}
+
+
+
+uint verify_signature(int fd, __off_t *param_2       ,unsigned char *sha256_buffer,int param_4,int param_5){
+  int i;
+  uint uVar1;
+  __off_t file_location;
   int iVar3;
   __off_t _Var4;
-  unsigned char bVar5;
-  unsigned char abStack_48 [48];
+  
+  unsigned char *digest; //abStack_48[48]
+  digest = calloc(4*SHA256_DIGEST_SIZE, sizeof(unsigned char));
 
+  //unsigned char output[2 * SHA256_DIGEST_SIZE + 1];
+  //output[2 * SHA256_DIGEST_SIZE] = '\0';
+  
   printf(RED);
   printf("verify_signature, FUN_1000610c\n");
   printf(DEFAULT);
 
-  _Var2 = lseek(fd,0,1);
+  file_location = lseek(fd,0,SEEK_CUR);
+  //printf("file_location: 0x%lX\n", file_location);
+  
   uVar1 = 0xffffffff;
-  if (-1 < _Var2) {
-    iVar3 = FUN_10005de8(fd,param_3,abStack_48);
+  if (file_location > -1) {  // no error
+
+    iVar3 = FUN_10005de8(fd,sha256_buffer,digest);
+
+    printf("digest:\n");
+    line_print_16_bytes(digest,SHA256_DIGEST_SIZE);
+    printf("sha256_buffer+55\n");
+    line_print_16_bytes(sha256_buffer+0x55,4*SHA256_DIGEST_SIZE);
+
     uVar1 = 0xffffffff;
-    if (-1 < iVar3) {
+    if (iVar3 > -1) {
       if (param_2 != (__off_t *)0x0) {
         _Var4 = lseek(fd,0,1);
         *param_2 = _Var4;
       }
-      _Var2 = lseek(fd,_Var2,0);
+      
+      file_location = lseek(fd,file_location,SEEK_SET);
+      
       uVar1 = 0xffffffff;
-      if (-1 < _Var2) {
-	printf("Should add developer key to key ring.\n");
-        //bVar5 = FUN_10005f64(param_3 + 0x55,0x80,abStack_48,0x20,param_4,param_5);
-        //uVar1 = (uint)bVar5;
+
+
+      if (file_location > -1) { //no error
+	printf("file_location: 0x%lX\n",file_location);
+#if 1
+	unsigned char bVar5;
+        bVar5 = FUN_10005f64(sha256_buffer + 0x55,0x80,digest,0x20,param_4,param_5);
+	printf("bVar5: %i\n",bVar5);
+        uVar1 = (uint)bVar5;
+#endif 
       }
+      printf("Should add developer key to key ring.\n");
+
+      uVar1 = 1^1; // ==0
     }
+  }else{
+    printf("lseek error!\n");
   }
   return uVar1;
 }
@@ -2425,3 +3430,138 @@ int get_free_loop(void){
   return loopdev[0]+1;
   
 }
+
+void print_keys(void){
+  /* print keys in data_10010100 */
+  int i,j;
+  for(j=0;j<7;j++){
+    printf("key[%i]: ",j);
+    for(i=0;i<(4*8);i++){
+      printf("%c",data_10010100[j*36 +i]);
+    }
+    printf("\n");
+  }
+  printf("\n");
+}
+
+
+
+
+  
+#if 0  
+
+//DAT_10022c28=calloc(0x80,sizeof(unsigned char));
+//unsigned char *DAT_10022c28;
+//unsigned char *DAT_10022a68;
+//char *DAT_10022c2c; // waarschijnlijk naam van flash image 
+
+
+  
+  unsigned int *local_5c;
+  local_5c=calloc(6,sizeof(uint));
+
+  unsigned int      partition_nr;  //was unsigned char, was uVar9
+
+
+
+
+unsigned int jump_size=0;             //mag uiteindelijk ook weg  /* _Var12*/
+  unsigned int current_location=0;
+
+
+  int iVar5 = 0;
+  int iVar8 = 0;
+  int iVar9 = 0;
+  bool bVar1;
+
+
+
+  //printf("Endianness: ");
+  //if(is_bigendian()) printf("big.\n"); else printf("little.\n");
+
+
+
+
+int jsa_index=0;
+  while( false ) {
+    current_location = lseek(fd,0,SEEK_CUR);
+    current_location_array[index]=current_location;
+    index++;
+
+    //printf("current location: 0x%X\n",current_location);
+    
+    iVar5 = iVar8;
+    bVar1 = (3 < iVar9);
+    iVar9 = iVar9 + 1;
+
+    if ( ( bVar1 || (local_5c[0] != 0) ) || ( *(read_buffer+1+iVar5) == '\0') ) break;
+
+    partition_nr = (unsigned int) *(read_buffer+1+iVar5);  
+    partition_name = partition_selector(partition_nr);      
+
+    jump_size= *(__off_t*)(read_buffer+1+iVar5+1);
+    if(!is_bigendian()) jump_size = __htobe32(jump_size);
+    jump_size_array[jsa_index]=jump_size;
+    jsa_index++;
+    
+    /* write mtd partition */
+    local_5c[0] = open_mtd_for_output_internal(fd, partition_name,jump_size);
+
+    iVar8 = iVar5 + 0x15;
+
+    if(modify && strcmp(partition_name,"initrd")==0) {
+
+      md5_sum  = calloc( 0x10,sizeof(char));
+      nr_partitions= modify_partition(partition_name,&partition_size);
+      /* update md5sum int read_buffer, should also be updated in firmware file */
+
+      for(i=0;i<MD5_DIGEST_LENGTH;i++){
+	*(uint8_t*)(read_buffer + 1 + iVar5 + 5 + i)= *(uint8_t*)(md5_sum+i);
+	}
+
+      sprintf(mtd_name,"dev/mtd-%s",partition_name);
+
+      fp=fopen(mtd_name,"r");
+      partition_size=fseek(fp,0, SEEK_END);
+      partition_size = ftell(fp);
+      fclose(fp);
+    }
+
+    if (local_5c[0] == 0) {
+      local_5c[0] = open_mtd_for_input_internal(partition_name,jump_size,(read_buffer + 1 + iVar5 + 5));
+    }
+    printf("\n");
+  }
+
+
+
+
+  
+  if(!burn){
+    //system("rm -rf dev/*");
+  }
+
+
+
+
+  /* what is DAT_10022c28? */
+  uint uVar9 = memcmp(argv[optind], "file://",7);  //is file:// somewhere in filename?
+  //printf("uVar9: 0x%08X, %i\n",uVar9,uVar9);
+  uint uVar10 = (int)uVar9 >> 0x1f;
+  //printf("uVar10: 0x%08X, %i\n",uVar10, uVar10);
+  uint uVar21=1;  // is initialised as 1
+  char *pcVar27 = (char *)0xc; // devfined  right here
+  uint tmp1 = (int) (uVar10 - (uVar10 ^ uVar9 )) >> 0x1f;
+  //printf("tmp1: %i\n",tmp1);
+  
+  char pcVar22 = (uVar21 & tmp1);  //1 & -1: 0x00000001 & 0xFFFFFFFF = 1
+  
+  char pcVar22 = 0x00000001 & 0xFFFFFFFF
+  //printf("pcVar22: 0x%08X\n",pcVar22);
+
+
+
+
+
+#endif
+

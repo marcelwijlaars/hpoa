@@ -9,7 +9,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-//#include "data_0x10010100.h" // needed fro sha stuff??
+#include "DAT_variables.h" // needed for sha stuff
 #include "sha2/sha2.h"
 //#include <openssl/sha.h>
 #include "md5/md5.h"
@@ -87,19 +87,30 @@ int open_mtd_for_input_internal(char*, int, void*); /* FUN_10002160 */
 int FUN_1000f7dc(unsigned int, unsigned int);
 char *partition_selector(unsigned char); /* FUN_100033a8 */
 void do_housekeeping(void);
-void do_sha256_tests(void);
+void do_sha256_test(void);
 int modify_partition(partition, char*,int);
 int em_type(void);
 int do_rw_test(void);
 uint64_t fw_with_fingerprint(char*);                       /* FUN_1000cb68 ish */ 
-uint verify_signature(int, __off_t *, unsigned char *, int);
+uint verify_signature(int, __off_t *, unsigned char *, int, int);
 int write_initrd(void);
 int verify_initrd(void);
 int get_free_loop(void);
 int do_analysis(partition, char *);
 void print_partition_info(partition, int);
-int verify_mtd_md5sum(char *, void *);
+int verify_mtd_md5sum(char*, void *);
 unsigned int copy_partition_to_mtd_device(int, partition);
+void write_hpoa_header(int, partition, int, unsigned char*);
+int partition_nr_selector(char*);
+void line_print_16_bytes(unsigned char*,int);
+void print_keys(void);
+
+void kind_of_memset(unsigned int*,unsigned char,unsigned int); /* FUN_10008264 */
+void kind_of_memcpy(unsigned int*,unsigned int*,unsigned int); /* FUN_100081f0 */
+
+void FUN_100092f8(int*, int*, uint);
+void FUN_10009374(int*, uint);
+void FUN_10008fe4(void *,void *,size_t);
 
 
 #if 0
