@@ -111,6 +111,8 @@ void kind_of_memcpy(unsigned int*,unsigned int*,unsigned int); /* FUN_100081f0 *
 void FUN_100092f8(int*, int*, uint);
 void FUN_10009374(int*, uint);
 void FUN_10008fe4(void *,void *,size_t);
+void simple_md5sum(char*, int);
+
 
 
 #if 0
