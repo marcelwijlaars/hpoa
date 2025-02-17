@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 
-#include <linux/loop.h>
+//#include <linux/loop.h>
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
@@ -23,6 +23,11 @@
 #define C7000 2
 #define C3000 1 //actually 1 or 3
 #define OA_BOARD_TYPE C7000
+
+#define KEY_SIZE 0x20
+#define KEY_BUFFER_SIZE_INTS  (2*KEY_SIZE+1)
+#define KEY_BUFFER_SIZE_CHARS KEY_BUFFER_SIZE_INTS*sizeof(int)
+
 
 
 #define ___bswap_constant_32(x)						\
@@ -143,13 +148,13 @@ void FUN_100096ac(int, int, int, int);
 void FUN_10009db8(int, int, uint, int, uint);
 void FUN_10009a24(int, int, int, uint, int, uint);
 void FUN_1000af94(uint *, uint, uint);
-void FUN_1000b104(int*, int*, uint);
+void FUN0_1000b104(int*, int*, uint);
 uint FUN_1000aa18(uint);
 uint FUN_1000a738(int, int, uint, int, uint);
 void MD5_printf(unsigned int*,char*);
 int FUN_1000a8a4(int, int, uint, int, uint);
 int FUN_10009580(int, int, int, uint);
 int FUN_10008474(void *, size_t *, int, uint, int *);
-int FUN_1000a6bc(int,int);
+int FUN0_1000a6bc(int,int);
 
 #endif
