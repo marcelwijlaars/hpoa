@@ -34,7 +34,7 @@ int main(int argc,char **argv){
 
   
   unsigned int jump_size_array[0x10];     // mag weg, ook hier boven gedefineerd
-  unsigned int image_data_size_array[0x10];   //dubbel up denk ik
+  unsigned int image_data_size_array[0x10];   //dubbel op denk ik
   unsigned int fw_location=0;
   unsigned int fw_location_array[0x10];
   unsigned int current_location_array[0x10];
@@ -2686,8 +2686,8 @@ int find_first_non_zero_from_end(int *param_1,int len){  //very starnge function
 }
 
 
-
-uint FUN_10009824(int *param_1,int *param_2,uint param_3,uint param_4){
+//   FUN_10009824(int*)auStack_1cc + 1,  (int*)param_3,     leading_zeros,param_4);
+uint FUN_10009824(int *param_1,           int *param_2,uint param_3,uint  len){
   uint local_24;
   uint i;
   
@@ -2698,11 +2698,11 @@ uint FUN_10009824(int *param_1,int *param_2,uint param_3,uint param_4){
   printf("FUN_10009824\n");
   printf(DEFAULT);
 
-  if (param_3 < 0x20) {
+  if (param_3 < 0x20) {   //sizeof(param_2) = 4*8=32 == 0x20 int 
     local_24 = 0;
-    for (i = 0; i < param_4; i = i + 1) {
+    for (i = 0; i < len; i = i + 1) {  //len = 0x40  == 64 firs 64 bytes of param_2
       
-      local_14 = *(uint *)(i + param_2);
+      local_14 = *(uint *)(param_2 + i);
       *(uint *)(param_1 + i) = local_14 << (param_3 & 0x3f) | local_24;
       
       if (param_3 == 0) {
@@ -2714,8 +2714,7 @@ uint FUN_10009824(int *param_1,int *param_2,uint param_3,uint param_4){
       local_24 = local_14;
     }
     local_18 = local_24;
-  }
-  else {
+  }else{
     local_18 = 0;
   }
   return local_18;
@@ -2815,8 +2814,8 @@ void FUN0_1000b104(int *return_value,int *param_2,uint param_3) {
   unsigned char loop_condition;
   while ( loop_condition = ((local_24 > p3_h) || ( (local_24 == p3_h) && ( (param_3 << 0x10) <= local_28) ) ), loop_condition == true ) {
 
-    printf("5.3: b104: 0x%X <= 0x%X, ",param_3<<0x10, local_28);
-    printf("loop_condition: %i\n",loop_condition);
+    //printf("5.3: b104: 0x%X <= 0x%X, ",param_3<<0x10, local_28);
+    //printf("loop_condition: %i\n",loop_condition);
     
     local_28 = local_28 + (param_3 & 0xffff) * -0x10000;
     //local_28 = local_28 + ((param_3 & 0xffff) << 0x10);
@@ -2830,10 +2829,10 @@ void FUN0_1000b104(int *return_value,int *param_2,uint param_3) {
     //  printf("5.5:   b104: break from b104 loop 1\n");
     //  exit(-1);
     //}
-    printf("6:   b104: local_24: 0x%08X, ",local_24);
-    printf("p3_h: 0x%04X, ",p3_h);
-    printf("local_28: 0x%08X, ",local_28);
-    printf("param_3: 0x%08X\n",param_3);
+    //printf("6:   b104: local_24: 0x%08X, ",local_24);
+    //printf("p3_h: 0x%04X, ",p3_h);
+    //printf("local_28: 0x%08X, ",local_28);
+    //printf("param_3: 0x%08X\n",param_3);
   }
 
   if (p3_h == 0xffff) {
@@ -2841,7 +2840,7 @@ void FUN0_1000b104(int *return_value,int *param_2,uint param_3) {
   }else {
     local_16 = (ushort)( (local_24 * 0x10000 + (local_28 >> 0x10)) / (p3_h + 1));
   }
-  printf("7:   b104: local_16  : 0x%04X\n",local_16);
+  //printf("7:   b104: local_16  : 0x%04X\n",local_16);
   
   iVar3 = (uint)local_16 * (param_3 & 0xffff);
   uVar2 = (uint)local_16 * (uint)p3_h;
@@ -2878,14 +2877,11 @@ int FUN_10009580(int *param_1,int *param_2,int *param_3,uint len){
   uint local_28;
   int  local_24;
   uint i;
-  static int once=0;
 
-  if(once==0){
-    printf(RED);
-    printf("FUN_10009580, this only prints once\n");
-    printf(DEFAULT);
-    once=1;
-  }
+  printf(RED);
+  printf("FUN_10009580");
+  printf(DEFAULT);
+
   local_24 = 0;
   for (i= 0; i < len; i = i + 1) {
     local_28 = *(int *)(param_2 + i) - local_24;
@@ -2993,9 +2989,11 @@ int FUN_1000a8a4(int *param_1,int *param_2,uint param_3,int *param_4,uint len){
 
 
 
-uint count_leading_zeros(uint param_1)
-
-{
+uint count_leading_zeros(uint param_1){
+  printf(RED);
+  printf("count_leading_zeros, FUN_1000a8a4\n");
+  printf(DEFAULT);
+  
   uint local_18;
   uint local_14;
   
@@ -3004,17 +3002,6 @@ uint count_leading_zeros(uint param_1)
     local_14 = local_14 + 1;
   }
   return local_14;
-}
-
-
-unsigned int new_count_leading_zeros(unsigned int x) {
-  unsigned int count = 0;
-  if (x == 0) return 32;  // Edge case: all 32 bits are zeros
-  while ((x & (1 << 31)) == 0) {  // Check most significant bit
-    count++;
-    x <<= 1;  // Left shift by 1
-  }
-  return count;
 }
 
 
@@ -3069,23 +3056,27 @@ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *param
   line_print_4_ints((unsigned char*)param_3, 0x80);
 
   printf("-2.6: 9a24: local_20: %i\n",local_20);
-  printf("-2.5: 9a24: *param_5: %X\n",*param_5);  
+  printf("-2.5: 9a24: *param_5:\n");
+  line_print_4_ints((unsigned char*)param_5, 0x84);
+  printf("*(uint *)(param_5 + %i): 0x%08X\n",local_20*4-4,*(uint *)(param_5 + local_20*4 -4));
+  printf("*(uint *)(param_5 + %i): 0x%08X\n",local_20-1,*(uint *)(param_5 +local_20-1));
   
   if (local_20 != 0) {
-    leading_zeros=count_leading_zeros(*(uint *)(param_5 + local_20*4 -4));
+    leading_zeros=count_leading_zeros(*(uint *)(param_5 + local_20*1 -1));
     leading_zeros=0x20-leading_zeros;
+
+    
     printf("-2.3: 9a24: leading_zeros: 0x%X\n", leading_zeros);
     
     memset((int*)(auStack_1cc + 1),0,local_20*sizeof(uint32_t));  //local_20 == len == 8
 
-    printf("-2.0: 9a24: auStack_1cc:\n");	
+    printf("-2.0: 9a24: auStack_1cc, zeros for first %i bytes:\n",local_20*sizeof(uint32_t));	
     line_print_4_ints((unsigned char*)(auStack_1cc),36*sizeof(int));
 
     uVar3 = FUN_10009824((int*)(auStack_1cc + 1),param_3,leading_zeros,param_4);
 
     printf("-1.9: 9a24: auStack_1cc:\n");	
     line_print_4_ints((unsigned char*)(auStack_1cc), 36*sizeof(int));
-
     
     //printf("9a24 after FUN_10009824\n");
     //printf("-1.5: 9a24: uVar3: 0x%08X\n",uVar3);
@@ -3146,15 +3137,20 @@ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *param
       auStack_1cc[iVar1 + 1] = auStack_1cc[iVar2 + 1] - iVar4;
 
 
-      //printf("3: 9a24: auStack_1cc[%i]: 0x%08X\n",i+local_20+1,(int)auStack_1cc[i+local_20+1]);
+      //printf("2.5: 9a24: auStack_1cc[%i]: 0x%08X\n",i+local_20+1,(int)auStack_1cc[i+local_20+1]);
 
-      //printf("3: 9a24: i: %i, iVar4: 0x%X, iVar1: %i, iVar2: %i, local_20: %i, auStack_1cc[%i]: 0x%08X\n",i,iVar4, iVar1, iVar2, local_20,i+local_20+1,(int)auStack_1cc[i+local_20+1]);
+      //printf("2.6: 9a24: i: %i, iVar4: 0x%X, iVar1: %i, iVar2: %i, local_20: %i, auStack_1cc[%i]: 0x%08X\n",i,iVar4, iVar1, iVar2, local_20,i+local_20+1,(int)auStack_1cc[i+local_20+1]);
+      printf("3.0: 9a24: auStack_1cc[%i]: 0x%08X\n",65,(int)auStack_1cc[65]);
+      printf(MAGENTA);
+      printf("waarom klopt int 65 niet\n");
+      printf(DEFAULT);
 
       printf("3.1: 9a24: auStack_1cc\n");
-      line_print_4_ints((unsigned char*)auStack_1cc+i+1,local_20*sizeof(int));
-      printf("3.2: 9a24: auStackb8\n");
-      line_print_4_ints((unsigned char*)auStack_b8,local_20*sizeof(int));
-      
+      line_print_4_ints((unsigned char*)auStack_1cc+i+1,4*local_20*sizeof(int)+8);
+      //printf("3.2: 9a24: auStackb8\n");
+      //line_print_4_ints((unsigned char*)auStack_b8,2*local_20*sizeof(int)+8);
+      getchar();
+
       /* while loops takes infinite to finish */
       int lc=0;
       while (
@@ -3168,9 +3164,8 @@ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *param
 	      )
 	     ) {
 
-
 	printf("4.6: 9a24: (auStack_1cc + 1)[i + local_20] != 0: %i\n",(auStack_1cc + 1)[i + local_20] != 0 );
-	printf("4.7: 9a34: (iVar1 > -1): %i\n",(iVar1 > -1) );
+	printf("4.7: 9a24: (iVar1 > -1): %i\n",(iVar1 > -1) );
 	
 
 	printf("4.8: 9a24: lc: 0x%08X, auStack_1cc[%i]: 0x%08X\n",lc,i+local_20+1,(int)auStack_1cc[i+local_20+1]);
@@ -3180,6 +3175,8 @@ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *param
         iVar2 = i + local_20;
 	  
         iVar4 = FUN_10009580((int*)(auStack_1cc + i + 1),(int*)(auStack_1cc + i + 1),(int*)auStack_b8,local_20);
+	getchar();
+	
 	//if((auStack_1cc[i+local_20+1]%0x10000)==0)
 	printf("5: 9a24: i: %i, iVar4: 0x%X, iVar1: %i, iVar2: %i, local_20: %i, auStack_1cc[%i]: 0x%08X\n",i,iVar4, iVar1, iVar2, local_20,i+local_20+1,(int)auStack_1cc[i+local_20+1]);
 
@@ -3188,12 +3185,6 @@ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *param
 	lc++;
       }
 
-      getchar();
-
-
-
-
-      
       printf(BLUE);
       printf("6: 9a24: i: %i, iVar4: 0x%X, iVar1: %i, local_20: %i, auStack_1cc[%i]: 0x%08X\n",i,iVar4, iVar1, local_20,i+local_20+1,(int)auStack_1cc[i+local_20+1]);
       printf(DEFAULT);
@@ -3325,8 +3316,8 @@ void FUN_100096ac(int *param_1,int *param_2,int *param_3,int param_4){
 
 //parameter 4 is paramter 5 van 9a24
 void FUN_10009e2c(int *param_1,int *param_2,int *param_3,int *param_4,uint param_5){
-  int auStack_120[71];
-  int auStack_220[71];  
+  int auStack_120[0x11c];
+  int auStack_220[0x11c];  
 
   printf(RED);
   printf("FUN_10009e2c\n");
@@ -3334,8 +3325,8 @@ void FUN_10009e2c(int *param_1,int *param_2,int *param_3,int *param_4,uint param
 
   printf("2: 9e2c: *param_4: 0x%X\n",*param_4);
 
-  memset(auStack_120,0,71*sizeof(int));
-  memset(auStack_220,0,71*sizeof(int));
+  memset(auStack_120,0,0x11c*sizeof(int));
+  memset(auStack_220,0,0x11c*sizeof(int));
 
   FUN_100096ac(auStack_120,param_2,param_3,param_5);
   FUN_10009a24(auStack_220,param_1,auStack_120 ,param_5<<1,param_4,param_5);
@@ -3483,7 +3474,7 @@ void FUN0_100090a4(int *param_1,uint key_len,int *key,int sha256_len){
 uint32_t FUN_100089b8(int *pass_through,uint *param_2,unsigned char *sha256_buffer,int sha256_len,int *key_address){
   int iVar1;
   
-  int auStack_260[36];
+  int return_buffer[36];
   int auStack_1d0[36];
   int auStack_140[36];
   int auStack_0b0[36];  // goes into FUN_10009ebc and eventuall into 9a24 param_5
@@ -3497,7 +3488,7 @@ uint32_t FUN_100089b8(int *pass_through,uint *param_2,unsigned char *sha256_buff
 
   int q;
   for(q=0; q<36;q++){
-    auStack_260[q]=0;
+    return_buffer[q]=0;
     auStack_1d0[q]=0;
     auStack_140[q]=0;
     auStack_0b0[q]=0;
@@ -3561,8 +3552,8 @@ uint32_t FUN_100089b8(int *pass_through,uint *param_2,unsigned char *sha256_buff
   line_print_4_ints((unsigned char*)auStack_1d0,0x21*sizeof(int));
 
   
-  local_1c = find_first_non_zero_from_end(auStack_0b0,0x21*sizeof(int));  //returns nr of ints before int is 0
-  local_20 = find_first_non_zero_from_end(auStack_1d0,0x21*sizeof(int));  // returns key size in int lengths
+  local_1c = find_first_non_zero_from_end(auStack_0b0,0x21);
+  local_20 = find_first_non_zero_from_end(auStack_1d0,0x21);
 
   printf("2.0: 89b8: local_1c: 0x%X, local_20: 0x%X\n",local_1c,local_20);
 
@@ -3570,23 +3561,26 @@ uint32_t FUN_100089b8(int *pass_through,uint *param_2,unsigned char *sha256_buff
 
   printf("2.9: 89b8: iVar1: %i\n",iVar1);
 
-  getchar();
-
   
   if (iVar1 < 0) { // auStack_0b0 is not equal to auStack_140
-    printf("3: 89b8: auStack_0b0:\n");
-    line_print_4_ints((unsigned char*)auStack_0b0,local_1c);
+    printf("3.0: 89b8: return_buffer:\n");
+    line_print_4_ints((unsigned char*)auStack_140,36*sizeof(int)); //full, len=32
+    printf("3.2: 89b8: auStack_1d0:\n");
+    line_print_4_ints((unsigned char*)auStack_1d0,36*sizeof(int)); //almost empty, len=1
+    printf("3.3: 89b8: auStack_1d0:\n");
+    line_print_4_ints((unsigned char*)auStack_0b0,36*sizeof(int)); //full, len=32
 
-    printf("4: 89b8: test 1\n");
-    printf("5: 89b8: *auStack_0b0: 0x%X\n",*auStack_0b0);
-    FUN_10009ebc(auStack_260,auStack_140,auStack_1d0,local_20,auStack_0b0,local_1c);
+    getchar();
 
+    FUN_10009ebc(return_buffer,auStack_140,auStack_1d0,local_20,auStack_0b0,local_1c);
+
+    getchar();
     
     unsigned int ui = 7;
     *param_2 = (*key_address + ui) >> 3;
     //if(!is_bigendian()) *param_2= __htobe32(*param_2);
-    FUN_100091dc(pass_through,*param_2,auStack_260,local_1c); //realy (int*)?
-    memset(auStack_260,0,0x84);
+    FUN_100091dc(pass_through,*param_2,return_buffer,local_1c); //realy (int*)?
+    memset(return_buffer,0,0x84);
     memset(auStack_140,0,0x84);
     local_18 = 0;
   }
@@ -3620,17 +3614,19 @@ int FUN_10008474(void *return_buffer,size_t *key_len,unsigned char *sha256_buffe
   }else{
     /* should we take care of content of keyaddress[0] being big of small endian */
     printf(CYAN);
-    printf("0: 8474:  in (key_address+1) md5_sum: ");
+    printf("0.0: 8474:  in (key_address+1) md5_sum: ");
     printf(DEFAULT);
     simple_md5sum((char*)(key_address+1),*key_len*sizeof(int)); 
 
     ret = FUN_100089b8((int*)pass_through,&local_18,sha256_buffer,sha256_len,key_address);
 
     printf(CYAN);
-    printf("0: 8474: out (key_address+1) md5_sum: ");
+    printf("0.1: 8474: out (key_address+1) md5_sum: ");
     printf(DEFAULT);
     simple_md5sum((char*)(key_address+1),*key_len*sizeof(int));
 
+    exit(-2);
+    
     if (ret == 0) {
       printf("ret==0, local_1c: 0x%X\n", local_1c);
       if (local_18 == local_1c) {
