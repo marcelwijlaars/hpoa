@@ -24,6 +24,9 @@
 #define C3000 1 //actually 1 or 3
 #define OA_BOARD_TYPE C7000
 
+#define IS_INT true
+#define NOT_INT false
+
 
 #define ___bswap_constant_32(x)						\
      ((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >>  8) |                      \
@@ -111,7 +114,7 @@ void kind_of_memcpy(unsigned int*,unsigned int*,unsigned int); /* FUN_100081f0 *
 void FUN_100092f8(int*, int*, uint);
 void FUN_10009374(int*, uint);
 void FUN_10008fe4(void *,void *,size_t);
-void simple_md5sum(char*, int);
+void simple_md5sum(char*, int, bool);
 int only_modify_hash(char*, char*, unsigned char*);
 
 
