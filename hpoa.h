@@ -32,12 +32,11 @@
      ((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >>  8) |                      \
       (((x) & 0x0000ff00) <<  8) | (((x) & 0x000000ff) << 24))
 
-# define __bswap_32(x) \
+# define ___bswap_32(x) \
      (__extension__                                                              \
       ({ register unsigned int __x = (x); ___bswap_constant_32 (__x); }))
 
-
-#define __htobe32(x) __bswap_32 (x)
+#define __htobe32(x) ___bswap_32 (x)
 
 // #define SEEK_SET 0
 // #define SEEK_CUR 1
@@ -127,7 +126,7 @@ size_t FUN_10005d64(int, void *, size_t, SHA256_CTX *);
 uint32_t FUN_10005de8(int, unsigned char *, unsigned char *);
 uint32_t FUN_100089b8(int, uint *, int, int, int *);
 uint32_t FUN_1000a4c0(int,int,int);
-uint FUN_10009824(int, int, uint, uint);
+uint FUN0_10009824(int, int, uint, uint);
 uint FUN_10009924(int, int, uint, int);
 uint FUN_1000610c(int, __off_t *, unsigned char *, int, int);
 uint FUN_10005cdc(int, uint, SHA256_CTX *);

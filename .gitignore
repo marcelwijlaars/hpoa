@@ -9,3 +9,5 @@ gpio_states~
 dev
 old_code
 Makefile~
+octave-workspace
+hpoa
