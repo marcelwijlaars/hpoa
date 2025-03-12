@@ -659,15 +659,19 @@ uint64_t fw_with_fingerprint (char *filename){
   FILE *file;
   int iVar3;
   int iVar4;
-  char acStack_420 [0x410];
+  char *acStack_420;
+  acStack_420=calloc(0x410,sizeof(char));
+  //pcVar2=calloc(0x100,sizeof(char));
+  
+  memset(acStack_420,0,0x400);
+
+
   //code *local_20;
 
   printf(RED);
   printf("fw_with_fingerprint, FUN_1000cb68.\n");
   printf(DEFAULT);
 
-  pcVar2=calloc(0x400,sizeof(char));
-  memset(acStack_420,0,0x400);
 
   //local_20 = FUN_1000b510;
   //pcVar2 = (char *)FUN_1000b510(); //returns filename
@@ -676,8 +680,7 @@ uint64_t fw_with_fingerprint (char *filename){
   if (file == (FILE *)0x0) {
     printf("could not open the signed file for parsing\n");
     uVar1 = 0;
-  }
-  else {
+  } else {
     printf("Opened the signed file for parsing\n");
     memset(acStack_420,0,0x400);
     fgets(acStack_420,0x400,file);
@@ -691,13 +694,15 @@ uint64_t fw_with_fingerprint (char *filename){
     /* hpoa440.bin has no clear fingerprint section, hpoa450.bin does */
     memset(acStack_420,0,0x400);
     while (pcVar2 = fgets(acStack_420,0x400,file), pcVar2 != 0x0) {
-      pcVar2 = strstr(acStack_420 ,"Fingerprint Length:");
+      pcVar2= strstr(acStack_420 ,"Fingerprint Length:");
       if (pcVar2 != 0x0) {  //"Fingerprint Length:" string found!!!
         uVar1 = 1;
         break;
       }
       memset(acStack_420,0,0x400);
     }
+
+
     if(uVar1==1)
       printf("fingerprint Lenghth found\n");
     else
@@ -705,6 +710,8 @@ uint64_t fw_with_fingerprint (char *filename){
 
     fclose(file);
   }
+  free(pcVar2);
+  free(acStack_420);
   return uVar1;
 }
 
@@ -1949,9 +1956,12 @@ void simple_md5sum(char *data, int len, bool int_type){
   int i=0;
   MD5Context ctx;
   char md5_sum[MD5_DIGEST_LENGTH];
-  int d[len/sizeof(int)];
+  char *d;
+  d = calloc(len,sizeof(char));
   
-  for(i=0; i<=len/sizeof(int); i++){
+  //printf("\nlen: 0x%X\n",len);
+  for(i=0; i<(len/sizeof(int)); i++){
+    //printf("simple_md5sum: i: 0x%X\n",i);
     if(int_type){
       *((int*)d+i) = __htobe32( *((int*)data+i) );
     }else{
@@ -1960,8 +1970,18 @@ void simple_md5sum(char *data, int len, bool int_type){
   }
   
   md5Init(&ctx);
-  md5Update(&ctx, (uint8_t *)d, len);
-  //md5Update(&ctx, (uint8_t *)data, len);
+
+  i=0;
+  int c=0;
+  while(i+=MD5_INPUT_LENGTH, i<=len){
+    printf("\nc*MD5_INPUT_LENGTH: 0x%X\n",c*MD5_INPUT_LENGTH);
+    md5Update(&ctx, (uint8_t *)((char*)d+c*MD5_INPUT_LENGTH),MD5_INPUT_LENGTH);
+    c++;
+  }
+  if(c*MD5_INPUT_LENGTH <len){
+    printf("\nrest: c: 0x%X, len: 0x%X, c*MD5_INPUT_LENGTH: 0x%X, len - c*MD5_INPUT_LENGTH: 0x%X\n",c, len, c*MD5_INPUT_LENGTH,len -c*MD5_INPUT_LENGTH);
+    md5Update(&ctx, (uint8_t *)((char*)d+c*MD5_INPUT_LENGTH),len-(c*MD5_INPUT_LENGTH));
+  }
   md5Finalize(&ctx);
   
   memcpy(md5_sum, ctx.digest, MD5_DIGEST_LENGTH);
@@ -1969,7 +1989,7 @@ void simple_md5sum(char *data, int len, bool int_type){
     printf("%02X",(unsigned char)md5_sum[i]);
   printf("\n");
   
-
+  free(d);
 }
 
 void my_md5sum(char *file_name, char *md5_sum){
@@ -2632,7 +2652,8 @@ void line_print_4_ints(unsigned char * data,int len){
   if(is_bigendian()) printf("Big endian "); else printf("Little endian ");
   printf("line_print_4_ints\n");
   printf(DEFAULT);
-
+  printf("len: 0x%X\n",len);
+  printf("len/sizeof(int): 0x%X\n",len/sizeof(int));
   /* make copy so not to change data */
   for(i=0;i<len/sizeof(int);i++){ 
   //if(is_bigendian())
@@ -2857,10 +2878,7 @@ void FUN0_1000b104(int *return_value,int *param_2,uint param_3) {
   printf("FUN_1000b104\n");
   printf(DEFAULT);
 
-  printf("1.0: b104: param_2: \n");
-  line_print_4_ints((unsigned char*)param_2,(2*0x20+1)*sizeof(int));
-
-  
+  // we can not print param_2 becaus we dont know its size
   //printf("2.0: b104: param_2[0]: 0x%08X\n",param_2[0]);
   //printf("2.1: b104: param_2[1]: 0x%08X\n",param_2[1]);
   //printf("3:   b104: param_3   : 0x%08X\n",param_3);
@@ -2955,8 +2973,6 @@ void FUN0_1000b104(int *return_value,int *param_2,uint param_3) {
 
   }
   *return_value = (uint)p21_h * 0x10000 + (uint)local_16;
-  printf("7.5: b104: param_2: \n");
-  line_print_4_ints((unsigned char*)param_2,(2*0x20+1)*sizeof(int));
   //printf("8:   b104: return_value: 0x%08X\n",*return_value);
   return;
 }
@@ -3267,6 +3283,7 @@ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *param
 	printf("Strange that b104 param_2 takes auSTack_1cc, which is big an only uses index 0 and d 1\nLooks like someting goes wrong with index or gets over written)\n");
 	printf("Remember index of auStack_1cc is (i+local_20) = 0x%X\n",i+local_20);
 	printf(DEFAULT);
+	printf("auStack_1cc is 68xint long, i+local_20: 0x%X", i+local_20);
 	FUN0_1000b104((int *)&local_1d0,(int *)(auStack_1cc + i + local_20),local_28 + 1);
        
 	
