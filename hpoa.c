@@ -20,7 +20,7 @@ int main(int argc,char **argv){
 
   int md5_check=0;
   
-  int i,j;                                                      /* iVar16 and iVar27 */
+  int i,j;                                                     /* iVar16 and iVar27 */
   int index=0;
 
   uint32_t partition_size=0;
@@ -42,6 +42,7 @@ int main(int argc,char **argv){
   int burn=0;
   int firmware=0;
   int verify=0;
+  int signature=0;
   int have_signature=0;
   uint64_t have_fingerprint=0;
 
@@ -83,7 +84,7 @@ int main(int argc,char **argv){
     printf("No firmware file. Usage: %s [option] <filename>\n",argv[0]);
     return -1;
   }else{
-    while(opt = getopt(argc,argv,"fbmtv"),opt != -1) {
+    while(opt = getopt(argc,argv,"btfsmv"),opt != -1) {
       if (true) {
 	switch(opt) {
 	case 'm':
@@ -104,6 +105,11 @@ int main(int argc,char **argv){
 	  firmware=1;
 	  printf("Choosen option: %c, will compose new firmware image\n",opt);
 	  break;
+
+	case 's':
+	 signature=1;
+	 printf("Going to check signature.\n");
+	 break;
 	case 'v':
 	  verify=1;
 	  if((modify==0)&&(burn==0)&&(firmware==0)){
@@ -124,7 +130,9 @@ int main(int argc,char **argv){
   /****************************************************************************************/
   
   printf("Endianness: ");
-  if(is_bigendian()) printf("big.\n"); else printf("little.\n");
+  if(!is_bigendian()) printf("little.\n"); else printf("big.\n");
+
+
 
   int test_int=305419896;
   unsigned char test_array[4]={0x12,0x34,0x56,0x78};
@@ -145,20 +153,22 @@ int main(int argc,char **argv){
    */
   
   have_fingerprint=fw_with_fingerprint (argv[optind]);
-  
-  int iVar17 = (int)((uint64_t)have_fingerprint>> 0x20);
-  iVar17=0;
+
+  if(signature){
+    int iVar17 = (int)((uint64_t)have_fingerprint>> 0x20);
+    iVar17=0;
     if (iVar17 == 1) {
       /* X509 *functions */
     }
     else {
       /* SHA256 functions */
-
+      
       have_signature = verify_signature(fd,fd_location,read_buffer,0,pcVar22);
       printf("have_signature: %i\n", have_signature);
     }
-
+    
     exit(1);
+  }
   
   /* analyse partitions */
   nr_partitions = do_analysis(p,argv[optind]);
@@ -1974,12 +1984,12 @@ void simple_md5sum(char *data, int len, bool int_type){
   i=0;
   int c=0;
   while(i+=MD5_INPUT_LENGTH, i<=len){
-    printf("\nc*MD5_INPUT_LENGTH: 0x%X\n",c*MD5_INPUT_LENGTH);
+    //printf("\nc*MD5_INPUT_LENGTH: 0x%X\n",c*MD5_INPUT_LENGTH);
     md5Update(&ctx, (uint8_t *)((char*)d+c*MD5_INPUT_LENGTH),MD5_INPUT_LENGTH);
     c++;
   }
   if(c*MD5_INPUT_LENGTH <len){
-    printf("\nrest: c: 0x%X, len: 0x%X, c*MD5_INPUT_LENGTH: 0x%X, len - c*MD5_INPUT_LENGTH: 0x%X\n",c, len, c*MD5_INPUT_LENGTH,len -c*MD5_INPUT_LENGTH);
+    //printf("\nrest: c: 0x%X, len: 0x%X, c*MD5_INPUT_LENGTH: 0x%X, len - c*MD5_INPUT_LENGTH: 0x%X\n",c, len, c*MD5_INPUT_LENGTH,len -c*MD5_INPUT_LENGTH);
     md5Update(&ctx, (uint8_t *)((char*)d+c*MD5_INPUT_LENGTH),len-(c*MD5_INPUT_LENGTH));
   }
   md5Finalize(&ctx);
@@ -2652,8 +2662,8 @@ void line_print_4_ints(unsigned char * data,int len){
   if(is_bigendian()) printf("Big endian "); else printf("Little endian ");
   printf("line_print_4_ints\n");
   printf(DEFAULT);
-  printf("len: 0x%X\n",len);
-  printf("len/sizeof(int): 0x%X\n",len/sizeof(int));
+  //printf("len: 0x%X\n",len);
+  //printf("len/sizeof(int): 0x%lX\n",len/sizeof(int));
   /* make copy so not to change data */
   for(i=0;i<len/sizeof(int);i++){ 
   //if(is_bigendian())
@@ -2762,14 +2772,25 @@ int kind_of_memcmp(int *param_1,int *param_2,int param_3){
   printf("kind_of_memcmp, FUN_1000a4c0\n");
   printf(DEFAULT);
 
+  //printf("1.0: a4c0: param_1:\n");
+  //line_print_4_ints((unsigned char*)param_1,param_3*sizeof(int));
+  //printf("1.0: a4c0: param_2:\n");
+  //line_print_4_ints((unsigned char*)param_2,param_3*sizeof(int));
+
+  
   i=  param_3 -1;
   while( true ) {
     if (i < 0) {
       return 0;
     }
-        
+
     if (*(uint *)(param_2 + i) < *(uint *)(param_1 + i)) break;
-    if (*(uint *)(param_1 + i) < *(uint *)(param_2 + i)) return -1;
+    if (*(uint *)(param_1 + i) < *(uint *)(param_2 + i)) {
+      printf(GREEN);
+      printf("We have a  identical int\n");
+      printf(DEFAULT);
+      return -1;
+    }
     i= i -1;
   }
   return 1;
@@ -2801,27 +2822,34 @@ uint FUN0_10009824(int *param_1,           int *param_2,uint param_3,uint  len){
   printf("FUN_10009824\n");
   printf(DEFAULT);
 
-
+  // endianness should be corrected before this function is called
+  
   //printf("1.0: 9824: param_3: 0x%X, len: 0x%X\n",param_3,len);
-  if (param_3 < 0x20) {   //sizeof(param_2) = 4*8=32 == 0x20 int 
+  if (param_3 < 0x20) {   //sizeof(param_2) = 4*8=32 == 0x20 int
     local_24 = 0;
     for (i = 0; i < len; i = i + 1) {  //len = 0x40  == 64 firs 64 bytes of param_2
       
       local_14 = *(uint *)(param_2 + i);
+      //printf("2.0: 9824: local_14: 0x%08X, ",local_14);
+
       *(uint *)(param_1 + i) = local_14 << (param_3 & 0x3f) | local_24;
-      
+      //printf("*(param_1+%02i): 0x%08X\n", i,*(uint*)(param_1+i));
+
       if (param_3 == 0) {
         local_14 = 0;
       }
       else {
+	//printf("4: 9824: param_3: 0x%X, local_14: 0x%X\n", param_3, local_14);
         local_14 = local_14 >> ((0x20 - param_3) & 0x3f);
       }
       local_24 = local_14;
+      
     }
     local_18 = local_24;
   }else{
     local_18 = 0;
   }
+  //printf("5: 9824: local_18: 0x%X\n",local_18);
   return local_18;
 }
 
@@ -2879,9 +2907,10 @@ void FUN0_1000b104(int *return_value,int *param_2,uint param_3) {
   printf(DEFAULT);
 
   // we can not print param_2 becaus we dont know its size
-  //printf("2.0: b104: param_2[0]: 0x%08X\n",param_2[0]);
-  //printf("2.1: b104: param_2[1]: 0x%08X\n",param_2[1]);
-  //printf("3:   b104: param_3   : 0x%08X\n",param_3);
+  printf("2.0: b104: param_2[0]: 0x%08X\n",param_2[0]);
+  printf("2.1: b104: param_2[1]: 0x%08X\n",param_2[1]);
+  printf("2.2: b104: param_2[2]: 0x%08X\n",param_2[2]);
+  printf("3.0: b104: param_3   : 0x%08X\n",param_3);
 
  
   p3_h = (ushort)(param_3 >> 0x10);
@@ -3029,12 +3058,13 @@ void multiply_and_store(uint *param_1,uint param_2,uint param_3){
   ushort uVar2;
   uint uVar3;
   uint uVar4;
+  static int lc=0;
   
   //printf(RED);
   //printf("multiply_and_store, FUN_1000af94");
   //printf(DEFAULT);
 
-  //intf("1: af94: param_{2,3}: 0x%.8X, 0x%.8X, ", param_2, param_3);
+  //printf("1.0: af94: param_{2,3}: 0x%.8X, 0x%.8X\n", param_2, param_3);
 
   uVar1 = (ushort)(param_2 >> 0x10);
   uVar2 = (ushort)(param_3 >> 0x10);
@@ -3051,7 +3081,10 @@ void multiply_and_store(uint *param_1,uint param_2,uint param_3){
     param_1[1] = param_1[1] + 1;
   }
   param_1[1] = param_1[1] + (uVar4 >> 0x10);
-  //printf("param_1[0]: 0x%08X, param_1[1]: 0x%08X\n", param_1[0],param_1[1]);
+  
+  //printf("2.0: af84: lc: 0x%04X, param_1[0]: 0x%08X, param_1[1]: 0x%08X\n", lc,param_1[0],param_1[1]);
+  //if(lc==0x410) exit(-2);
+  lc++;
   return;
 }
 
@@ -3071,18 +3104,23 @@ int FUN_1000a8a4(int *param_1,uint param_3,int *param_4,uint len){
   unsigned int *return_value;  // local_20[0]
   uint i;
   int local_14;
+  int *param4;
   printf(RED);
   printf("FUN_1000a8a4\n");
   printf(DEFAULT);
 
   return_value=calloc(2,sizeof(unsigned int));
+  param4=calloc(1,sizeof(int));
   
   if (param_3 == 0) {
     local_14 = 0;
   }else {
     local_24 = 0;
     for (i= 0; i < len; i = i + 1) {
-      multiply_and_store(return_value,param_3,*(uint *)(param_4 + i));
+      if(!is_bigendian()) *(uint*)(param4) = __htobe32(*(uint*)(param_4+i));
+      else *(uint*)(param4) = *(uint*)(param_4+i);
+	
+      multiply_and_store(return_value,param_3,*(uint *)(param4));
       uVar1 = *(int *)(param_1 + i) - local_24;
       *(uint *)(param_1 + i) = uVar1;
       local_24 = (uint)(-local_24 - 1 < uVar1);
@@ -3100,6 +3138,8 @@ int FUN_1000a8a4(int *param_1,uint param_3,int *param_4,uint len){
 
   //printf("2.0: a8a4: param_1:\n");
   //line_print_4_ints((unsigned char*)param_1,len*sizeof(int));
+  free(return_value);
+  free(param4);
   return local_14;
 }
 
@@ -3181,22 +3221,26 @@ uint FUN_1000aa18(uint param_1){
   return local_14;
 }
 
-void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *param_5,uint param_6){
+// param_5 is first part of key in reverse order
+// param_3 seems to be related to hash_buffer
+void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *reverse_key,uint param_6){
   int iVar1=0;
   int iVar2=0;
   uint uVar3;
   int iVar4=0;
   uint local_1d0=0;
   int auStack_1cc [68];     // was (unsigned char) auStack_1cc [4] + (int)aiStack_1c8[67];
-  int auStack_2cc [68];     // nieuw
   uint auStack_b8 [37];     // was (unsigned char) auStack_b8 [144] + (int) iStack_bc; 
   //int iStack_bc=0;
 
+  int* _reverse_key;
+  _reverse_key=calloc(37,sizeof(int));
+  
   int local_28=0;
   int i=0;
   uint local_20=0;
   uint leading_zeros=0;  // was local_1c
-
+  int lc=0;
   printf(RED);
   printf("FUN_10009a24\n");
   printf(DEFAULT);
@@ -3204,48 +3248,39 @@ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *param
   memset(auStack_1cc,0, 68*sizeof(int));
   memset(auStack_b8, 0, 37*sizeof(int));
 
-  //printf("-5: 9a24: param_4: 0x%X\n",param_4);
-  //printf("-4: 9a24: *param_5: 0x%X\n",*param_5); //is een pointer address
-  //printf("-3: 9a24: param_6: 0x%X\n",param_6);
-
-  //line_print_4_ints((unsigned char*)param_5,param_6);
-  local_20 = find_first_non_zero_from_end(param_5,param_6);
-  //printf("-2.9: 9a24: param_3:\n");	
+  if(!is_bigendian())
+    for(int q=0;q<param_4/sizeof(int);q++)
+      *(param_3+q)=__htobe32(*(param_3+q));
+  
+  local_20 = find_first_non_zero_from_end(reverse_key,param_6);
+  printf("-2.9: 9a24: param_3: ");	
+  simple_md5sum((char*)param_3,param_4, NOT_INT); 
   //line_print_4_ints((unsigned char*)param_3, 0x80);
+  
 
-  //printf("-2.6: 9a24: local_20: 0x%X\n",local_20);
-  //printf("-2.5: 9a24: *param_5:\n");
-  //line_print_4_ints((unsigned char*)param_5, 0x84);
-  //printf("-2.4: 9a34: *(uint *)(param_5 + %03i): 0x%08X\n",local_20*4-4,*(uint *)(param_5 + local_20*4 -4));
-  //printf("-2.3: 9a24: *(uint *)(param_5 + %03i): 0x%08X\n",local_20-1,*(uint *)(param_5 +local_20-1));
+  printf("-2.5: 9a24: *reverse_key: ");
+  simple_md5sum((char*)reverse_key,36*sizeof(int), NOT_INT); 
+  //  line_print_4_ints((unsigned char*)reverse_key, 0x84);
   
   if (local_20 != 0) {
-    /* param 4 is 2x zo groot al param 5, param 5 is zoiets als size of key/hash */
-    leading_zeros=count_leading_zeros(*(uint *)(param_5 + local_20*1 -1));
-    leading_zeros=0x20-leading_zeros;
+    /* param 4 is 2x zo groot al reverse_key, reverse_key is zoiets als size of key/hash */
+    leading_zeros=count_leading_zeros(*(uint *)(reverse_key + local_20*1 -1));
+    leading_zeros=0x20-leading_zeros; //leading_zeros = 0
 
-    
-    //printf("-2.1: 9a24: leading_zeros: 0x%X\n", leading_zeros);
-    
     memset((int*)(auStack_1cc + 1),0,local_20*sizeof(uint32_t));  //local_20 == len == 8
 
-    //printf("-2.0: 9a24: auStack_1cc, zeros for first %li bytes:\n",local_20*sizeof(uint32_t));	
-    //line_print_4_ints((unsigned char*)(auStack_1cc),68*sizeof(int));
-
+    //if leading_zeros == 0 function below copies param_2 to patam_1
     uVar3 = FUN0_10009824((int*)(auStack_1cc + 1),param_3,leading_zeros,param_4);
+    // FUN_10008474 alreadey reversed the key_address data thus also the reverse_key
+    FUN0_10009824((int*)(auStack_b8 + 1),reverse_key,leading_zeros,local_20);
 
-    printf("-1.9: 9a24: auStack_1cc: \n");
-    //simple_md5sum((char*)auStack_1cc, 68*sizeof(int),!is_bigendian());
-    line_print_4_ints((unsigned char*)(auStack_1cc), 68*sizeof(int));
-    
-    printf("-1.8: 9a24: auStack[%i] = uVar3: 0x%08X\n",param_4+1, uVar3);
-    auStack_1cc[param_4 + 1] = uVar3;
-    FUN0_10009824((int*)(auStack_b8+1),param_5,leading_zeros,local_20);
 
-    printf("-1.7: 9a24: auStack_1cc: \n");
-    line_print_4_ints((unsigned char*)(auStack_1cc), 68*sizeof(int));
-    
+    printf("-1.6: 9a24: auStack_1cc: ");
+    simple_md5sum((char*)(auStack_1cc+1),param_4, NOT_INT); 
 
+    printf("-1.7: 9a24: auStack_b8: ");
+    simple_md5sum((char*)(auStack_b8+1),36*sizeof(int), NOT_INT); 
+    //line_print_4_ints((unsigned char*)(auStack_b8),37*sizeof(int));
 
     //printf("-0.6: 9a24: auStack_b8:\n");	
     //line_print_4_ints((unsigned char*)(auStack_b8+1), 0x90/sizeof(int));
@@ -3253,17 +3288,24 @@ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *param
     //printf("-1.0: 9a24 local_20: 0x%X\n",local_20);
 
 
-    //local_28 = auStack_b8[local_20+1];  // was (&iStack_bc)[local_20];
-    local_28 = auStack_b8[local_20];  // was (&iStack_bc)[local_20];
+    local_28 = auStack_b8[local_20+1];  // was (&iStack_bc)[local_20];
+    //local_28 = auStack_b8[local_20];  // was (&iStack_bc)[local_20];
 
-    //printf("-0.5: 9a24: local_28: 0x%X\n",local_28);
+    printf("-0.9: 9a24: param_4: 0x%X\n",param_4);   //0x40 is logical
+    printf("-0.8: 9a24: local_20: 0x%X\n",local_20); //0x20 is logical
+    printf("-0.5: 9a24: local_28: 0x%X\n",local_28);
+    printf("-0.7: 9a24: auStack_b8[%i]: 0x%X\n",local_20+1,auStack_b8[local_20+1]);
+    printf("-0.6: 9a24: auStack_b8[%i]: 0x%X\n",local_20,auStack_b8[local_20]);
+
 
     memset(param_1,0,param_4*sizeof(uint32_t));  //param_4 == len
 	  
     //printf("-0.1: 9a24 param_4: %i\n",param_4);
     printf(" 0.0: 9a24: auStack_1cc[%i]: 0x%08X\n",i+local_20+1,(int)auStack_1cc[i+local_20+1]);
+
     //printf("0.97: 9a24: local_1d0: 0x%X\n", local_1d0);
-    
+
+    getchar();
     for (i = param_4 - local_20; i > -1; i = i -1) { //param_4=0x40, local_20=0x20
       if (local_28 == -1) {
         local_1d0 = auStack_1cc[i + local_20 + 1];
@@ -3277,22 +3319,22 @@ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *param
 
 	//local_1d0 is the return buffer, only the first value is changed
 	//local_1d0 is just one int
-	//printf("1.0: 9a24: i: %i, local_20: %i, local_28: %i\n",i,local_20,local_28);
-
 	printf(CYAN);
 	printf("Strange that b104 param_2 takes auSTack_1cc, which is big an only uses index 0 and d 1\nLooks like someting goes wrong with index or gets over written)\n");
 	printf("Remember index of auStack_1cc is (i+local_20) = 0x%X\n",i+local_20);
 	printf(DEFAULT);
-	printf("auStack_1cc is 68xint long, i+local_20: 0x%X", i+local_20);
+	printf("auStack_1cc is 68xint long, i+local_20: 0x%X, cant do line_print\n", i+local_20);
+	printf("1.0: 9a24: local_28: 0x%X\n",local_28);
+	printf("1.1: 9a24: local_1d0: 0x%X\n",local_1d0);
 	FUN0_1000b104((int *)&local_1d0,(int *)(auStack_1cc + i + local_20),local_28 + 1);
-       
-	
+	printf("1.2: 9a24: local_1d0: 0x%X\n",local_1d0);
+	getchar();	
       }
       printf(CYAN);
-      printf("1.1: 9a24: f0_1000b104 fucks up content of auStack_1cc in x86 code\n");
+      printf("1.3: 9a24: fun0_1000b104 fucks up content of auStack_1cc in x86 code\n");
       printf(DEFAULT);
 
-      exit(-2);
+
       
       iVar1 = i + local_20;
       iVar2 = i + local_20;
@@ -3301,11 +3343,17 @@ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *param
 
       // should we correct for big/little endianess ????
 
-      printf("1.5: 9a24: auStack_1cc:\n");
-      line_print_4_ints((unsigned char*)(auStack_1cc+i+1),(2*local_20+1)*sizeof(int));
+      printf("1.4: 9a24: auStack_1cc:\n");
+      line_print_4_ints((unsigned char*)(auStack_1cc),(2*local_20+1)*sizeof(int));
+      printf("1.5: 9a24: auStack_b8:\n");
+      line_print_4_ints((unsigned char*)(auStack_b8),37*sizeof(int));
+      printf("1.6: 9a24: i: 0x%X, local_1d0: 0x%X\n",i, local_1d0);
+
       iVar4 = FUN_1000a8a4((int*)(auStack_1cc + i + 1),local_1d0,(int*)(auStack_b8+1),local_20);
-      printf("1.6: 9a24: auStack_1cc:\n");
-      line_print_4_ints((unsigned char*)(auStack_1cc+i+1),(2*local_20+1)*sizeof(int));
+
+      
+      printf("1.7: 9a24: auStack_1cc:\n");
+      line_print_4_ints((unsigned char*)(auStack_1cc),(2*local_20+1)*sizeof(int));
 
 
       //printf("2.0: 9a24: auStack_1cc[%i]: 0x%08X\n",i+local_20+1,(uint)auStack_1cc[i+local_20+1]);
@@ -3323,7 +3371,6 @@ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *param
       printf("diffrence between x86 and ppc\n");
       printf(DEFAULT);
 
-      int lc=0;
       while (
 	     (
 	      ( auStack_1cc[i + local_20 + 1] != 0)||
@@ -3333,10 +3380,13 @@ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *param
 	       )
 	      )
 	     ) {
-	printf("4.4: 9a24: lc: %i, (auStack_b8+1): \n",lc);
-	line_print_4_ints((unsigned char*)(auStack_b8+1),local_20*sizeof(int));
-	printf("4.5: 9a24: auStack_1cc: \n");
-	line_print_4_ints((unsigned char*)(auStack_1cc + i +1),local_20*sizeof(int));
+	//printf("4.4: 9a24: (auStack_b8+1): ");
+	//simple_md5sum((char*)(auStack_b8+1),local_20*sizeof(int), NOT_INT); 
+	//line_print_4_ints((unsigned char*)(auStack_b8+1),local_20*sizeof(int));
+
+	//printf("4.5: 9a24: auStack_1cc: ");
+	//simple_md5sum((char*)(auStack_1cc +i +1),local_20*sizeof(int), NOT_INT); 
+	//line_print_4_ints((unsigned char*)(auStack_1cc + i +1),local_20*sizeof(int));
 
 	//printf("4.6: 9a24: (auStack_1cc + 1)[i + local_20] != 0: %i\n",(auStack_1cc + 1)[i + local_20] != 0 );
 	//printf("4.7: 9a24: (iVar1 > -1): %i\n",(iVar1 > -1) );
@@ -3354,20 +3404,27 @@ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *param
 	 * the rrurn value is always 0 or 1
 	 */
 
-	memset((auStack_2cc+i+1),0,local_20*sizeof(int));
-        iVar4 = FUN_10009580((int*)(auStack_1cc + i + 1),(int*)(auStack_1cc + i + 1),(int*)(auStack_b8+1),local_20);	//printf("4.6: 9a24: auStack_1cc+i+1: \n");
+	//printf("5.3: 9a24: iVar4: 0x%X\n",iVar4);
+        iVar4 = FUN_10009580((int*)(auStack_1cc + i + 1),(int*)(auStack_1cc + i + 1),(int*)(auStack_b8+1),local_20);
+
+	//printf("5.4: 9a24: lc: 0x%X, iVar4: 0x%X\n",lc,iVar4);
+
+	//printf("5.5: 9a24: auStack_1cc+i+1: \n");
 	//line_print_4_ints((unsigned char*)(auStack_1cc + i + 1),local_20*sizeof(int));
 	
-	if((auStack_1cc[i+local_20+1]%0x500000)==0)
-	  printf("5: 9a24: i: %i, iVar4: 0x%X, iVar1: %i, iVar2: %i, local_20: %i, auStack_1cc[%i]: 0x%08X\n",i,iVar4, iVar1, iVar2, local_20,i+local_20+1,(int)auStack_1cc[i+local_20+1]);
+	//if((auStack_1cc[i+local_20+1]%0x500000)==0)
+	//  printf("5.9: 9a24: i: %i, iVar4: 0x%X, iVar1: %i, iVar2: %i, local_20: %i, auStack_1cc[%i]: 0x%08X\n",i,iVar4, iVar1, iVar2, local_20,i+local_20+1,(int)auStack_1cc[i+local_20+1]);
 
        
         auStack_1cc[iVar1 + 1] = auStack_1cc[iVar2 + 1] - iVar4;
+	//if(lc==0x5) exit(-2);
+	//getchar();
 	lc++;
+
       } // end of while
 
       printf(BLUE);
-      printf("6: 9a24: i: %i, iVar4: 0x%X, iVar1: %i, local_20: %i, auStack_1cc[%i]: 0x%08X\n",i,iVar4, iVar1, local_20,i+local_20+1,(int)auStack_1cc[i+local_20+1]);
+      printf("6: 9a24: lc: 0x%i, i: %i, iVar4: 0x%X, iVar1: %i, local_20: %i, auStack_1cc[%i]: 0x%08X\n",lc, i,iVar4, iVar1, local_20,i+local_20+1,(int)auStack_1cc[i+local_20+1]);
       printf(DEFAULT);
       if(i==31) exit(-2);
       //getchar();
@@ -3508,9 +3565,9 @@ void FUN_10009e2c(int *param_1,int *param_2,int *param_3,int *param_4,uint param
   memset(auStack_220,0,0x11c*sizeof(int));
 
   FUN_100096ac(auStack_120,param_2,param_3,param_5);
-  
-  FUN_10009a24(auStack_220,param_1,auStack_120 ,param_5<<1,param_4,param_5);
 
+  FUN_10009a24(auStack_220,param_1,auStack_120 ,param_5<<1,param_4,param_5);
+  
   memset(auStack_220,0,66*sizeof(int));
   memset(auStack_120,0,66*sizeof(int));
   return;
@@ -3731,8 +3788,6 @@ uint32_t FUN_100089b8(int *pass_through,uint *param_2,unsigned char *hash_buffer
     //line_print_4_ints((unsigned char*)auStack_0b0,(KEY_SIZE+1)*sizeof(int)); //full, len=32
 
 
-
-
     
     FUN_10009ebc(return_buffer,auStack_140,auStack_1d0,local_20,auStack_0b0,local_1c);
 
@@ -3906,7 +3961,6 @@ unsigned char FUN_10005f64(unsigned char *hash_buffer,uint hash_len,unsigned cha
     
     param2 = FUN_10008474(return_buffer,key_len,hash_buffer,hash_len,key_address[iVar2]);
 
-    exit(-2);
     //printf("0.9: 5f64: key_address[iVar2]:\n");
     //line_print_4_ints((unsigned char*)key_address[iVar2],KEY_BUFFER_SIZE_CHARS);
     
