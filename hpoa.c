@@ -2531,7 +2531,7 @@ uint32_t FUN_10005de8(int fd,unsigned char *sha256_buffer,unsigned char *digest)
 
   
 #if 0
-  printf("0: 5de8: file_location: 0x%lX\n",lseek(fd,0,SEEK_CUR));
+  printf("0.0: 5de8: file_location: 0x%lX\n",lseek(fd,0,SEEK_CUR));
   sha256_init(&ctx);
   while(len=read(fd,buffer,0x0E),len>0){
     sha256_update(&ctx,buffer, len);
@@ -2588,7 +2588,7 @@ uint32_t FUN_10005de8(int fd,unsigned char *sha256_buffer,unsigned char *digest)
     //printf("1: 5de8: jump_size_sum: 0x%X, pbVar6_plus_8: 0x%X\n",jump_size_sum,pbVar6_plus_8 );
     //printf("2: 5de8: pbVar6: 0x%08X\n",*(uint*)pbVar6);
 
-    printf("3: 5de8: File location: 0x%lX\n",lseek(fd,0,SEEK_CUR));
+    //printf("3: 5de8: File location: 0x%lX\n",lseek(fd,0,SEEK_CUR));
     if (jump_size_sum == 0) {
       if ((pbVar6 != (unsigned char *)0x0) && (pbVar6_plus_8 != 0)) {
 	/* read 0xe bytes and store them at uStack_58 */
@@ -2621,7 +2621,7 @@ uint32_t FUN_10005de8(int fd,unsigned char *sha256_buffer,unsigned char *digest)
 
 	    new_jump_size = *(uint*)((uint8_t*)uStack_48+1);
 	    if(!is_bigendian()) new_jump_size = __htobe32(new_jump_size);
-	    printf("4: 5de8: new jump_size: 0x%08X\n", new_jump_size);
+	    //printf("4: 5de8: new jump_size: 0x%08X\n", new_jump_size);
             jump_size_sum = jump_size_sum + new_jump_size; 
 	    //printf("iVar8: %i, (int)(uint)buffer[i]: 0x%X\n",iVar8,(int)(uint)buffer[1]);
           } while ((int)(uint)buffer[1] > iVar8);
@@ -2641,9 +2641,11 @@ uint32_t FUN_10005de8(int fd,unsigned char *sha256_buffer,unsigned char *digest)
       }
 
       sha256_final(&ctx,digest); //was sha256_Final(param_3,&SStack_c8);
+      //printf("5.9: 5de8: File location: 0x%lX\n",lseek(fd,0,SEEK_CUR));
+
       uVar2 = 0;
     }else{
-      printf("6: 5de8: jump_size_sum is not 0!!!\n");
+      printf("6.0: 5de8: jump_size_sum is not 0!!!\n");
     }// end of if (jump_size_sum == 0)
   }
 #endif
@@ -2751,11 +2753,12 @@ void line_print_16_bytes(unsigned char * data,int len){
 
 void line_print_all_bytes(unsigned char * data,int len){
   int i;
-
+#if 0
   printf(RED);
   if(is_bigendian()) printf("Big endian "); else printf("Little endian ");
   printf("line_print_all_bytes:\n");
   printf(DEFAULT);
+  #endif
 
   for(i=0;i<len;i++){
     printf("%02X",*(data+i));
@@ -2772,23 +2775,22 @@ int kind_of_memcmp(int *param_1,int *param_2,int param_3){
   printf("kind_of_memcmp, FUN_1000a4c0\n");
   printf(DEFAULT);
 
-  //printf("1.0: a4c0: param_1:\n");
-  //line_print_4_ints((unsigned char*)param_1,param_3*sizeof(int));
-  //printf("1.0: a4c0: param_2:\n");
-  //line_print_4_ints((unsigned char*)param_2,param_3*sizeof(int));
-
-  
   i=  param_3 -1;
   while( true ) {
     if (i < 0) {
+      printf(GREEN);
+      printf("1: a4c0: We have an identical int\n");
+      printf("2: a4c0: Content of param_1:\n");
+      line_print_4_ints((unsigned char*)param_1,param_3*sizeof(int));
+      printf("3: a4c0: Content of param_1:\n");
+      line_print_4_ints((unsigned char*)param_2,param_3*sizeof(int));
+      printf(DEFAULT);
+
       return 0;
     }
 
     if (*(uint *)(param_2 + i) < *(uint *)(param_1 + i)) break;
     if (*(uint *)(param_1 + i) < *(uint *)(param_2 + i)) {
-      printf(GREEN);
-      printf("We have a  identical int\n");
-      printf(DEFAULT);
       return -1;
     }
     i= i -1;
@@ -3639,7 +3641,34 @@ void FUN_10009ebc(int *return_buffer,int *param_2,int *param_3,int param_4,int *
 }
 
 
-void FUN_100091dc(int *param_1,int param_2,int *param_3,uint param_4){
+/* this is the same as the unpack_key function */
+
+void FUN_100091dc(int *hash,int key_len,int *key,uint hash_len){
+  uint uVar1;
+  int j;
+  uint k;
+  uint i;
+
+  printf("FUN_100091dc\n");
+
+  k = 0;
+  j = hash_len - 1;
+  while (k < key_len && j >= 0) {
+    uVar1 = *(uint *)(hash + k);
+    for (i= 0; ((-1 < j) && (i < 0x20)); i = i + 8) {
+      *(unsigned char *)((unsigned char*)key + j) = (char)(uVar1 >> (i & 0x3f));
+      j = j + -1;
+    }
+    k = k + 1;
+  }
+  for (; -1 < j; j = j  -1) {
+    *(unsigned char *)(key + j) = 0;
+  }
+  return;
+}
+
+
+void old_FUN_100091dc(int *param_1,int param_2,int *param_3,uint param_4){
   uint uVar1;
   int local_24;
   uint local_20;
@@ -3669,14 +3698,14 @@ void FUN_100091dc(int *param_1,int param_2,int *param_3,uint param_4){
 /* I think key is endianess sensitive */
 /* should correct for endianness of key only once */
 /* param_1 == auStack_140 */
-void FUN0_100090a4(int *param_1,uint key_len,int *key,int hash_len){
+void pack_key(int *packed_key,uint key_len,int *key,int hash_len){
   uint local_28;
   int j;
   uint k;
   uint i;
 
   printf(RED);
-  printf("FUN0_100090a4\n");
+  printf("pack_key, FUN0_100090a4\n");
   printf(DEFAULT);
 
 
@@ -3689,22 +3718,17 @@ void FUN0_100090a4(int *param_1,uint key_len,int *key,int hash_len){
       local_28 = local_28 | (unsigned int)*(unsigned char*)((unsigned char*)key+j) << (i & 0x3f); //shift left over i bits
       j = j - 1;
     }
-    *(uint *)(param_1 + k) = local_28; //copy something to auStack_140, was k*4
-    //printf("0.8: 90a4: address (param_1+k): 0x%08X\n", (param_1+k));
+    *(uint *)(packed_key + k) = local_28; //copy something to auStack_140, was k*4
     k = k + 1;
   }
-  //printf("0.9: 90a4: key_len: 0x%X, k: 0x%X\n",key_len, k);
   
   for (; k < key_len; k = k + 1) {
-    *(uint32_t*)(param_1 + k ) = 0;  // was k*4
-    //printf("1.0: 90a4: address (param_1+k): 0x%08X\n)", (param_1+k));
+    *(uint32_t*)(packed_key + k ) = 0;  // was k*4
   }
 
-  //printf("1.1: 90a4: k: 0x%X, param_1:\n", k);
-  //line_print_4_ints((unsigned char*)param_1,key_len*sizeof(int));
-  
   return;
 }
+
 
 /* is param_2 some kind of length? */
 /* at teh end: *param_2 = (*key_address + ui) >> 3;  */
@@ -3733,18 +3757,16 @@ uint32_t FUN_100089b8(int *pass_through,uint *param_2,unsigned char *hash_buffer
   simple_md5sum((char*)key_address,(KEY_SIZE+1)*sizeof(int), !is_bigendian()); 
   //line_print_4_ints((unsigned char*)(key_address),(KEY_SIZE+1)*sizeof(int));
 
-  /* 90a4 is kind of encryption function */
-  /* not sure this is endian safe */
+  printf("0.6: 89b8: hash_len: 0x%X\n",hash_len);
 
-  /* is this function 90a4 correct */
-  FUN0_100090a4(auStack_140, 0x21,(int*)hash_buffer ,hash_len);
+  pack_key(auStack_140, 0x21,(int*)hash_buffer ,hash_len);
   printf("0.7: 89b8: auStack_140 md5sum: ");
   simple_md5sum((char*)auStack_140,(KEY_SIZE+1)*sizeof(int),!is_bigendian());
-  //line_print_4_ints((unsigned char*)auStack_140,(KEY_SIZE+1)*sizeof(int));
+  line_print_4_ints((unsigned char*)auStack_140,(KEY_SIZE+1)*sizeof(int));
   
   printf("0.9: 89b8: hash_buffer md5sum: ");
   simple_md5sum((char*)hash_buffer,hash_len, NOT_INT);
-  //line_print_4_ints((unsigned char*)hash_buffer,hash_len);
+  line_print_4_ints((unsigned char*)hash_buffer,hash_len);
 
   //printf("1.0: 89b8: (key_address+0x01)\n");
   //line_print_4_ints((unsigned char*)(key_address+0x01),(KEY_SIZE+1)*sizeof(int));
@@ -3752,16 +3774,16 @@ uint32_t FUN_100089b8(int *pass_through,uint *param_2,unsigned char *hash_buffer
   //line_print_4_ints((unsigned char*)(key_address+0x21),KEY_SIZE*sizeof(int));
 
 
-  /* is the function below (2x 90a4) correct */
+  /* is the function below (2x pack_key) correct */
   /* waarom param_4 in bytes */
-  FUN0_100090a4(auStack_0b0, 0x21,(key_address + 0x01), 0x80); // key values
-  FUN0_100090a4(auStack_1d0, 0x21,(key_address + 0x21), 0x80); // key zeros 
+  pack_key(auStack_0b0, 0x21,(key_address + 0x01), 0x80); // key values
+  pack_key(auStack_1d0, 0x21,(key_address + 0x21), 0x80); // key zeros 
   
   printf("1.2: 89b8: auStack_0b0 md5_sum: ");
-  simple_md5sum((char*)auStack_0b0,0x21,NOT_INT);
+  simple_md5sum((char*)auStack_0b0,(KEY_SIZE+1)*sizeof(int),NOT_INT);
   //line_print_4_ints((unsigned char*)auStack_0b0,0x21*sizeof(int));
   printf("1.3: 89b8: auStack_1d0 md5_sum: ");
-  simple_md5sum((char*)auStack_1d0,0x21,NOT_INT);
+  simple_md5sum((char*)auStack_1d0,(KEY_SIZE+1)*sizeof(int),NOT_INT);
   //line_print_4_ints((unsigned char*)auStack_1d0,0x21*sizeof(int));
 
   /* find the actual key size */
@@ -3771,8 +3793,22 @@ uint32_t FUN_100089b8(int *pass_through,uint *param_2,unsigned char *hash_buffer
   printf("2.0: 89b8: local_1c: 0x%X, local_20: 0x%X\n",local_1c,local_20);
 
   iVar1 = kind_of_memcmp(auStack_140,auStack_0b0,local_1c); 
+  printf("2.1: 89b8: iVar1: %i\n",iVar1);
+  
+  printf("2.4: 89b8: auStack_140 md5_sum: ");
+  //  simple_md5sum((char*)auStack_140,(KEY_SIZE+1)*sizeof(int),NOT_INT);
+  simple_md5sum((char*)auStack_140,(KEY_SIZE+1)*sizeof(int),!is_bigendian());
 
-  printf("2.9: 89b8: iVar1: %i\n",iVar1);
+  line_print_4_ints((unsigned char*)auStack_140,(KEY_SIZE+1)*sizeof(int));
+  printf("2.5: 89b8: auStack_0b0 md5_sum: ");
+  simple_md5sum((char*)auStack_0b0,(KEY_SIZE+1)*sizeof(int),NOT_INT);
+  line_print_4_ints((unsigned char*)auStack_0b0,(KEY_SIZE+1)*sizeof(int));
+
+  printf(MAGENTA);
+  printf("we should check function 90a4\n");
+  printf("Should it copy of change the hash to auStack_140?\n");
+  printf(DEFAULT);
+  exit(-2);
 
   
   if (iVar1 < 0) { // auStack_0b0 is not equal to auStack_140
@@ -4018,16 +4054,24 @@ uint verify_signature(int fd, __off_t *fd_location ,unsigned char *read_buffer,i
   printf(DEFAULT);
 
   file_location = lseek(fd,0,SEEK_CUR);  
-  printf("1.0: 610c: file_location: 0x%lX\n", file_location); // file_location =0xD5
+  printf("0.8: 610c: file_location: 0x%lX\n", file_location); // file_location =0xD5
 
   uVar1 = 0xffffffff;
   if (file_location > -1) {  // no error
 
     iVar3 = FUN_10005de8(fd,read_buffer,digest); // returns sha25_digest from file_location
-    
-    printf("1.1: 610c: iVar3: 0x%X, digest: ",iVar3);
-    simple_md5sum((char*)digest,SHA256_DIGEST_SIZE,NOT_INT);
 
+    file_location = lseek(fd,0,SEEK_CUR);  
+    printf("0.9: 610c: file_location: 0x%lX\n", file_location); // file_location =0xD5
+
+    printf("1.0: 610c: finished sha256 digest of fw file minus header\n");
+    printf("1.1: 610c: sha256 digest: ");
+    line_print_all_bytes((unsigned char*)digest,SHA256_DIGEST_SIZE);
+    printf("1.2: 610c: tail -c+214 hpoa440.bin | sha256sum\n");
+    printf("                  digest: 471e10e450f519b7f4d0e6d995ca66b0ceb50da12f00c3df0d57e02708c77eb3\n");
+
+
+    
     uVar1 = 0xffffffff;
     if (iVar3 > -1) {
       if (fd_location != (__off_t *)0x0) {  // check for null pointer ????
@@ -4044,20 +4088,19 @@ uint verify_signature(int fd, __off_t *fd_location ,unsigned char *read_buffer,i
       if (file_location > -1) { //no error
 
 	
-	//printf("1.5: 610c: verify_signature: file_location: 0x%lX\n",file_location);
+	printf("1.5: 610c: file_location: 0x%lX\n",file_location);
 
 	/* enter sha256 key rabit hole */
-	// digets has been used to do sha256 over header 0xe and 0x15, should contain gersult
+	// digets has been used to do sha256 over header 0xe and 0x15, should contain result
 	// should we  __htobe32 digest? 
 
 	memcpy(hash_buffer, read_buffer+0x55, HASH_BUFFER_SIZE_CHARS);
 
 	printf("1.9: 610c: hash_buffer (no endianness corr.) md5_sum: ");
 	simple_md5sum((char*)hash_buffer,0x80,NOT_INT);
-	
+
         uVar1= FUN_10005f64(hash_buffer,HASH_BUFFER_SIZE_CHARS,digest,0x20,param_4,param_5);
 	printf("2: 610c: verify_signature: uVar1: %i\n",uVar1);
-
       }
       printf("3: 610c: Should add developer key to key ring.\n");
 
