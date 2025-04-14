@@ -40,6 +40,21 @@ unsigned char data_10010100[32*8 + 4] = {
   0x65, 0x33, 0x64, 0x33, 0x30, 0x63, 0x38, 0x33,
   0x00, 0x00, 0x00, 0x00 };
 
+
+/* I am convinced the keys below are RSA public keys */
+
+/* KEY_BUFFER_SIZE_CHARS = 2*(0x20+1)*sizeof(int) */
+/*
+ * The plus 1 is because of the inclusion of the exponent value
+ * at the end of the key data
+ */
+/* KEY_BUFFER_SIZE_BITS =  2*(0x20)*sizeof(int)*8bits */
+/* KEY_BUFFER_SIZE_BITS = 2048*/
+/* the exponent seems to be 0x10001 ie 65537 */
+
+/* probably the exponent is extracted from the key data and the key is handled seperately. probably in a struct however the struct is mangled up by the compiler and storec in the stack seperate from the key but close to the end of the key data.*/
+
+     
 unsigned char data_10022860[KEY_BUFFER_SIZE_CHARS] = {
   0x00, 0x00, 0x04, 0x00, 0xb8, 0x10, 0x9a, 0xe0,
   0x19, 0x49, 0xc4, 0x5a, 0x11, 0xf2, 0xf6, 0x12,

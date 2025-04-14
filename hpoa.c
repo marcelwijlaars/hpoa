@@ -40,7 +40,7 @@ int main(int argc,char **argv){
   int opt=0;
   int modify=0;
   int burn=0;
-  int firmware=0;
+  int firmw=0;
   int verify=0;
   int signature=0;
   int have_signature=0;
@@ -81,7 +81,7 @@ int main(int argc,char **argv){
 
   /*  handle commandline options */
   if(argc <= 1){
-    printf("No firmware file. Usage: %s [option] <filename>\n",argv[0]);
+    printf("No file. Usage: %s [option] <filename>\n",argv[0]);
     return -1;
   }else{
     while(opt = getopt(argc,argv,"btfsmv"),opt != -1) {
@@ -93,7 +93,7 @@ int main(int argc,char **argv){
 	  break;
 	case 'b':
 	  burn=1;
-	  if((modify==0)&&(firmware==0)){
+	  if((modify==0)&&(firmw==0)){
 	    printf("Going to burn_only.\n");
 	    goto burn_only;
 	    printf("Burn firmare ok.\n");
@@ -102,8 +102,8 @@ int main(int argc,char **argv){
 	  //printf("Choosen option: %c, will burn new initrd to /dev/mtd-initrd\n",opt);
 	  break;
 	case 'f':
-	  firmware=1;
-	  printf("Choosen option: %c, will compose new firmware image\n",opt);
+	  firmw=1;
+	  printf("Choosen option: %c, will compose new image\n",opt);
 	  break;
 
 	case 's':
@@ -112,13 +112,13 @@ int main(int argc,char **argv){
 	 break;
 	case 'v':
 	  verify=1;
-	  if((modify==0)&&(burn==0)&&(firmware==0)){
+	  if((modify==0)&&(burn==0)&&(firmw==0)){
 	    printf("Going to verify_only.\n");
 	    goto verify_only;
 	    printf("Firmare verification ok.\n");
 	    return(1);
 	  }
-	  //printf("Choosen option: %c, will verify new firmware image\n",opt);
+	  //printf("Choosen option: %c, will verify new firmw image\n",opt);
 	  break;
 	}
       }
@@ -147,9 +147,9 @@ int main(int argc,char **argv){
 
   /*
    * search for "Fingerprint Length" at SEEK_END -0x2800
-   * if found, hane x509 certificates at the end of the firmware file
-   * if not found should user signature at 0x55-0xd5 of the firmwre file
-   * firmware version >= 450 should have x509 certificates
+   * if found, hane x509 certificates at the end of the file
+   * if not found should user signature at 0x55-0xd5 of the file
+   * version >= 450 should have x509 certificates
    */
   
   have_fingerprint=fw_with_fingerprint (argv[optind]);
@@ -176,7 +176,7 @@ int main(int argc,char **argv){
   /*
    * Verifying signature...
    * on success (NEW_HEADER==0)  successful! Key1
-   * on failure (NEW_HEADER==1)  Firmware image is an unofficial and unsupported release.
+   * on failure (NEW_HEADER==1)  image is unsupported.
    */
   
 #define NEW_HEADER 0
@@ -234,9 +234,9 @@ int main(int argc,char **argv){
   strcpy(file_name,argv[optind]);
 
   
-  if(firmware){
+  if(firmw){
     printf(RED);
-    printf("doing the firmware stuff\n");
+    printf("doing the fw stuff\n");
     printf(DEFAULT);
 
 
@@ -348,7 +348,7 @@ int main(int argc,char **argv){
         for(i=0;i<4;i++){
       printf("jump_size: 0x%08X, image_data_size: 0x%08X\n", jump_size_array[i], image_data_size_array[i+1]);
     }
-  } // end of doing the firmware stuff
+  } // end of doing the fw stuff
 
  verify_only:
   if(verify){
@@ -364,8 +364,6 @@ int main(int argc,char **argv){
     write_initrd();
     return(1);
   }
-
-  //print_keys();
 
 
   free(p);
@@ -660,7 +658,7 @@ void print_partition_info(partition p, int nr_partitions){
 }
 
 
-/* this function returns 1 if the firmware file has a fingerprint section, otherwise 0 */
+/* this function returns 1 if the file has a fingerprint section, otherwise 0 */
 /* FUN_1000cb68 */
 uint64_t fw_with_fingerprint (char *filename){
   uint64_t uVar1=0;
@@ -2812,69 +2810,55 @@ int find_first_non_zero_from_end(int *param_1,int len){  //very starnge function
 }
 
 
-//   FUN0_10009824(int*)auStack_1cc + 1,  (int*)param_3,     leading_zeros,param_4);
-uint FUN0_10009824(int *param_1,           int *param_2,uint param_3,uint  len){
+/* multiword_left_shift */
+uint multiword_left_shift(int *param_1,int *param_2,uint param_3,uint  len){
   uint local_24;
   uint i;
-  
   uint local_18;
   uint local_14;
   
   printf(RED);
-  printf("FUN_10009824\n");
+  printf("Multiword_left_shift, FUN_10009824\n");
   printf(DEFAULT);
 
-  // endianness should be corrected before this function is called
-  
-  //printf("1.0: 9824: param_3: 0x%X, len: 0x%X\n",param_3,len);
-  if (param_3 < 0x20) {   //sizeof(param_2) = 4*8=32 == 0x20 int
+  if (param_3 < 0x20) {
     local_24 = 0;
-    for (i = 0; i < len; i = i + 1) {  //len = 0x40  == 64 firs 64 bytes of param_2
-      
+    for (i = 0; i < len; i = i + 1) {
       local_14 = *(uint *)(param_2 + i);
-      //printf("2.0: 9824: local_14: 0x%08X, ",local_14);
-
       *(uint *)(param_1 + i) = local_14 << (param_3 & 0x3f) | local_24;
-      //printf("*(param_1+%02i): 0x%08X\n", i,*(uint*)(param_1+i));
-
       if (param_3 == 0) {
         local_14 = 0;
-      }
-      else {
-	//printf("4: 9824: param_3: 0x%X, local_14: 0x%X\n", param_3, local_14);
+      } else {
         local_14 = local_14 >> ((0x20 - param_3) & 0x3f);
       }
       local_24 = local_14;
-      
     }
     local_18 = local_24;
   }else{
     local_18 = 0;
   }
-  //printf("5: 9824: local_18: 0x%X\n",local_18);
   return local_18;
 }
 
-
-uint FUN_10009924(int *param_1,int *param_2,uint param_3,int param_4){
+/*  multiword_right_shift */
+uint multiword_right_shift(int *param_1,int *param_2,uint param_3,int len){
   uint local_24;
   int  i;
   uint local_18;
   uint local_14;
   
   printf(RED);
-  printf("FUN_10009924\n");
+  printf("Multiword_right_shift, FUN_10009924\n");
   printf(DEFAULT);
 
   if (param_3 < 0x20) {
     local_24 = 0;
-    for (i = param_4 + -1; i>=0; i = i + -1) {
+    for (i = len + -1; i>=0; i = i + -1) {
       local_14 = *(uint *)(param_2 + i);
       *(uint *)(param_1 + i) = local_14 >> (param_3 & 0x3f) | local_24;
       if (param_3 == 0) {
         local_14 = 0;
-      }
-      else {
+      } else {
         local_14 = local_14 << ((0x20 - param_3) & 0x3f);
       }
       local_24 = local_14;
@@ -3009,8 +2993,14 @@ void FUN0_1000b104(int *return_value,int *param_2,uint param_3) {
 }
 
 
+/* name could be multiword_subtract */
 
-int FUN_10009580(int *param_1,int *param_2,int *param_3,uint len){
+/*
+ * Given its usage in code that deals with signatures and keys
+ * The modular arithmetic is probably part of a larger cryptographic operation
+ * Most likely part of RSA or similar public-key cryptography implementation 
+ */
+int big_int_subtract(int *param_1,int *param_2,int *param_3,uint len){
   uint local_28;
   int  local_24;
   uint i;
@@ -3019,7 +3009,7 @@ int FUN_10009580(int *param_1,int *param_2,int *param_3,uint len){
   return_buffer = calloc(len,sizeof(int));
   
   //printf(RED);
-  //printf("FUN_10009580\n");
+  //printf("big_int_subtract, FUN_10009580\n");
   //printf(DEFAULT);
 
   //printf("0.0: 9580: param_1: \n");
@@ -3054,7 +3044,19 @@ int FUN_10009580(int *param_1,int *param_2,int *param_3,uint len){
   return local_24;
 }
 
+void simplefied_multiply_and_store(uint *param_1, uint param_2, uint param_3) {
+    // Multiply the two parameters
+    uint64_t result = (uint64_t)param_2 * (uint64_t)param_3;
 
+    // Store the lower 32 bits in param_1[0] and the higher 32 bits in param_1[1]
+    param_1[0] = (uint)(result & 0xFFFFFFFF);        // Lower 32 bits
+    param_1[1] = (uint)(result >> 32);               // Upper 32 bits
+
+    return;
+}
+
+/* on x86 this function and the function above give identical results */
+/* still not sure this function works correctly on all old powerpc cpu's */
 void multiply_and_store(uint *param_1,uint param_2,uint param_3){
   ushort uVar1;
   ushort uVar2;
@@ -3090,6 +3092,71 @@ void multiply_and_store(uint *param_1,uint param_2,uint param_3){
   return;
 }
 
+
+
+
+/*  implementing a multi-precision addition operation with carry*/
+uint FUN_1000a738(int *param_1,int *param_2,uint param_3,int *param_4,uint param_5){
+  uint uVar1;
+  uint local_24;
+  uint local_20[2]; // local_20[0]
+  //int local_1c;   // local_20[1]
+  uint i;
+  uint local_14;
+
+  static int itter=0;
+  //printf(RED);
+  //printf("FUN_1000a738\n");
+  //printf(DEFAULT);
+
+  //why are param_1 and param 2 identical
+  //printf("0: a738: param_1:\n");
+  //line_print_4_ints((unsigned char*)param_1,param_5);
+
+
+  //printf("1.1: a738: param_3: 0x%X\n", param_3);
+  //printf("1.2: a738: param_4\n ");
+  //line_print_4_ints((unsigned char*)param_4,param_5);
+  
+  memset(local_20,0,2*sizeof(int));
+  
+  if (param_3 == 0) {
+    local_14 = 0;
+  }
+  else {
+    local_24 = 0;
+    //printf("2: a738: param_5: %i\n",param_5);
+    //printf("3: a738: param_1:\n");
+
+    for (i = 0; i < param_5; i = i + 1) {
+      //printf("i: 0x%04X, ",i);
+      multiply_and_store(&local_20[0],param_3,*(uint *)(param_4 +i)); //was i*4
+
+      //printf("0x%X ",*(int *)(param_2 + i) );
+      uVar1 = *(int *)(param_2 + i) + local_24;
+      *(uint *)(param_1 + i) = uVar1;
+      local_24 = (uint)(uVar1 < local_24);
+      
+      uVar1 = *(int *)(param_1 + i) + local_20[0];
+      *(uint *)(param_1 + i) = uVar1;
+      if (uVar1 < local_20[0]) {
+        local_24 = local_24 + 1;
+      }
+      local_24 = local_24 + local_20[1];
+    }
+    //printf("\n");
+    local_14 = local_24;
+  }
+  //printf("4: a738: function itter: %i\n", itter);
+
+  //printf("5: a738: param_1:\n");
+  //line_print_4_ints((unsigned char*)param_1,param_5*sizeof(int));
+  itter++;
+  return local_14;
+}
+
+
+
 /*
  * param_1: rw
  * param_2: ro
@@ -3098,8 +3165,7 @@ void multiply_and_store(uint *param_1,uint param_2,uint param_3){
  * len    : ro
  */
 
-
-// local_1d0 is param_3
+/* implementing a multi-precision subtraction operation with borrow */
 int FUN_1000a8a4(int *param_1,uint param_3,int *param_4,uint len){
   uint uVar1;
   uint local_24;
@@ -3225,7 +3291,13 @@ uint FUN_1000aa18(uint param_1){
 
 // param_5 is first part of key in reverse order
 // param_3 seems to be related to hash_buffer
-void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *reverse_key,uint param_6){
+/*
+ * ai says: revised and most appropiate name:
+ * rsa_signature_montgomery_exp
+ * RSA key in DAT_variables.h file. key bit size and key exponent match RSA key. should check with: openssl rsa -pubin -inform PEM -text -noout < pub.key
+ */
+
+ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *reverse_key,uint param_6){
   int iVar1=0;
   int iVar2=0;
   uint uVar3;
@@ -3244,6 +3316,7 @@ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *rever
   uint leading_zeros=0;  // was local_1c
   int lc=0;
   printf(RED);
+
   printf("FUN_10009a24\n");
   printf(DEFAULT);
 
@@ -3272,9 +3345,9 @@ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *rever
     memset((int*)(auStack_1cc + 1),0,local_20*sizeof(uint32_t));  //local_20 == len == 8
 
     //if leading_zeros == 0 function below copies param_2 to patam_1
-    uVar3 = FUN0_10009824((int*)(auStack_1cc + 1),param_3,leading_zeros,param_4);
+    uVar3 = multiword_left_shift((int*)(auStack_1cc + 1),param_3,leading_zeros,param_4);
     // FUN_10008474 alreadey reversed the key_address data thus also the reverse_key
-    FUN0_10009824((int*)(auStack_b8 + 1),reverse_key,leading_zeros,local_20);
+    multiword_left_shift((int*)(auStack_b8 + 1),reverse_key,leading_zeros,local_20);
 
 
     printf("-1.6: 9a24: auStack_1cc: ");
@@ -3407,7 +3480,7 @@ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *rever
 	 */
 
 	//printf("5.3: 9a24: iVar4: 0x%X\n",iVar4);
-        iVar4 = FUN_10009580((int*)(auStack_1cc + i + 1),(int*)(auStack_1cc + i + 1),(int*)(auStack_b8+1),local_20);
+        iVar4 = big_int_subtract((int*)(auStack_1cc + i + 1),(int*)(auStack_1cc + i + 1),(int*)(auStack_b8+1),local_20);
 
 	//printf("5.4: 9a24: lc: 0x%X, iVar4: 0x%X\n",lc,iVar4);
 
@@ -3438,73 +3511,13 @@ void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *rever
 
     memset(param_2,0,param_6*sizeof(uint32_t));
 
-    FUN_10009924(param_2,(auStack_1cc + 1),leading_zeros,local_20);
+    multiword_right_shift(param_2,(auStack_1cc + 1),leading_zeros,local_20);
     memset(auStack_1cc + 1,0,0x10c); // size is 0x110, why not clear all?
     memset(auStack_b8,0,0x84);       // size is 0x90,  why not clear all?
   } //end of if
   return;
 }
 
-
-// both two functions below are almost the same ??????????????????
-
-uint FUN_1000a738(int *param_1,int *param_2,uint param_3,int *param_4,uint param_5){
-  uint uVar1;
-  uint local_24;
-  uint local_20[2]; // local_20[0]
-  //int local_1c;   // local_20[1]
-  uint i;
-  uint local_14;
-
-  static int itter=0;
-  //printf(RED);
-  //printf("FUN_1000a738\n");
-  //printf(DEFAULT);
-
-  //why are param_1 and param 2 identical
-  //printf("0: a738: param_1:\n");
-  //line_print_4_ints((unsigned char*)param_1,param_5);
-
-  //printf("1.1: a738: param_3: 0x%X\n", param_3);
-  //printf("1.2: a738: param_4\n ");
-  //line_print_4_ints((unsigned char*)param_4,param_5);
-  
-  memset(local_20,0,2*sizeof(int));
-  
-  if (param_3 == 0) {
-    local_14 = 0;
-  }
-  else {
-    local_24 = 0;
-    //printf("2: a738: param_5: %i\n",param_5);
-    //printf("3: a738: param_1:\n");
-
-    for (i = 0; i < param_5; i = i + 1) {
-      //printf("i: 0x%04X, ",i);
-      multiply_and_store(&local_20[0],param_3,*(uint *)(param_4 +i)); //was i*4
-
-      //printf("0x%X ",*(int *)(param_2 + i) );
-      uVar1 = *(int *)(param_2 + i) + local_24;
-      *(uint *)(param_1 + i) = uVar1;
-      local_24 = (uint)(uVar1 < local_24);
-      
-      uVar1 = *(int *)(param_1 + i) + local_20[0];
-      *(uint *)(param_1 + i) = uVar1;
-      if (uVar1 < local_20[0]) {
-        local_24 = local_24 + 1;
-      }
-      local_24 = local_24 + local_20[1];
-    }
-    //printf("\n");
-    local_14 = local_24;
-  }
-  //printf("4: a738: function itter: %i\n", itter);
-
-  //printf("5: a738: param_1:\n");
-  //line_print_4_ints((unsigned char*)param_1,param_5*sizeof(int));
-  itter++;
-  return local_14;
-}
 
 
 
@@ -3641,15 +3654,13 @@ void FUN_10009ebc(int *return_buffer,int *param_2,int *param_3,int param_4,int *
 }
 
 
-/* this is the same as the unpack_key function */
-
-void FUN_100091dc(int *hash,int key_len,int *key,uint hash_len){
+void unpack_key(int *hash,int key_len,int *key,uint hash_len){
   uint uVar1;
   int j;
   uint k;
   uint i;
 
-  printf("FUN_100091dc\n");
+  printf("unpack_key, FUN_100091dc\n");
 
   k = 0;
   j = hash_len - 1;
@@ -3667,32 +3678,6 @@ void FUN_100091dc(int *hash,int key_len,int *key,uint hash_len){
   return;
 }
 
-
-void old_FUN_100091dc(int *param_1,int param_2,int *param_3,uint param_4){
-  uint uVar1;
-  int local_24;
-  uint local_20;
-  uint i;
-
-  printf(RED);
-  printf("FUN_100091dc\n");
-  printf(DEFAULT);
-
-  local_20 = 0;
-  local_24 = param_2 + -1;
-  while ((local_20 < param_4 && (-1 < local_24))) {
-    uVar1 = *(uint *)(local_20 * 4 + param_3);
-    for (i= 0; ((-1 < local_24) && (i < 0x20)); i = i + 8) {
-      *(char *)(param_1 + local_24) = (char)(uVar1 >> (i & 0x3f));
-      local_24 = local_24 + -1;
-    }
-    local_20 = local_20 + 1;
-  }
-  for (; -1 < local_24; local_24 = local_24 + -1) {
-    *(unsigned char *)(param_1 + local_24) = 0;
-  }
-  return;
-}
 
 
 /* I think key is endianess sensitive */
@@ -3830,7 +3815,8 @@ uint32_t FUN_100089b8(int *pass_through,uint *param_2,unsigned char *hash_buffer
     printf("4.0: 89b8: tmp: 0x%08X\n",*key_address);
     *param_2 = (*key_address + 7U) >> 3;
 
-    FUN_100091dc(pass_through,*param_2,return_buffer,local_1c); //realy (int*)?
+    /* unpack return_buffer to pass_through */
+    unpack_key(pass_through,*param_2,return_buffer,local_1c); //realy (int*)?
     memset(return_buffer,0,0x84);
     memset(auStack_140,0,0x84);
     local_18 = 0;
@@ -4134,23 +4120,6 @@ int get_free_loop(void){
   return loopdev[0]+1;
   
 }
-
-void print_keys(void){
-  /* print keys in data_10010100 */
-  int i,j;
-  for(j=0;j<7;j++){
-    printf("key[%i]: ",j);
-    for(i=0;i<(4*8);i++){
-      printf("%c",data_10010100[j*36 +i]);
-    }
-    printf("\n");
-  }
-  printf("\n");
-}
-
-
-
-
   
 #if 0  
 
@@ -4215,7 +4184,7 @@ int jsa_index=0;
 
       md5_sum  = calloc( 0x10,sizeof(char));
       nr_partitions= modify_partition(partition_name,&partition_size);
-      /* update md5sum int read_buffer, should also be updated in firmware file */
+      /* update md5sum int read_buffer, should also be updated in file */
 
       for(i=0;i<MD5_DIGEST_LENGTH;i++){
 	*(uint8_t*)(read_buffer + 1 + iVar5 + 5 + i)= *(uint8_t*)(md5_sum+i);

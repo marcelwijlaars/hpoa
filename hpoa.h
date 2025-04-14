@@ -152,7 +152,7 @@ uint FUN_1000aa18(uint);
 uint FUN_1000a738(int, int, uint, int, uint);
 void MD5_printf(unsigned int*,char*);
 int FUN_1000a8a4(int, int, uint, int, uint);
-int FUN_10009580(int, int, int, uint);
+int FUN_10009580(int, int, int, uint); // big_int_subtract
 int FUN_10008474(void *, size_t *, int, uint, int *);
 int FUN0_1000a6bc(int,int);
 
