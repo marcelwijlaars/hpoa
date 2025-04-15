@@ -27,6 +27,10 @@
 #define IS_INT true
 #define NOT_INT false
 
+#define RSA_ERR_PADDING     0x401   /* PKCS#1 padding validation failed */
+#define RSA_ERR_SIZE        0x406   /* Key/message size mismatch */
+
+
 
 #define ___bswap_constant_32(x)						\
      ((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >>  8) |                      \
@@ -94,7 +98,7 @@ int modify_partition(partition, char*,int);
 int em_type(void);
 int do_rw_test(void);
 uint64_t fw_with_fingerprint(char*);                       /* FUN_1000cb68 ish */ 
-uint verify_signature(int, __off_t *, unsigned char *, int, int);
+uint rsa_verify_signature(int, __off_t *, unsigned char *, int, int);
 int write_initrd(void);
 int verify_initrd(void);
 int get_free_loop(void);

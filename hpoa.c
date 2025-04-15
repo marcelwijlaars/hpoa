@@ -128,6 +128,19 @@ int main(int argc,char **argv){
   /****************************************************************************************/
   /*                                 main code                                            */
   /****************************************************************************************/
+
+  #if 0
+  fd=open("key_1.rsa",O_CREAT|O_WRONLY|0666);
+  for(i=0;i<128;i++){
+    write(fd,data_10022860[i+4],1);
+    printf("%02X:",data_10022860[i+4]);
+  }
+  fsync(fd);
+  
+  close(fd);
+  exit(-2);
+  
+#endif
   
   printf("Endianness: ");
   if(!is_bigendian()) printf("little.\n"); else printf("big.\n");
@@ -158,12 +171,12 @@ int main(int argc,char **argv){
     int iVar17 = (int)((uint64_t)have_fingerprint>> 0x20);
     iVar17=0;
     if (iVar17 == 1) {
-      /* X509 *functions */
+      /* X.509 *functions */
     }
     else {
       /* SHA256 functions */
       
-      have_signature = verify_signature(fd,fd_location,read_buffer,0,pcVar22);
+      have_signature = rsa_verify_signature(fd,fd_location,read_buffer,0,pcVar22);
       printf("have_signature: %i\n", have_signature);
     }
     
@@ -785,8 +798,8 @@ char * partition_selector(unsigned char p){ //should be partition_name_selector
 }
 
 
-
-void FUN_1000e730(uint *param_1,uint *param_2){
+// ai suggests montgomery_form_convert or bn_to_mont_form as name
+void  bn_to_mont_form(uint *param_1,uint *param_2){
   uint uVar1;
   unsigned int uVar2;
   uint uVar3;
@@ -794,7 +807,7 @@ void FUN_1000e730(uint *param_1,uint *param_2){
   uint uVar5;
   /*
   printf(RED);
-  printf("FUN_1000e730.\n");
+  printf(" bn_to_mont_form, FUN_1000e730.\n");
   printf(DEFAULT);
   */
   uVar3 = *param_1;
@@ -915,7 +928,8 @@ uint64_t FUN_1000f988(uint param_1,uint param_2,uint param_3){
 
 
 /* needed by _130 functions */
-uint64_t FUN_1000fa10(uint *param_1){
+//ai suggests  bn_from_mont_form
+uint64_t bn_from_mont_form(uint *param_1){
   uint uVar1;
   uint uVar2;
   uint uVar3;
@@ -1048,8 +1062,8 @@ uint64_t FUN_1000ecf4(uint param_1,int param_2,uint param_3,int param_4){
   local_50[0] = param_3;
   local_50[1] = param_4; // not used, combined array[2] ????
   
-  FUN_1000e730(&local_58[0],&local_b8[0]);
-  FUN_1000e730(&local_50[0],&local_98[0]);
+  bn_to_mont_form(&local_58[0],&local_b8[0]);
+  bn_to_mont_form(&local_50[0],&local_98[0]);
   local_48 = (uint)(unsigned char)
     ((
      (local_b8[0] == 0) << 3 |
@@ -1199,7 +1213,7 @@ LAB_1000f0b0:
     local_b8[1] = (uint)(local_b8[1] != local_98[1]);
   }
 LAB_1000efd0:
-  uVar9 = FUN_1000fa10(puVar2);
+  uVar9 = bn_from_mont_form(puVar2);
   return uVar9;
 }
 
@@ -1213,6 +1227,7 @@ LAB_1000efd0:
  * updating param_3
 */
 
+// ai suggests montgomery_modular_add or bn_mod_add_mont as name
 uint * FUN_1000e89c(uint *param_1,uint *param_2,uint *param_3){
   bool bVar1;
   uint uVar2;
@@ -1356,7 +1371,7 @@ uint * FUN_1000e89c(uint *param_1,uint *param_2,uint *param_3){
   return puVar5;
 }
 
-
+// ai suggests montgomery_add or bn_add_mont as name
 uint64_t FUN_1000ebfc(uint param_1,unsigned int  param_2,uint param_3,unsigned int param_4){
   uint *puVar1;
   uint64_t uVar2;
@@ -1376,14 +1391,14 @@ uint64_t FUN_1000ebfc(uint param_1,unsigned int  param_2,uint param_3,unsigned i
   local_20[1] = param_4;
 
   /* FUN_1000e730(uint param_1[2],uint param_2[6-8]) */
-  FUN_1000e730(&local_28[0],auStack_88);
-  FUN_1000e730(&local_20[0],auStack_68);
+  bn_to_mont_form(&local_28[0],auStack_88);
+  bn_to_mont_form(&local_20[0],auStack_68);
   puVar1 = FUN_1000e89c(auStack_88,auStack_68,auStack_48);
-  uVar2 = FUN_1000fa10(puVar1);
+  uVar2 = bn_from_mont_form(puVar1);
   return uVar2;
 }
 
-
+//ai suggests  montgomery_modular_divide or bn_mod_div_mont as name
 uint64_t FUN_1000f0f0(uint param_1,uint32_t param_2,uint param_3,uint32_t param_4){
   uint uVar1;
   uint *puVar2;
@@ -1413,8 +1428,8 @@ uint64_t FUN_1000f0f0(uint param_1,uint32_t param_2,uint param_3,uint32_t param_
   local_30[1] = param_4;
 
   /* FUN_1000e730(uint param_1[2],uint param_2[6-8]) */
-  FUN_1000e730(&local_38[0],local_78);
-  FUN_1000e730(&local_30[0],local_58);
+  bn_to_mont_form(&local_38[0],local_78);
+  bn_to_mont_form(&local_30[0],local_58);
   puVar2 = local_78;
   uVar6 = local_78[3];
   uVar7 = local_78[4];
@@ -1475,7 +1490,7 @@ uint64_t FUN_1000f0f0(uint param_1,uint32_t param_2,uint param_3,uint32_t param_
   }
   local_78[4] = uVar7;
   local_78[3] = uVar6;
-  uVar9 = FUN_1000fa10(puVar2);
+  uVar9 = bn_from_mont_form(puVar2);
   return uVar9;
 }
 
@@ -1579,7 +1594,7 @@ uint64_t FUN_1000f6bc(uint param_1){
 	       );
     }
   }
-  uVar4 = FUN_1000fa10(&local_38);
+  uVar4 = bn_from_mont_form(&local_38);
   return uVar4;
 }
 
@@ -1829,7 +1844,7 @@ int FUN_1000f7dc(unsigned int param_1,unsigned int param_2){
   local_18[0] = param_1;
   local_18[1] = param_2;
 
-  FUN_1000e730(&local_18[0],local_38);
+  bn_to_mont_form(&local_18[0],local_38);
 
   if (*(local_38+0) == 2) {
     return 0;
@@ -2488,8 +2503,8 @@ uint FUN_10005cdc(int fd,uint param_2,sha256_ctx *ctx){
 
 
 
-/* this dunction does the actual sha256 hash */
-uint32_t FUN_10005de8(int fd,unsigned char *sha256_buffer,unsigned char *digest){
+/* this function does the actual sha256 hash */
+uint32_t rsa_hash_to_verify (int fd,unsigned char *sha256_buffer,unsigned char *digest){
   int i,n;
   int len=0;
   bool bVar1;
@@ -2510,7 +2525,7 @@ uint32_t FUN_10005de8(int fd,unsigned char *sha256_buffer,unsigned char *digest)
   //int local_47;                  // uStack_48[1] 
 
   printf(RED);
-  printf("FUN_10005de8\n");
+  printf("rsa_hash_to_verify, FUN_10005de8\n");
   printf(DEFAULT);
 
   //line_print_16_bytes(sha256_buffer,HEADER_SIZE);
@@ -2796,12 +2811,12 @@ int kind_of_memcmp(int *param_1,int *param_2,int param_3){
   return 1;
 }
 
-//normally returns key size
-int find_first_non_zero_from_end(int *param_1,int len){  //very starnge function
+// ai suggests bn_num_words 
+int bn_num_words(int *param_1,int len){  //very starnge function
   int i;
 
   //printf(RED);
-  //printf("find_first_non_zero_from_end, FUN0_1000a6bc\n");
+  //printf("bn_num_words, FUN0_1000a6bc\n");
   //printf(DEFAULT);
 
   for(i = len -1; ( (i > -1) && (*(param_1 +i) == 0)); i = i -1) {
@@ -2810,15 +2825,14 @@ int find_first_non_zero_from_end(int *param_1,int len){  //very starnge function
 }
 
 
-/* multiword_left_shift */
-uint multiword_left_shift(int *param_1,int *param_2,uint param_3,uint  len){
+uint bn_shift_left(int *param_1,int *param_2,uint param_3,uint  len){
   uint local_24;
   uint i;
   uint local_18;
   uint local_14;
   
   printf(RED);
-  printf("Multiword_left_shift, FUN_10009824\n");
+  printf("bn_shift_left, FUN_10009824\n");
   printf(DEFAULT);
 
   if (param_3 < 0x20) {
@@ -2840,15 +2854,14 @@ uint multiword_left_shift(int *param_1,int *param_2,uint param_3,uint  len){
   return local_18;
 }
 
-/*  multiword_right_shift */
-uint multiword_right_shift(int *param_1,int *param_2,uint param_3,int len){
+uint bn_shift_right(int *param_1,int *param_2,uint param_3,int len){
   uint local_24;
   int  i;
   uint local_18;
   uint local_14;
   
   printf(RED);
-  printf("Multiword_right_shift, FUN_10009924\n");
+  printf("bn_shift_right, FUN_10009924\n");
   printf(DEFAULT);
 
   if (param_3 < 0x20) {
@@ -2875,7 +2888,8 @@ uint multiword_right_shift(int *param_1,int *param_2,uint param_3,int len){
 
 //this function only reads param_{2,3} and only writes return_buffer
 // waar komt param_2 vandaan
-void FUN0_1000b104(int *return_value,int *param_2,uint param_3) {
+//ai suggests bn_div_rem_words
+void bn_div_rem_words(int *return_value,int *param_2,uint param_3) {
 
   ushort p3_h;  //was uVar1  
   ushort p3_l;  
@@ -2889,7 +2903,7 @@ void FUN0_1000b104(int *return_value,int *param_2,uint param_3) {
   ushort   local_16;
   
   printf(RED);
-  printf("FUN_1000b104\n");
+  printf("bn_div_rem_words,FUN_1000b104\n");
   printf(DEFAULT);
 
   // we can not print param_2 becaus we dont know its size
@@ -3166,7 +3180,8 @@ uint FUN_1000a738(int *param_1,int *param_2,uint param_3,int *param_4,uint param
  */
 
 /* implementing a multi-precision subtraction operation with borrow */
-int FUN_1000a8a4(int *param_1,uint param_3,int *param_4,uint len){
+// ai suggests bn_word_mul_sub
+int bn_word_mul_sub(int *param_1,uint param_3,int *param_4,uint len){
   uint uVar1;
   uint local_24;
   unsigned int *return_value;  // local_20[0]
@@ -3174,7 +3189,7 @@ int FUN_1000a8a4(int *param_1,uint param_3,int *param_4,uint len){
   int local_14;
   int *param4;
   printf(RED);
-  printf("FUN_1000a8a4\n");
+  printf("bn_word_mul_sub, FUN_1000a8a4\n");
   printf(DEFAULT);
 
   return_value=calloc(2,sizeof(unsigned int));
@@ -3255,9 +3270,9 @@ int old_FUN_1000a8a4(int *param_1,int *param_2,uint param_3,int *param_4,uint le
 
 
 
-uint count_leading_zeros(uint param_1){
+uint bn_clz_word(uint param_1){
   printf(RED);
-  printf("count_leading_zeros, FUN_1000aa18\n");
+  printf("bn_clz_word, FUN_1000aa18\n");
   printf(DEFAULT);
   
   uint local_18;
@@ -3292,12 +3307,11 @@ uint FUN_1000aa18(uint param_1){
 // param_5 is first part of key in reverse order
 // param_3 seems to be related to hash_buffer
 /*
- * ai says: revised and most appropiate name:
- * rsa_signature_montgomery_exp
  * RSA key in DAT_variables.h file. key bit size and key exponent match RSA key. should check with: openssl rsa -pubin -inform PEM -text -noout < pub.key
  */
 
- void FUN_10009a24(int *param_1,int *param_2,int *param_3,uint param_4,int *reverse_key,uint param_6){
+// ai suggests bn_mod_reduce_montgomery as name 
+ void bn_mod_reduce_mont(int *param_1,int *param_2,int *param_3,uint param_4,int *reverse_key,uint param_6){
   int iVar1=0;
   int iVar2=0;
   uint uVar3;
@@ -3313,11 +3327,11 @@ uint FUN_1000aa18(uint param_1){
   int local_28=0;
   int i=0;
   uint local_20=0;
-  uint leading_zeros=0;  // was local_1c
+  uint msb_position=0;  // was local_1c
   int lc=0;
   printf(RED);
 
-  printf("FUN_10009a24\n");
+  printf("bn_mod_reduce_mont, FUN_10009a24\n");
   printf(DEFAULT);
 
   memset(auStack_1cc,0, 68*sizeof(int));
@@ -3327,7 +3341,7 @@ uint FUN_1000aa18(uint param_1){
     for(int q=0;q<param_4/sizeof(int);q++)
       *(param_3+q)=__htobe32(*(param_3+q));
   
-  local_20 = find_first_non_zero_from_end(reverse_key,param_6);
+  local_20 = bn_num_words(reverse_key,param_6);
   printf("-2.9: 9a24: param_3: ");	
   simple_md5sum((char*)param_3,param_4, NOT_INT); 
   //line_print_4_ints((unsigned char*)param_3, 0x80);
@@ -3338,16 +3352,14 @@ uint FUN_1000aa18(uint param_1){
   //  line_print_4_ints((unsigned char*)reverse_key, 0x84);
   
   if (local_20 != 0) {
-    /* param 4 is 2x zo groot al reverse_key, reverse_key is zoiets als size of key/hash */
-    leading_zeros=count_leading_zeros(*(uint *)(reverse_key + local_20*1 -1));
-    leading_zeros=0x20-leading_zeros; //leading_zeros = 0
-
+    msb_position=0x20-bn_clz_word(*(uint *)(reverse_key + local_20*1 -1));
+    
     memset((int*)(auStack_1cc + 1),0,local_20*sizeof(uint32_t));  //local_20 == len == 8
 
-    //if leading_zeros == 0 function below copies param_2 to patam_1
-    uVar3 = multiword_left_shift((int*)(auStack_1cc + 1),param_3,leading_zeros,param_4);
+    //if msb_position == 0 function below copies param_2 to patam_1
+    uVar3 = bn_shift_left((int*)(auStack_1cc + 1),param_3,msb_position,param_4);
     // FUN_10008474 alreadey reversed the key_address data thus also the reverse_key
-    multiword_left_shift((int*)(auStack_b8 + 1),reverse_key,leading_zeros,local_20);
+    bn_shift_left((int*)(auStack_b8 + 1),reverse_key,msb_position,local_20);
 
 
     printf("-1.6: 9a24: auStack_1cc: ");
@@ -3401,7 +3413,7 @@ uint FUN_1000aa18(uint param_1){
 	printf("auStack_1cc is 68xint long, i+local_20: 0x%X, cant do line_print\n", i+local_20);
 	printf("1.0: 9a24: local_28: 0x%X\n",local_28);
 	printf("1.1: 9a24: local_1d0: 0x%X\n",local_1d0);
-	FUN0_1000b104((int *)&local_1d0,(int *)(auStack_1cc + i + local_20),local_28 + 1);
+	bn_div_rem_words((int *)&local_1d0,(int *)(auStack_1cc + i + local_20),local_28 + 1);
 	printf("1.2: 9a24: local_1d0: 0x%X\n",local_1d0);
 	getchar();	
       }
@@ -3424,7 +3436,7 @@ uint FUN_1000aa18(uint param_1){
       line_print_4_ints((unsigned char*)(auStack_b8),37*sizeof(int));
       printf("1.6: 9a24: i: 0x%X, local_1d0: 0x%X\n",i, local_1d0);
 
-      iVar4 = FUN_1000a8a4((int*)(auStack_1cc + i + 1),local_1d0,(int*)(auStack_b8+1),local_20);
+      iVar4 = bn_word_mul_sub((int*)(auStack_1cc + i + 1),local_1d0,(int*)(auStack_b8+1),local_20);
 
       
       printf("1.7: 9a24: auStack_1cc:\n");
@@ -3487,8 +3499,8 @@ uint FUN_1000aa18(uint param_1){
 	//printf("5.5: 9a24: auStack_1cc+i+1: \n");
 	//line_print_4_ints((unsigned char*)(auStack_1cc + i + 1),local_20*sizeof(int));
 	
-	//if((auStack_1cc[i+local_20+1]%0x500000)==0)
-	//  printf("5.9: 9a24: i: %i, iVar4: 0x%X, iVar1: %i, iVar2: %i, local_20: %i, auStack_1cc[%i]: 0x%08X\n",i,iVar4, iVar1, iVar2, local_20,i+local_20+1,(int)auStack_1cc[i+local_20+1]);
+	if((auStack_1cc[i+local_20+1]%0x500000)==0)
+	printf("5.9: 9a24: i: %i, iVar4: 0x%X, iVar1: %i, iVar2: %i, local_20: %i, auStack_1cc[%i]: 0x%08X\n",i,iVar4, iVar1, iVar2, local_20,i+local_20+1,(int)auStack_1cc[i+local_20+1]);
 
        
         auStack_1cc[iVar1 + 1] = auStack_1cc[iVar2 + 1] - iVar4;
@@ -3501,7 +3513,7 @@ uint FUN_1000aa18(uint param_1){
       printf(BLUE);
       printf("6: 9a24: lc: 0x%i, i: %i, iVar4: 0x%X, iVar1: %i, local_20: %i, auStack_1cc[%i]: 0x%08X\n",lc, i,iVar4, iVar1, local_20,i+local_20+1,(int)auStack_1cc[i+local_20+1]);
       printf(DEFAULT);
-      if(i==31) exit(-2);
+      //if(i==31) exit(-2);
       //getchar();
 
       
@@ -3511,7 +3523,7 @@ uint FUN_1000aa18(uint param_1){
 
     memset(param_2,0,param_6*sizeof(uint32_t));
 
-    multiword_right_shift(param_2,(auStack_1cc + 1),leading_zeros,local_20);
+    bn_shift_right(param_2,(auStack_1cc + 1),msb_position,local_20);
     memset(auStack_1cc + 1,0,0x10c); // size is 0x110, why not clear all?
     memset(auStack_b8,0,0x84);       // size is 0x90,  why not clear all?
   } //end of if
@@ -3521,8 +3533,8 @@ uint FUN_1000aa18(uint param_1){
 
 
 
-
-void FUN_100096ac(int *param_1,int *param_2,int *param_3,int param_4){
+//OpenSSL nameing for this function  bn_mul
+void bn_mul(int *param_1,int *param_2,int *param_3,int param_4){
   int iVar1;
   uint uVar3;
   int aiStack_138 [66+2]; // was 68
@@ -3532,13 +3544,13 @@ void FUN_100096ac(int *param_1,int *param_2,int *param_3,int param_4){
 
   
   //printf(RED);
-  //printf("FUN_100096ac\n");
+  //printf("bn_mul, FUN_100096ac\n");
   //printf(DEFAULT);
 
   memset(aiStack_138,0,(param_4 << 1)*sizeof(uint32_t));
 
-  local_28 = find_first_non_zero_from_end(param_2,param_4); //should return 32
-  local_24 = find_first_non_zero_from_end(param_3,param_4); //should return 32
+  local_28 = bn_num_words(param_2,param_4); //should return 32
+  local_24 = bn_num_words(param_3,param_4); //should return 32
 
   //printf("3: 96ac: local_28: %i\n",local_28);  // should return 32
   //printf("4: 96ac: local_24: %i\n",local_24);  // should return 32
@@ -3565,23 +3577,23 @@ void FUN_100096ac(int *param_1,int *param_2,int *param_3,int param_4){
 
 
 
-//parameter 4 is paramter 5 van 9a24
-void FUN_10009e2c(int *param_1,int *param_2,int *param_3,int *param_4,uint param_5){
+// parameter 4 is paramter 5 van 9a24
+// ai suggests  rsa_montgomery_multiply or rsa_modular_multiply  as a name for this function
+// more acurate ai suggests rsa_montgomery_modular_multiply
+//  OpenSSL library uses bn_mod_mul_montgomery
+void bn_mod_mul_mont(int *param_1,int *param_2,int *param_3,int *param_4,uint param_5){
   int auStack_120[0x11c];
   int auStack_220[0x11c];  
 
   //printf(RED);
-  //printf("FUN_10009e2c\n");
+  //printf("bn_mod_mul_mont, FUN_10009e2c\n");
   //printf(DEFAULT);
-
-  //printf("2: 9e2c: *param_4: 0x%X\n",*param_4);
 
   memset(auStack_120,0,0x11c*sizeof(int));
   memset(auStack_220,0,0x11c*sizeof(int));
 
-  FUN_100096ac(auStack_120,param_2,param_3,param_5);
-
-  FUN_10009a24(auStack_220,param_1,auStack_120 ,param_5<<1,param_4,param_5);
+  bn_mul(auStack_120,param_2,param_3,param_5);
+  bn_mod_reduce_mont(auStack_220,param_1,auStack_120 ,param_5<<1,param_4,param_5);
   
   memset(auStack_220,0,66*sizeof(int));
   memset(auStack_120,0,66*sizeof(int));
@@ -3591,7 +3603,9 @@ void FUN_10009e2c(int *param_1,int *param_2,int *param_3,int *param_4,uint param
 
 
 // paramet 5 is parameter 5 van 9a24
-void FUN_10009ebc(int *return_buffer,int *param_2,int *param_3,int param_4,int *param_5,uint len){
+// ai suggect (RSA_)montgomery_modular_exponentiation as a name for this function
+// OpenSSL library uses bn_mod_exp_mont 
+void bn_mod_exp_mont (int *return_buffer,int *param_2,int *param_3,int param_4,int *param_5,uint len){
   int iVar1;
   int auStack_2d4[144];
   int auStack_250[144];
@@ -3612,19 +3626,19 @@ void FUN_10009ebc(int *return_buffer,int *param_2,int *param_3,int param_4,int *
   memset(local_b8,   0, 36*sizeof(int));
   
   printf(RED);
-  printf("FUN_10009ebc\n");
+  printf("bn_mod_exp_mont, FUN_10009ebc\n");
   printf(DEFAULT);
 
   memcpy(auStack_250, param_2, len * sizeof(uint32_t));
   
-  FUN_10009e2c(auStack_1cc,auStack_250,param_2,param_5,len);
-  FUN_10009e2c(auStack_148,auStack_1cc,param_2,param_5,len);
+  bn_mod_mul_mont(auStack_1cc,auStack_250,param_2,param_5,len);
+  bn_mod_mul_mont(auStack_148,auStack_1cc,param_2,param_5,len);
 
 
   memset(local_b8, 0, len * sizeof(uint32_t));
   
   local_b8[0] = 1;
-  iVar1 = find_first_non_zero_from_end(param_3,param_4);
+  iVar1 = bn_num_words(param_3,param_4);
   local_28 = iVar1;
   while (local_28 = local_28 + -1, -1 < local_28) {
     local_c0 = *(uint *)(local_28 * 4 + param_3);
@@ -3637,11 +3651,11 @@ void FUN_10009ebc(int *return_buffer,int *param_2,int *param_3,int param_4,int *
 
     for (local_20 = 0; local_20 < local_24; local_20 = local_20 + 2) {
 
-      FUN_10009e2c(local_b8,local_b8,local_b8,param_5,len);
-      FUN_10009e2c(local_b8,local_b8,local_b8,param_5,len);
+      bn_mod_mul_mont(local_b8,local_b8,local_b8,param_5,len); // squaring  result=(input*input)mod n, n=param_5
+      bn_mod_mul_mont(local_b8,local_b8,local_b8,param_5,len); // squaring
       local_1c = local_c0 >> 0x1e;
       if (local_1c != 0) {
-        FUN_10009e2c(local_b8,local_b8,(auStack_2d4 + local_1c * 0x84),param_5,len);
+        bn_mod_mul_mont(local_b8,local_b8,(auStack_2d4 + local_1c * 0x84),param_5,len);
       }
       local_c0 = local_c0 << 2;
     }
@@ -3654,13 +3668,15 @@ void FUN_10009ebc(int *return_buffer,int *param_2,int *param_3,int param_4,int *
 }
 
 
-void unpack_key(int *hash,int key_len,int *key,uint hash_len){
+
+// ai suggests bn_bn2bin as name 
+void bn_bn2bin(int *hash,int key_len,int *key,uint hash_len){
   uint uVar1;
   int j;
   uint k;
   uint i;
 
-  printf("unpack_key, FUN_100091dc\n");
+  printf("bn_bn2bin, FUN_100091dc\n");
 
   k = 0;
   j = hash_len - 1;
@@ -3683,14 +3699,15 @@ void unpack_key(int *hash,int key_len,int *key,uint hash_len){
 /* I think key is endianess sensitive */
 /* should correct for endianness of key only once */
 /* param_1 == auStack_140 */
-void pack_key(int *packed_key,uint key_len,int *key,int hash_len){
+// ai suggests bn_bin2bn as name
+void bn_bin2bn(int *packed_key,uint key_len,int *key,int hash_len){
   uint local_28;
   int j;
   uint k;
   uint i;
 
   printf(RED);
-  printf("pack_key, FUN0_100090a4\n");
+  printf("bn_bin2bn, FUN0_100090a4\n");
   printf(DEFAULT);
 
 
@@ -3719,7 +3736,8 @@ void pack_key(int *packed_key,uint key_len,int *key,int hash_len){
 /* at teh end: *param_2 = (*key_address + ui) >> 3;  */
 /* we need to check endianness at the end  for param_2 to be correct*/
 /* some key/hash bufers seem to be big endian and some little endian */
-uint32_t FUN_100089b8(int *pass_through,uint *param_2,unsigned char *hash_buffer,int hash_len,int *key_address){
+/* ai suggest rsa_verify_raw_montgomery as name */
+uint32_t rsa_verify_raw_montgomery(int *pass_through,uint *param_2,unsigned char *hash_buffer,int hash_len,int *key_address){
   int iVar1;
   int return_buffer[36];
   int auStack_1d0[36];
@@ -3730,7 +3748,7 @@ uint32_t FUN_100089b8(int *pass_through,uint *param_2,unsigned char *hash_buffer
   uint32_t local_18;
   
   printf(RED);
-  printf("FUN_100089b8\n");
+  printf("rsa_verify_raw_montgomery, FUN_100089b8\n");
   printf(DEFAULT);
 
   memset(return_buffer,0,36*sizeof(int));
@@ -3744,7 +3762,7 @@ uint32_t FUN_100089b8(int *pass_through,uint *param_2,unsigned char *hash_buffer
 
   printf("0.6: 89b8: hash_len: 0x%X\n",hash_len);
 
-  pack_key(auStack_140, 0x21,(int*)hash_buffer ,hash_len);
+  bn_bin2bn(auStack_140, 0x21,(int*)hash_buffer ,hash_len);
   printf("0.7: 89b8: auStack_140 md5sum: ");
   simple_md5sum((char*)auStack_140,(KEY_SIZE+1)*sizeof(int),!is_bigendian());
   line_print_4_ints((unsigned char*)auStack_140,(KEY_SIZE+1)*sizeof(int));
@@ -3761,19 +3779,24 @@ uint32_t FUN_100089b8(int *pass_through,uint *param_2,unsigned char *hash_buffer
 
   /* is the function below (2x pack_key) correct */
   /* waarom param_4 in bytes */
-  pack_key(auStack_0b0, 0x21,(key_address + 0x01), 0x80); // key values
-  pack_key(auStack_1d0, 0x21,(key_address + 0x21), 0x80); // key zeros 
+  bn_bin2bn(auStack_0b0, 0x21,(key_address + 0x01), 0x80); // packs RSA key Modulus 
+  bn_bin2bn(auStack_1d0, 0x21,(key_address + 0x21), 0x80); // packs RSA key Exponent  
   
   printf("1.2: 89b8: auStack_0b0 md5_sum: ");
   simple_md5sum((char*)auStack_0b0,(KEY_SIZE+1)*sizeof(int),NOT_INT);
-  //line_print_4_ints((unsigned char*)auStack_0b0,0x21*sizeof(int));
+  line_print_4_ints((unsigned char*)auStack_0b0,0x21*sizeof(int));
   printf("1.3: 89b8: auStack_1d0 md5_sum: ");
   simple_md5sum((char*)auStack_1d0,(KEY_SIZE+1)*sizeof(int),NOT_INT);
-  //line_print_4_ints((unsigned char*)auStack_1d0,0x21*sizeof(int));
+  line_print_4_ints((unsigned char*)auStack_1d0,0x21*sizeof(int));
 
+  /* below confirms keys are endian sensitive */
+  printf("exponent: %i\n", __htobe32(*(int*)auStack_1d0));
+  printf("exponent: %X\n", __htobe32(*(int*)auStack_1d0));
+  exit(-2);
+  
   /* find the actual key size */
-  local_1c = find_first_non_zero_from_end(auStack_0b0,0x21); // 0x20
-  local_20 = find_first_non_zero_from_end(auStack_1d0,0x21); // 0x01 
+  local_1c = bn_num_words(auStack_0b0,0x21); // 0x20 size is 20 ints
+  local_20 = bn_num_words(auStack_1d0,0x21); // 0x01 size is 1 int
 
   printf("2.0: 89b8: local_1c: 0x%X, local_20: 0x%X\n",local_1c,local_20);
 
@@ -3793,7 +3816,6 @@ uint32_t FUN_100089b8(int *pass_through,uint *param_2,unsigned char *hash_buffer
   printf("we should check function 90a4\n");
   printf("Should it copy of change the hash to auStack_140?\n");
   printf(DEFAULT);
-  exit(-2);
 
   
   if (iVar1 < 0) { // auStack_0b0 is not equal to auStack_140
@@ -3809,20 +3831,19 @@ uint32_t FUN_100089b8(int *pass_through,uint *param_2,unsigned char *hash_buffer
     //line_print_4_ints((unsigned char*)auStack_0b0,(KEY_SIZE+1)*sizeof(int)); //full, len=32
 
 
-    
-    FUN_10009ebc(return_buffer,auStack_140,auStack_1d0,local_20,auStack_0b0,local_1c);
+    bn_mod_exp_mont(return_buffer,auStack_140,auStack_1d0,local_20,auStack_0b0,local_1c);
 
     printf("4.0: 89b8: tmp: 0x%08X\n",*key_address);
     *param_2 = (*key_address + 7U) >> 3;
 
     /* unpack return_buffer to pass_through */
-    unpack_key(pass_through,*param_2,return_buffer,local_1c); //realy (int*)?
+    bn_bn2bin(pass_through,*param_2,return_buffer,local_1c); //realy (int*)?
     memset(return_buffer,0,0x84);
     memset(auStack_140,0,0x84);
     local_18 = 0;
   }
   else {
-    local_18 = 0x401;
+    local_18 = RSA_ERR_PADDING;
   }
   
   return local_18;
@@ -3831,7 +3852,56 @@ uint32_t FUN_100089b8(int *pass_through,uint *param_2,unsigned char *hash_buffer
 
 // len_1[0] should be KEY_SIZE == 0x20 len_2 == 0x80 == sizeof(hash_buffer))
 // FUN_10008474 only acts on one key !!!!!!!!!
-int FUN_10008474(void *return_buffer,size_t *key_len,unsigned char *hash_buffer,uint hash_len,int *key_address){
+/* 
+ * Verify PKCS#1 type 1 padding (0x00 0x01 0xFF... 0x00 DATA)
+ * Returns 0 on success, 0x401 on padding error
+ */
+
+/* new function */
+int verify_pkcs1_type1_padding(unsigned char *buffer, uint buffer_len, void *out_data, size_t *out_len) {
+  uint i;
+  uint data_start;
+  unsigned char *separator_ptr;
+
+  // Check for PKCS#1 padding header (0x00 0x01)
+  if ((buffer[0] != '\0') || (buffer[1] != '\x01')) {
+    return RSA_ERR_PADDING;
+  }
+
+  // Find padding end (0xFF bytes followed by 0x00 separator)
+  for (i = 2; (i < buffer_len - 1) && (buffer[i] == 0xFF); i++) {
+    // Iterate through padding bytes
+  }
+  
+  separator_ptr = &buffer[i];
+  data_start = i + 1;
+  
+  // Check for 0x00 separator
+  if (*separator_ptr != '\0') {
+    return RSA_ERR_PADDING;
+  }
+
+  // Calculate data length
+  *out_len = buffer_len - data_start;
+  
+  // Verify minimum padding length (8 bytes) - 0x00 0x01 + at least 6 0xFF bytes + 0x00
+  if (buffer_len < *out_len + 0xb) {
+    return RSA_ERR_PADDING;
+  }
+  
+  // Copy data to output buffer if length > 0
+  if (*out_len != 0) {
+    memcpy(out_data, buffer + data_start, *out_len);
+  }
+  
+  return 0;
+}
+
+/* 
+ * RSA verify with PKCS#1 padding
+ * Returns 0 on success, error code on failure
+ */
+int rsa_verify_pkcs1_padding(void *return_buffer,size_t *key_len,unsigned char *hash_buffer,uint hash_len,int *key_address){
 
   int i;
   uint uVar1;
@@ -3848,7 +3918,7 @@ int FUN_10008474(void *return_buffer,size_t *key_len,unsigned char *hash_buffer,
   int  ret;
 
   printf(RED);
-  printf("FUN_10008474\n");
+  printf("rsa_verify_pkcs1_padding, FUN_10008474\n");
   printf(DEFAULT);
 
   if(!is_bigendian()){  //if not powerPC
@@ -3862,7 +3932,7 @@ int FUN_10008474(void *return_buffer,size_t *key_len,unsigned char *hash_buffer,
   printf("-4.0: 8474: *key_len: 0x%lX\n", (long int)*key_len); // *key_len = 0x20
 
 
-  printf("-3.0: 5f64: key_address, endianness corrected, md5_sum: ");
+  printf("-3.0: 8474: key_address, endianness corrected, md5_sum: ");
   simple_md5sum((char*) key_address,(key_len[0]+1)*sizeof(int), !is_bigendian());
   //line_print_4_ints((unsigned char*)key_address,(key_len[0]+1)*sizeof(int));
   
@@ -3877,58 +3947,36 @@ int FUN_10008474(void *return_buffer,size_t *key_len,unsigned char *hash_buffer,
   printf("-1.0: 8474: hash_len: 0x%X\n", hash_len);
   printf(DEFAULT);
 
-  //getchar();
-
   if (local_1c < hash_len) {
-    ret = 0x406;
+    ret = RSA_ERR_SIZE;
   }else{
     printf("0.0: 8474: key_address md5_sum: ");
     simple_md5sum((char*)(key_address),(KEY_SIZE+1)*sizeof(int),!is_bigendian()); 
     printf("0.1: 8474: local_1c: 0x%X\n", local_1c);
 
-    //getchar();
-    ret = FUN_100089b8((int*)pass_through,&local_18,hash_buffer,hash_len,key_address);
+    ret = rsa_verify_raw_montgomery((int*)pass_through,&local_18,hash_buffer,hash_len,key_address);
     printf(CYAN);
     printf("0.3: 8474: local_1c: 0x%X\n", local_1c);
     printf(DEFAULT);
-
-    //getchar();
 
     printf(CYAN);
     printf("0.4: 8474: out (key_address+1) md5_sum: ");
     printf(DEFAULT);
     simple_md5sum((char*)(key_address+1),KEY_SIZE*sizeof(int),NOT_INT);
 
-    //getchar();
     if (ret == 0) {
       printf("ret==0, local_1c: 0x%X\n", local_1c);
       if (local_18 == local_1c) {
-        if ((pass_through[0] == '\0') && (pass_through[1] == '\x01')) {
-          for (local_20 = 2; (uVar1 = local_20, local_20 < local_1c - 1 && (pass_through[local_20] == -1)); local_20 = local_20 + 1) {
-          }
-          pcVar2 = &pass_through[0] + local_20;  //is dit een address?
-          local_20 = local_20 + 1;
-          if (*pcVar2 == '\0') {
-            *key_len = local_1c - local_20;
-            if (local_1c < *key_len + 0xb) {
-              ret = 0x401;
-            }
-            else {
-	      if (*key_len != 0) memcpy(return_buffer,pass_through + uVar1 + 1,*key_len);
-              memset(pass_through,0,0x80*sizeof(int)); // set first 128 ints to 0
-              ret = 0;
-            }
-          }
-          else {
-            ret = 0x401;
-          }
-        }
-        else {
-          ret = 0x401;
+        // Verify PKCS#1 padding and extract data
+        ret = verify_pkcs1_type1_padding(pass_through, local_1c, return_buffer, key_len);
+        
+        // Clear sensitive data
+        if (ret == 0) {
+          memset(pass_through, 0, 0x80*sizeof(int)); // set first 128 ints to 0
         }
       }
       else {
-        ret = 0x406;
+        ret = RSA_ERR_SIZE;
       }
     }
   }
@@ -3940,7 +3988,8 @@ int FUN_10008474(void *return_buffer,size_t *key_len,unsigned char *hash_buffer,
 /*************************************************************************************/  
 
 /* do something with keys I guess */
-unsigned char FUN_10005f64(unsigned char *hash_buffer,uint hash_len,unsigned char *digest,size_t digest_len,int add_dev_key,int param_6) {
+//ai suggests rsa_verify_signature_keyring 
+unsigned char rsa_verify_signature_keyring(unsigned char *hash_buffer,uint hash_len,unsigned char *digest,size_t digest_len,int add_dev_key,int verify_signature_flag) {
   bool bVar1=false;
   int param2=0;
   int iVar2;
@@ -3952,7 +4001,7 @@ unsigned char FUN_10005f64(unsigned char *hash_buffer,uint hash_len,unsigned cha
   size_t key_len[3];
 
   printf(RED);
-  printf("FUN_10005f64\n");
+  printf("rsa_verify_signature_keyring, FUN_10005f64\n");
   printf(DEFAULT);
 
   memset(key_len,0,3*sizeof(size_t));
@@ -3981,7 +4030,7 @@ unsigned char FUN_10005f64(unsigned char *hash_buffer,uint hash_len,unsigned cha
     simple_md5sum((char*) key_address[iVar2],(key_len[0]+1)*sizeof(int), NOT_INT);
     //line_print_4_ints((unsigned char*)key_address[iVar2],(key_len[0]+1)*sizeof(int));
     
-    param2 = FUN_10008474(return_buffer,key_len,hash_buffer,hash_len,key_address[iVar2]);
+    param2 = rsa_verify_pkcs1_padding(return_buffer,key_len,hash_buffer,hash_len,key_address[iVar2]);
 
     //printf("0.9: 5f64: key_address[iVar2]:\n");
     //line_print_4_ints((unsigned char*)key_address[iVar2],KEY_BUFFER_SIZE_CHARS);
@@ -3990,7 +4039,7 @@ unsigned char FUN_10005f64(unsigned char *hash_buffer,uint hash_len,unsigned cha
     //printf("1: 5f64: param2: 0x%X\n",param2);
     
     iVar4 = iVar2 + 1;
-    if (param_6 > 2) {
+    if (verify_signature_flag > 2) {
       //printf("[%d] - %d, digest_size=%ld \n",iVar2,param2,key_len[0]);
       /* should print below to the keyring i guess */
       line_print_16_bytes(hash_buffer,hash_len);
@@ -4011,7 +4060,7 @@ unsigned char FUN_10005f64(unsigned char *hash_buffer,uint hash_len,unsigned cha
     iVar2 = iVar4;
   } while (!bVar1 && iVar4 < nr_keys);
   
-  if (param_6 != 0) {
+  if (verify_signature_flag != 0) {
     if (!bVar1) {
       printf("digest does not match abStack_58!\n");
     }else {
@@ -4023,8 +4072,7 @@ unsigned char FUN_10005f64(unsigned char *hash_buffer,uint hash_len,unsigned cha
 }
 
 
-/* FUN_1000610c */
-uint verify_signature(int fd, __off_t *fd_location ,unsigned char *read_buffer,int param_4,int param_5){
+uint rsa_verify_signature(int fd, __off_t *fd_location ,unsigned char *read_buffer,int param_4,int verify_signature_flag){
   int i;
   uint uVar1;
   __off_t file_location, store_file_location;
@@ -4036,7 +4084,7 @@ uint verify_signature(int fd, __off_t *fd_location ,unsigned char *read_buffer,i
   digest = calloc(48, sizeof(unsigned char)); //as in original code
 
   printf(RED);
-  printf("verify_signature, FUN_1000610c\n");
+  printf("rsa_verify_signature, FUN_1000610c\n");
   printf(DEFAULT);
 
   file_location = lseek(fd,0,SEEK_CUR);  
@@ -4045,7 +4093,7 @@ uint verify_signature(int fd, __off_t *fd_location ,unsigned char *read_buffer,i
   uVar1 = 0xffffffff;
   if (file_location > -1) {  // no error
 
-    iVar3 = FUN_10005de8(fd,read_buffer,digest); // returns sha25_digest from file_location
+    iVar3 = rsa_hash_to_verify(fd,read_buffer,digest); // returns sha25_digest from file_location
 
     file_location = lseek(fd,0,SEEK_CUR);  
     printf("0.9: 610c: file_location: 0x%lX\n", file_location); // file_location =0xD5
@@ -4085,10 +4133,10 @@ uint verify_signature(int fd, __off_t *fd_location ,unsigned char *read_buffer,i
 	printf("1.9: 610c: hash_buffer (no endianness corr.) md5_sum: ");
 	simple_md5sum((char*)hash_buffer,0x80,NOT_INT);
 
-        uVar1= FUN_10005f64(hash_buffer,HASH_BUFFER_SIZE_CHARS,digest,0x20,param_4,param_5);
-	printf("2: 610c: verify_signature: uVar1: %i\n",uVar1);
+        uVar1= rsa_verify_signature_keyring(hash_buffer,HASH_BUFFER_SIZE_CHARS,digest,0x20,param_4,verify_signature_flag);
+	printf("2: 610c: rsa_verify_signature: uVar1: %i\n",uVar1);
       }
-      printf("3: 610c: Should add developer key to key ring.\n");
+      printf("3: 610c: Should add developer key to keyring.\n");
 
       uVar1 = 1^1; // ==0
     }
