@@ -11,17 +11,18 @@ int i2c_detect_diag_blade(void);
 
 
 int main(void){
-
-  i2c_detect_diag_blade();
-  
-  
+  while(1){
+    i2c_detect_diag_blade();
+    sleep(1);
+  }
+    
   return 0;
 }
   
-
 unsigned int hpoa_main(void){
   unsigned int uVar1;
-  int iVar2;  
+  int iVar2;
+  
   iVar2 = i2c_detect_diag_blade();
   uVar1 = 2;
   if (iVar2 == 0) {
@@ -53,7 +54,7 @@ int i2c_detect_diag_blade(void) {
       if (iVar2 != 0) {
         local_28 = '\b';
       }
-      iVar1 = i2c_write(fd, 0x75,1,&local_28);
+      iVar1 = i2c_write(fd, 0x75,1,&local_28); //probably mux address
       fputs("1.",stderr);
       if (iVar1 == 0) {
         local_28 = '\x06';
@@ -61,19 +62,20 @@ int i2c_detect_diag_blade(void) {
         iVar1 = i2c_write(fd, 0x20,2,&local_28);
         fputs("2.",stderr);
         if (iVar1 == 0) {
-          local_28 = '\a';
+          local_28 = 0x07;
           local_27 = 0xff;
           iVar1 = i2c_write(fd, 0x20,2,&local_28);
           fputs("3.",stderr);
           if (iVar1 == 0) {
             local_27 = 0x55;
-            local_28 = '\x02';
+            local_28 = 0x02;
             iVar1 = i2c_write(fd, 0x20,2,&local_28);
             fputs("4.",stderr);
             if (iVar1 == 0) {
               local_28 = '\0';
               iVar1 = i2c_write(fd, 0x20,1,&local_28);
               fputs("5.",stderr);
+	      
               if (iVar1 == 0) {
                 iVar1 = i2c_read(fd, 0x20,1,&local_28);
                 fputs("6.",stderr);
@@ -96,7 +98,7 @@ int i2c_detect_diag_blade(void) {
                         if (iVar1 == 0) {
                           iVar1 = i2c_read(fd, 0x20,1,&local_28);
                           fputs("11.",stderr);
-                          if ((iVar1 == 0) && (iVar1 = 1, local_28 == -0x56)) {
+                          if ((iVar1 == 0) && (iVar1 = 1, local_28 == 0xAA)) { //-was 0x56
                             local_28 = '\x01';
                             iVar1 = i2c_write(fd, 0x20,1,&local_28);
                             fputs("12.",stderr);
@@ -104,7 +106,7 @@ int i2c_detect_diag_blade(void) {
                               iVar1 = i2c_read(fd, 0x20,1,&local_28);
                               fputs("13.",stderr);
                               if (iVar1 == 0) {
-                                if (local_28 == -0x56) {
+                                if (local_28 == 0xAA) {
                                   fputs("done.\n",stderr);
                                   break;
                                 }
@@ -132,29 +134,27 @@ int i2c_detect_diag_blade(void) {
 
 
 
-int i2c_write(int fd, unsigned int address,size_t param_2,void * param_3){
-  int iVar1;
-  size_t sVar2;
+int i2c_write(int fd, unsigned int address,size_t count,void *buff){
+  int err=0;
+  size_t nr_bytes;
   
-  iVar1 = 0;
-  if ((0 < (int)param_2) && (iVar1 = ioctl(fd, I2C_SLAVE,address), iVar1 != -1)) {
-    sVar2 = write(fd,param_3,param_2);
-    iVar1 = (sVar2 == param_2) - 1;
+  if ((0 < (int)count) && (err = ioctl(fd, I2C_SLAVE,address), err != -1)) {
+    nr_bytes = write(fd, buff, count);
+    err = (nr_bytes == count) - 1;
   }
-  return iVar1;
+  return err;
 }
 
 
-int i2c_read(int fd, unsigned int address,size_t param_2,void * param_3){
-  int iVar1;
-  size_t sVar2;
+int i2c_read(int fd, unsigned int address,size_t count,void *buff){
+  int err=0;
+  size_t nr_bytes;
   
-  iVar1 = 0;
-  if ((0 < (int)param_2) && (iVar1 = ioctl(fd, I2C_SLAVE,address), iVar1 != -1)) {
-    sVar2 = read(fd,param_3,param_2);
-    iVar1 = (sVar2 == param_2) - 1;
+  if ((0 < (int)count) && (err = ioctl(fd, I2C_SLAVE,address), err != -1)) {
+    nr_bytes = read(fd,buff,count);
+    err = (nr_bytes == count) - 1;
   }
-  return iVar1;
+  return err;
 }
 
 
