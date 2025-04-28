@@ -1,0 +1,717 @@
+#!/bin/sh
+boot_fdr () {
+	echo "Corrupted firmware detected.  Rebooting into Flash Recovery." >/dev/ttyS0
+	if [ "x$1" = "xdisplay_dmesg" ] ; then 
+		dmesg > /dev/ttyS0
+	fi
+	dd if=/dev/zero of=/dev/mtd-initrd bs=8 count=1
+	reboot
+}
+integrity_check () {
+	# File system integrity check 
+	ImgSizeTag=${1}ImgSize
+	eval ImgSize=\$$ImgSizeTag
+	ImgSigTag=${1}ImgSig
+	eval ImgSig=\$$ImgSigTag
+	count=$(( ${ImgSize} / 1024 ))
+	
+	PartSig=`dd if=/dev/mtd-${1} bs=1024 count=${count} 2>/dev/null | sha1sum | cut -d " " -f 1`
+	if [ "${PartSig}" != "${ImgSig}" ] ; then
+		echo "File system integrity check FAILED ${1}" > /dev/ttyS0
+		echo " ${PartSig} != ${ImgSig}"
+		boot_fdr
+	fi
+}
+
+source_config () {
+	ConfigFile=${1}
+	if [ -f "$ConfigFile" ]; then
+		SanitizedConfigFile=`/usr/sbin/sanitize $ConfigFile`
+		if [ -f "$SanitizedConfigFile" ]; then
+			/usr/bin/cmp "$ConfigFile" "$SanitizedConfigFile" > /dev/null 2>&1
+			if [ $? -eq 0 ]; then
+				. "$ConfigFile"
+			else
+				. "$SanitizedConfigFile"
+			fi
+			rm -f "$SanitizedConfigFile"
+		else
+			. "$ConfigFile"
+		fi	
+	fi
+}
+
+echo "     HP Onboard Administrator" > /dev/ttyS0
+
+# Hide cursor
+echo -ne "\033[?25l"
+
+mount -n -o remount,rw /dev/root / -t root
+mount -t sysfs sysfs /sys
+
+cat /etc/hp-ascii > /dev/ttyS0
+echo "" > /dev/ttyS0
+
+echo "Subsystems init:" > /dev/ttyS0e
+cho -ne " \r[ 1] " > /dev/ttyS0
+#echo 1 > /ramdisk/.lcdmsg
+
+# ability to customize the mounting process (if /etc/mount is present)
+[ -f /etc/mount ] && . /etc/mount
+
+# $MOUNT should typically not be zero 
+if [ "$MOUNT" != "0" ]; then
+
+. /etc/partition_info
+#integrity_check squashfs
+
+mkdir -p /usr
+mount -t squashfs /dev/mtd-squashfs /usr
+if [ $? != 0 ] ; then
+	mount -t squashfs /dev/mtd-squashfs /usr
+	if [ $? != 0 ] ; then
+		mount -t squashfs /dev/mtd-squashfs /usr >/dev/ttyS0 2>&1
+		boot_fdr display_dmesg
+	fi
+fi
+
+echo -ne " \r[ 2] " > /dev/ttyS0
+# if /usr/local is a softlink, mount storage partition.
+if [ -h "/usr/local" ] ; then
+	integrity_check storage
+
+	mkdir -p /storage
+	mount -t squashfs /dev/mtd-storage /storage
+	if [ $? != 0 ] ; then
+
+		mount -t squashfs /dev/mtd-storage /storage
+		if [ $? != 0 ] ; then
+			mount -t squashfs /dev/mtd-storage /storage >/dev/ttyS0 2>&1
+			boot_fdr
+		fi
+	fi
+fi
+
+fi
+
+echo -ne " \r[ 3] " > /dev/ttyS0
+#Verify date is after c-Class launch to
+#prevent "1920"-missing heartbeat bugs
+sh /usr/sbin/dateWrapper --1920 rqm307414 >/dev/null 2>&1
+
+/bin/chown 0:0 /
+/bin/rm -f /etc/mtab~
+>/etc/mtab
+mount -a
+/bin/chmod 0777 /ramdisk
+
+/bin/touch /ramdisk/umap
+/bin/chmod 644 /ramdisk/umap
+
+/bin/mkdir /ramdisk/sessions
+/bin/chmod 777 /ramdisk/sessions
+
+/bin/mkdir /ramdisk/empty
+/bin/mkdir /ramdisk/empty/punish
+/bin/chmod 777 /ramdisk/empty/punish
+
+/bin/mkdir /ramdisk/dvd
+/bin/chmod 773 /ramdisk/dvd
+
+/bin/touch /ramdisk/rtmp
+/bin/chmod 644 /ramdisk/rtmp
+
+/bin/mkdir /ramdisk/CA
+/bin/chmod 775 /ramdisk/CA
+
+/bin/mkdir /ramdisk/CA-ers
+/bin/chmod 775 /ramdisk/CA-ers
+
+/bin/mkdir /ramdisk/thumbprints
+/bin/chmod 775 /ramdisk/thumbprints
+
+/bin/mkdir /ramdisk/CRL
+/bin/chmod 775 /ramdisk/CRL
+
+/bin/mkdir /ramdisk/ipmi
+/bin/chmod 775 /ramdisk/ipmi
+
+/sbin/klogd -c 2
+
+EMID=7
+
+# Get GPIO states
+/usr/sbin/gpio_enviro > /etc/gpio_states
+
+## Read GPIO states
+. /etc/gpio_states
+
+if [ $EMID = 7 ] ; then
+	boot_fdr
+fi
+
+
+# THIS IS DEBUG ONLY, can be removed for production
+# This will enable core files to be dumped to /ramdisk
+#ulimit -c 65535
+#echo "/ramdisk/www/core.%p" > /proc/sys/kernel/core_pattern
+
+# initialize some system V semaphores to serialize scripts 
+# each digit is a count (array of 10)
+/usr/sbin/semvinit -c "1111110110"
+
+# unpack the LCD files on both the Active and Standby
+# Starting the lcd application 
+mkdir -p /ramdisk/lcd
+cd /ramdisk/lcd
+zcat /usr/menu/lcd.tar.gz | tar xf -
+
+if [ $OABOARDTYPE = "1" ] || [ $OABOARDTYPE = "3" ]; then
+	zcat /usr/menu/lcd.c3000.tar.gz | tar xf -
+else 
+	zcat /usr/menu/lcd.c7000.tar.gz | tar xf -
+fi
+cd /
+
+#start the LCD app, when we are active
+if eval test $EMID = $MUXSEL; then
+	case "$OABOARDTYPE" in 
+	"1" | "3" )
+		/usr/sbin/i2c ee 40 0 > /dev/null
+		/usr/sbin/i2c 3a 010100 0 > /dev/null
+		;;
+	*   )
+		/usr/sbin/i2c ea 80 0 > /dev/null
+		/usr/sbin/i2c 3a 010100 0 > /dev/null
+		;;
+	esac
+	/ramdisk/lcd/menu -s /ramdisk/lcd/main < /dev/null > /dev/null 2>&1 &
+	sleep 4
+# light the backlight: first off, then blink off, then on
+	case "$OABOARDTYPE" in 
+	"1" | "3" )
+		/usr/sbin/i2c ee 40 0 > /dev/null
+		/usr/sbin/i2c 3a 010100 0 > /dev/null
+		sleep 1
+		/usr/sbin/i2c 3a 010700 0 > /dev/null
+		/usr/sbin/i2c 3a 010101 0 > /dev/null
+		/usr/sbin/i2c ee 0 0 > /dev/null
+		;;
+	*   )
+		/usr/sbin/i2c ea 80 0 > /dev/null
+		/usr/sbin/i2c 3a 010100 0 > /dev/null
+		sleep 1
+		/usr/sbin/i2c 3a 010700 0 > /dev/null
+		/usr/sbin/i2c 3a 010101 0 > /dev/null
+		/usr/sbin/i2c ea 0 0 > /dev/null
+		;;
+	esac
+fi
+
+if [ $EMID = 0 ] ; then
+	OTHEROA=169.254.0.2
+else
+	OTHEROA=169.254.0.1
+fi
+echo "$OTHEROA    otheroa" >> /etc/hosts
+
+# Figure out the contents of /etc/issue
+/bin/sh /etc/issue.sh > /etc/issue
+# Set /etc/issue so that it can be modified for
+# banner text operations
+chmod 664 /etc/issue
+chown 1:0 /etc/issue
+# Save off the inital issue file for banner text option use
+cat /etc/issue > /tmp/issue.org
+# Ensure issue.org has proper permissions as well
+chmod 664 /tmp/issue.org
+chown 1:0 /tmp/issue.org
+
+ln -s /etc/issue /etc/issue.net
+
+if eval test $EMID != $MUXSEL; then
+	cp /etc/standby.xml /ramdisk/standby.xml
+	ln -s /etc/apache/httpsd2.conf.standby /etc/apache/httpsd2.conf
+else
+	ln -s /etc/apache/httpsd2.conf.active /etc/apache/httpsd2.conf
+fi
+
+
+echo -ne " \r[ 4] " > /dev/ttyS0
+echo " 4" > /ramdisk/.lcdmsg
+# Restore config files. Make sure they are available before envget
+/etc/config -get > /dev/null
+
+# Start syslog after we had restored oalog file from FLASH
+# any changes here require corresponding changes in flashput and /etc/get_debug
+# The default arguments for syslogd (or other services) are encoded in the rc.process script
+if [ -f "/ramdisk/debug.dat" ]; then
+	cat /ramdisk/debug.dat > /dev/dbglog
+fi
+/etc/rc.process start syslogd /sbin/syslogd > /dev/null 2>&1
+
+# Restore system setting
+/usr/sbin/envget -s
+
+# sync the openssl.cnf with default file so that lostpass
+# does not think there is a fips transition going on
+OPENSSL_CNF=/etc/ssl/openssl.cnf
+OPENSSL_CNF_DEFAULT=/etc/ssl/openssl.cnf.default
+
+# update [fips] section if upgrading from a version that has
+# [algs] section to ensure fips transition is possible after
+# the upgrade
+if [ `grep "\[ algs \]" $OPENSSL_CNF 2>/dev/null | wc -l` -gt 0  ] || [ `grep "leave_fips_mode_kat_fail" $OPENSSL_CNF 2>/dev/null | wc -l` -eq 0 ]; then
+	if [ `grep "fips_mode=yes" $OPENSSL_CNF 2>/dev/null | wc -l` -gt 0  ];  then
+		sed -ie "s/fips_mode=no/fips_mode=yes/" $OPENSSL_CNF_DEFAULT
+	fi
+
+	if [ `grep "fips_debug=yes" $OPENSSL_CNF 2>/dev/null | wc -l` -gt 0 ];  then
+		sed -ie "s/fips_debug=no/fips_debug=yes/" $OPENSSL_CNF_DEFAULT
+	fi
+
+	if [ `grep "leave_fips_mode_kat_fail=yes" $OPENSSL_CNF 2>/dev/null | wc -l` -gt 0 ];  then
+		sed -ie "s/leave_fips_mode_kat_fail=no/leave_fips_mode_kat_fail=yes/" $OPENSSL_CNF_DEFAULT
+	fi
+
+	sed -ie "s/\[ algs \]/\[ fips \]/" $OPENSSL_CNF_DEFAULT
+	/bin/cp $OPENSSL_CNF_DEFAULT $OPENSSL_CNF
+	/usr/sbin/flashput -config > /dev/null 2>&1
+else
+	# sync openssl.cnf.default with openssl.cnf so that they reflect the same FIPS
+	# state on bootup
+	/bin/cp $OPENSSL_CNF $OPENSSL_CNF_DEFAULT
+fi
+
+# FIPS tmp file - boot only
+touch /ramdisk/fips.boot
+
+chown 1:1 /etc/KAT.info
+chmod 666 /etc/KAT.info
+
+echo -ne " \r[ 5] " > /dev/ttyS0
+echo " 5" > /ramdisk/.lcdmsg
+
+if [ ! -f /ramdisk/vlanconf ]; then
+	if [ ! -f /etc/vlanconf ]; then
+		touch /etc/vlanconf
+		chmod 0666 /etc/vlanconf 
+	fi
+	cp /etc/vlanconf /ramdisk/vlanconf
+	chmod 0666 /ramdisk/vlanconf
+fi
+
+if [ ! -f /etc/ebipa.dev ]; then
+	/etc/upgrade_ebipa > /dev/null 2>&1
+fi
+
+if [ ! -f "/etc/vcminfo" ]; then
+	/usr/sbin/envget -v > /dev/null 2>&1
+	/usr/sbin/flashput -config > /dev/null 2>&1
+fi
+
+if [ ! -s "/etc/bayconf" ]; then
+	/usr/sbin/envget -b > /dev/null 2>&1
+	/usr/sbin/flashput -config > /dev/null 2>&1
+fi
+
+if [ ! -s "/etc/ldapgroup" ]; then
+        /usr/sbin/envget -G > /dev/null 2>&1
+        /usr/sbin/flashput -config > /dev/null 2>&1
+fi
+# check to see if gc port is in the ldapconf file, if not, we will get this file from nvram.
+HAVEGCPORTFLAG=`grep directoryServerGCPort /etc/ldapconf 2> /dev/null`
+if [ ! -s "/etc/ldapconf" ] || [ ! -f "/etc/ldapconf" ] || [ -z "$HAVEGCPORTFLAG" ]; then
+	/usr/sbin/envget -l > /dev/null 2>&1
+	/usr/sbin/flashput -config > /dev/null 2>&1
+fi
+
+if [ ! -s "/etc/adv_netconf" ] || [ ! -f "/etc/adv_netconf" ]; then
+	cp /etc/adv_netconf.default /etc/adv_netconf
+	/usr/sbin/flashput -config > /dev/null 2>&1
+fi
+
+if [ ! -f "/etc/vars" ]; then
+	touch /etc/vars > /dev/null 2>&1
+	chown 1:0 /etc/vars > /dev/null 2>&1
+	chmod 660 /etc/vars > /dev/null 2>&1
+	/usr/sbin/flashput -config > /dev/null 2>&1
+fi
+
+# first time boot, create engine id for snmp on active OA
+if eval test $EMID = $MUXSEL; then
+	if ! /bin/grep -q "engineID" /etc/snmp/snmpd.local.conf ; then
+		/etc/set-snmp-engineid
+		/usr/sbin/flashput -config > /dev/null 2>&1
+	fi
+fi
+
+# upgrade fix to 4.10+  Remove alg_section = algs
+sed -ie "s/^alg_section = algs//" /etc/ssl/openssl.cnf
+sed -ie "s/^alg_section = algs//" /etc/ssl/openssl.cnf.default
+
+# upgrade fix to 4.10+  Replace [ algs ] with [ fips ]
+if [ `grep "\[ fips \]" /etc/ssl/openssl.cnf | wc -l` -eq 0 ] && [ `grep "\[ algs \]" /etc/ssl/openssl.cnf | wc -l` -eq 1  ] ; then
+	sed -ie "s/\[ algs \]/\[ fips \]/" /etc/ssl/openssl.cnf
+	/usr/sbin/flashput -config > /dev/null 2>&1
+fi
+
+#Kick off loop to monitor DNS services
+/usr/sbin/netmon > /dev/null 2>&1 < /dev/null &
+
+echo -ne " \r[ 6] " > /dev/ttyS0
+echo " 6" > /ramdisk/.lcdmsg
+# Handle lost password mode
+if eval test $LOSTPASSWORD = 1; then
+	/etc/setpam disable
+	/usr/sbin/lostpass > /dev/ttyS0
+	/usr/sbin/envput -u
+else
+	/etc/setpam
+fi
+
+# Check for manufacturing diags - This must occur after last envget
+/usr/sbin/diagcheck > /dev/ttyS0 2> /dev/null
+
+# Read Enclosure Settings
+source_config /etc/udogconf
+
+hostname $oaName
+
+# Setup our Timezone
+cp /usr/share/zoneinfo/$TZ /etc/localtime
+chown 1:1 /etc/localtime
+chmod 664 /etc/localtime
+echo "UTC" > /etc/TZ
+chown 1:1 /etc/TZ
+chmod 664 /etc/TZ
+
+#Now do set up the /etc/TZ file up from /etc/localtime (if possible)
+/usr/sbin/gentz
+
+#synchronize the system clock to hardware clock
+#on 440epx models, the tickcount has to be calibrated 
+#due to a frequency glitch (33.333333 MHZ vs. 33.00 MHZ) 
+#to 10000 (base) * 33.00/33.333333 = 9900 ticks
+/usr/sbin/hwclock --hctosys --utc > /dev/null 2>&1
+if [ "$OABOARDTYPE" -gt 1 ]; then
+	/sbin/adjtimex -t 9900 -f 0 > /dev/null 2>&1
+fi
+
+if eval test $EMID != $MUXSEL; then
+	logger Onboard Administrator entering Standby mode.
+fi
+
+SED_FIPS_RULE='s/fips_mode=yes/fips_mode=no/'
+
+# If we don't have 'fips_debug' flag
+if [ $(grep fips_debug $OPENSSL_CNF 2> /dev/null | wc -l) -lt 1 ]; then
+    # ... then disable FIPS Mode (old Strong Encryption)
+    sed -i -e $SED_FIPS_RULE $OPENSSL_CNF
+    sed -i -e $SED_FIPS_RULE $OPENSSL_CNF_DEFAULT
+fi
+
+# if in fips mode, clear out any SNMPv2 settings left over
+# from upgrade
+if [ $(grep "fips_debug=yes\|fips_mode=yes" $OPENSSL_CNF 2> /dev/null | wc -l 2> /dev/null) -gt 0 ]; then
+	/etc/clear-snmpv2
+fi
+
+#Check if FLASH RECOVERY is required - too many KAT failures in FIPS OFF
+FIPS_FLASH_RECOVERY=`grep KAT_error_reboot=4 /etc/KAT.info 2> /dev/null`
+if [ -n "$FIPS_FLASH_RECOVERY" ] ; then
+	boot_fdr
+fi
+
+# KAT error handling first tasks
+/usr/sbin/fipstools -b 
+
+echo -ne " \r[ 7] " > /dev/ttyS0
+echo " 7" > /ramdisk/.lcdmsg
+
+/etc/refreshnet.internal > /dev/ttyS0
+/sbin/ifup.internal > /dev/ttyS0
+
+# Generate/Get ssh/ssl keys/certificates
+/etc/genkeys -startup > /dev/null 2>&1
+
+# Run security configuration setup script
+/etc/security_setup > /dev/null 2>&1
+
+/etc/setup_mgmtswitch
+
+echo -ne " \r[ 8] " > /dev/ttyS0
+echo " 8" > /ramdisk/.lcdmsg
+# Start networking
+ifconfig lo 127.0.0.1 netmask 255.0.0.0 broadcast 127.255.255.255
+
+#  enable syncookies
+echo "1" > /proc/sys/net/ipv4/tcp_syncookies
+# Enable large ARP neighbor cache
+echo 1024 > /proc/sys/net/ipv4/neigh/default/gc_thresh1
+echo 2048 > /proc/sys/net/ipv4/neigh/default/gc_thresh2
+echo 4096 > /proc/sys/net/ipv4/neigh/default/gc_thresh3
+echo 0 > /proc/sys/net/ipv4/tcp_sack
+
+# Enable/disable protocols - this may start HTTPD, SNMPD and SSHD
+echo "" > /dev/ttyS0
+
+/etc/refreshnet > /dev/ttyS0
+
+# BLOCK DHCP packets until EBIPA daemon ready
+logger -p local0.info "BLOCK DHCP."
+/etc/ebipa_setup ADD
+logger -p local0.info "CONTINUE."
+
+echo 1 > /proc/sys/net/ipv4/ip_forward
+source_config /etc/netconf
+
+# Figure out eth1 Auto-negotiation or Forced speed/duplex settings
+if eval test $nicForcedFlag = 1; then # Forced NIC settings
+	if eval test $nicDuplex = 1; then
+		duplex=full;
+	else
+		duplex=half;
+	fi
+	/sbin/ethtool -s eth1 speed $nicSpeed duplex $duplex autoneg off
+fi
+
+# Build our web directory
+if [ ! -d /ramdisk/www ]; then
+	cp -dpR /usr/www /ramdisk/www
+	/usr/bin/find /ramdisk/www -type f | /usr/bin/xargs /bin/touch -c
+	/usr/bin/find /ramdisk/www -type f -name *.var   | /usr/bin/xargs chown Administrator:oper 
+	/usr/bin/find /ramdisk/www -type d -name Help    | /usr/bin/xargs chown Administrator:oper 
+	/usr/bin/find /ramdisk/www -type d -name Strings | /usr/bin/xargs chown Administrator:oper 
+	/usr/bin/find /ramdisk/www -type d -name error   | /usr/bin/xargs chown Administrator:oper 
+	/usr/bin/find /ramdisk/www -type d -name html    | /usr/bin/xargs chown Administrator:oper 
+fi
+# Directory where OA and iLO firmware images may be accessed over elink
+if [ ! -d /ramdisk/www/staging ]; then
+	mkdir -p /ramdisk/www/staging
+	chmod 775 /ramdisk/www/staging
+	chown udog:oper /ramdisk/www/staging
+fi
+
+#Start Apache
+/etc/start_apache startup > /dev/null 2>&1 
+/etc/apachecheck > /dev/null 2>&1 &
+echo -ne " \r[ 9] " > /dev/ttyS0
+echo " 9" > /ramdisk/.lcdmsg
+
+#start vlan config daemon
+vlancfg > /dev/null 2>&1 &
+
+# load kernel modules
+/sbin/load_modules > /dev/null 2>&1
+
+if [ "$EMID" -eq "$MUXSEL" ]; then
+   if [ "$ipswapFlag" -eq "0" ]; then
+        #Active OAs with IPSWAP disabled may bring up eth1 immediately!
+        /sbin/ifup > /dev/null
+   fi
+   if eval test $dhcpFlag = 0; then
+      echo -e "\033[4B" > /dev/ttyS0
+      echo "Onboard Administrator's static IP address is: $ipAddress" > /dev/ttyS0
+      echo -e "\033[7A" > /dev/ttyS0
+   fi
+#Actives with IPSWAP enabled and Standbys must have redundancy bring up eth1
+else
+   echo -e "\033[4B" > /dev/ttyS0
+   echo "Enclosure IP Mode undetected" >/dev/ttyS0
+   echo -e "\033[7A" > /dev/ttyS0
+fi
+
+# fix the last local port number for mgmt
+echo 1024 49623 > /proc/sys/net/ipv4/ip_local_port_range
+
+echo -ne " \r[10] " > /dev/ttyS0
+echo "10" > /ramdisk/.lcdmsg
+# Start watchdog just prior to starting mgmt.
+/usr/sbin/watchdog
+
+# THIS IS DEBUG ONLY, can be removed for production
+# This will enable core files to be dumped to /ramdisk
+#cd /ramdisk/www
+#ulimit -c 65535
+#echo "/ramdisk/www/core.%p" > /proc/sys/kernel/core_pattern
+
+#Starting a deamon to keep track of timezones
+/usr/sbin/watchtime > /dev/null 2>&1
+
+echo -ne " \r[11] " > /dev/ttyS0
+echo "11" > /ramdisk/.lcdmsg
+# Starting the mgmt daemon
+logger -p local0.info "Starting System Management."
+/sbin/mgmt > /dev/null 2>&1
+# Enable this line to output debug to a file.
+#/sbin/mgmt > /ramdisk/www/debug.out 2>&1
+
+/usr/sbin/watchman > /dev/null 2>&1
+
+# We need to start the elink bridge and IP detection code _after_ mgmt is up.
+# This will make the enclosure invisible on the elink chain until mgmt is ready to
+# answer requests which is what we want.
+if eval test $EMID = $MUXSEL; then
+	# Start up enclosure link interface
+	/sbin/ifup-elink > /dev/null
+
+	# Get DATA required for EBIPA
+	/usr/sbin/ebipa  > /dev/null 2>&1 &
+	
+	# Start up RemSupport
+	/usr/sbin/remsupport > /dev/null 2>&1 &
+	
+	# Start up enclosure link 
+	/usr/sbin/elink_daemon > /dev/null 2>&1 
+
+	# start the firmware management daemon
+	mkdir /ramdisk/fw_mgmt
+	chmod 777 /ramdisk/fw_mgmt
+	/usr/sbin/fw_mgmtd >/dev/null 2>&1
+
+fi
+
+# Set up language pack 
+mkdir /etc/languages
+chmod 775 /etc/languages
+chown Administrator:oper /etc/languages
+/usr/sbin/config_lang --install > /dev/null 2>&1 
+
+echo -ne " \r[12] " > /dev/ttyS0
+echo "12" > /ramdisk/.lcdmsg
+# INETD - for telnet and SOAP
+/usr/sbin/inetd -R 2000 /etc/inetd.conf
+
+echo -ne " \r[13] " > /dev/ttyS0
+echo "13" > /ramdisk/.lcdmsg
+
+#Reconstitute /etc/issue with banner text if necessary
+ENABLED=`grep bannerEnabled=1 /etc/udogconf 2> /dev/null`
+if [ -n "$ENABLED" ] ; then
+	logger -p local0.info "Creating banner at startup."
+	cat /etc/banner.txt >> /etc/issue
+	echo -e "\n" >> /etc/issue
+	ln -s /etc/banner.txt /ramdisk/www/bannerfile.txt > /dev/null 2>&1
+fi
+
+# Check if strong passwords is enabled and minimum password length is invalid
+# This is possible when upgrading from an older firmware version
+STRONG_PASSWD=`grep strictPasswordsEnabled=1 /etc/udogconf 2> /dev/null`
+if [ $? -eq 0 ] ; then
+	# If the minimum password length is < 8, replace with default value of 8
+	MINPASSWD=`grep minPasswordLength /etc/udogconf | awk -F = '{print $2}'`
+	if [ $MINPASSWD -lt 8 ] ; then
+		sed -i -e 's/^minPasswordLength=.*/minPasswordLength=8/g' /etc/udogconf > /dev/null
+	fi
+else
+	# If the minimum password length is < 3, replace with default value of 3
+	MINPASSWD=`grep minPasswordLength /etc/udogconf | awk -F = '{print $2}'`
+	if [ $MINPASSWD -lt 3 ] ; then
+		sed -i -e 's/^minPasswordLength=.*/minPasswordLength=3/g' /etc/udogconf > /dev/null
+	fi
+fi
+
+# Last KAT error handling steps
+/usr/sbin/fipstools -c &
+# fipstools -c removes /ramdisk/fips.boot when it is finished.
+
+# tune tcp timeout established down, right before opening for business
+if [ "$tcpTimeout" -ge 10 ]; then
+	/usr/sbin/oaips -t $tcpTimeout
+fi
+
+rm /etc/nologin
+
+echo -ne " \r[14] " > /dev/ttyS0
+echo "14" > /ramdisk/.lcdmsg
+mount -t usbfs usbfs /proc/bus/usb > /dev/null 2>&1
+
+echo -ne " \r[15] " > /dev/ttyS0
+echo "15" > /ramdisk/.lcdmsg
+
+# Report reset due to watchdog
+if eval test $RTCRESET = 1; then
+	logger Rebooted due to watchdog timer.
+fi
+
+# Report redundancy state
+if eval test $REDUNDANT = 1; then
+	logger Redundant Onboard Administrator detected.
+fi
+
+# Start the inter-OA communications for OA redundancy
+if eval test $EMID = 0; then
+	ppp_IP=169.254.255.1
+else
+	ppp_IP=169.254.255.2
+fi
+/usr/sbin/pppd /dev/ttyS1 115200 passive persist maxfail 0 noauth local xonxoff $ppp_IP:0.0.0.0 netmask 255.255.255.0 > /dev/null 2>&1 &
+/usr/sbin/redund >/dev/null 2>&1 &
+
+# move this to inside mgmt to address case where both OAs claim to ba active
+# /sbin/ifup.udogbr > /dev/ttyS0
+
+# Start the security daemon for session cleanup
+/usr/sbin/securityd > /dev/null 2>&1 &
+
+if [ $OABOARDTYPE = "1" ]; then
+# Start check_bcm532x daemon which monitors MIB registers on BCM532x
+/usr/sbin/check_bcm532x
+fi
+
+# Start crond
+/usr/sbin/crond
+
+#Start cron to assign the schedule jobs
+/usr/sbin/cron -update > /dev/null 2>&1
+
+
+echo -ne " \r[16] " > /dev/ttyS0
+echo "16" > /ramdisk/.lcdmsg
+# Move cursor down
+echo -e -n "\r\033[7B" > /dev/ttyS0
+
+# Show cursor again
+echo -ne "\033[?25h"
+
+#FMOUNT=/ramdisk/www/media/usbkey/d1
+#FCAPUB=$FMOUNT/factory-ca.pub 
+#FCAPEM=/ramdisk/factory-ca.pem
+#FSVR=/ramdisk/factory-svr.txt
+#FREQ=/ramdisk/factory-req.txt
+#FRES=/ramdisk/factory-rsp.txt
+#
+#
+# Factory mode validation should be last
+#
+#if [ -f $FCAPUB ] ; then
+#	echo "" >/dev/ttyS0 2>&1
+#	echo "" >/dev/ttyS0 2>&1
+#	echo "Verifying Factory CA ..." >/dev/ttyS0 2>&1
+#	verify_factory_ca $FCAPUB $FCAPEM $FSVR >/dev/ttyS0 2>&1
+#	if [ -f $FCAPEM ] ; then
+#		echo "Creating request ..." >/dev/ttyS0 2>&1
+#		build_factory_req $FCAPEM $FREQ $FMOUNT >/dev/ttyS0 2>&1
+#		#Wait til eth1 is up, else wget SIGSEGVs
+#		wait_for_ifup eth1 >/dev/ttyS0 2>&1
+#		echo "Requesting credentials ..." >/dev/ttyS0 2>&1
+#		wget -q `cat $FSVR`?`cat $FREQ` -O $FRES >/dev/ttyS0 2>&1
+#		if [ -f $FRES ] ; then
+#			echo "Verifying factory response ..." >/dev/ttyS0 2>&1
+#			verify_factory_rsp $FCAPEM $FRES >/dev/ttyS0 2>&1
+#		fi
+#		rm -f $FCAPEM $FSVR $FREQ $FRES
+#	fi
+#fi
+
+# system monitoring
+/etc/monitor &
+
+if eval test $EMID = $MUXSEL; then
+        # Start up AlertMail
+        /usr/sbin/alertmail > /dev/null 2>&1 &
+fi
+
+# System fully booted. Put a mark in the log
+logger Onboard Administrator booted successfully

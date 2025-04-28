@@ -3,6 +3,7 @@ all:
 #	gcc -Wl,-emain -Wall -Wno-unused-variable -Wno-unused-but-set-variable -o hpoa md5/md5.c sha2/sha2.c hpoa.c
 	gcc -std=c99 -D _GNU_SOURCE -Wall -Wno-unused-variable -Wno-unused-but-set-variable -o hpoa md5/md5.c sha2/sha2.c crc32/crc32.c hpoa.c
 	gcc -std=c99 -D _GNU_SOURCE -Wall -Wno-unused-variable -Wno-unused-but-set-variable -o detect_diag_blade detect_diag_blade.c
+	gcc -std=c99 -D _GNU_SOURCE -Wall -Wno-unused-variable -Wno-unused-but-set-variable -o watchdog watchdog.c
 
 asan:
 	gcc -std=c99 -fsanitize=address -g3 -D _GNU_SOURCE -Wall -Wno-unused-variable -Wno-unused-but-set-variable -o hpoa md5/md5.c sha2/sha2.c crc32/crc32.c hpoa.c
@@ -25,4 +26,4 @@ old:
 	gcc -pedantic -Wno-unused-variable -Wno-unused-but-set-variable -Wall -o hpoa hpoa.c sha2/sha2.c
 
 clean:
-	rm hpoa detect_diag_blade
+	rm hpoa detect_diag_blade watchdog

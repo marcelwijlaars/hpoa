@@ -1,7 +1,23 @@
 #include "hpoa.h"
+#include <openssl/pem.h> //have to fix this, should be local
 
 /* glocal variables */
 unsigned char *DAT_10012738=0;  //doesn't change anywhere should be calloced
+X509 *DAT_10022c44;
+char *DAT_10022c2c;
+X509 *DAT_10022c48;
+EVP_MD_CTX *DAT_10022cb4;
+const EVP_MD *DAT_10022cb0;
+int *DAT_10022c98;
+int DAT_10022c84;
+int DAT_10022c7c;
+int DAT_10022ab4;
+unsigned char *DAT_10011a40;
+int DAT_10022c9c;
+
+
+
+
 
 int main(int argc,char **argv){
   
@@ -172,10 +188,19 @@ int main(int argc,char **argv){
     iVar17=0;
     if (iVar17 == 1) {
       /* X.509 *functions */
+      //ret = FUN_1000ca0c: x509 signature check -1 is fail, 0 is ok
+      have_signature = FUN_1000ca0c();
     }
     else {
       /* SHA256 functions */
-      
+      /* 
+       * in main parm_4=0 in FUN_100061f4 param_4 =  vVar7
+       * DAT_1001152c = "dev"
+       * iVar3 = memcmp(param_1,&DAT_1001152c,4);
+       * bVar7 = bVar7 = iVar3 == 0;
+       * ie. param_1 needs to start with dev
+       * however FUN_100061f4 is not used strangely enough
+       */ 
       have_signature = rsa_verify_signature(fd,fd_location,read_buffer,0,pcVar22);
       printf("have_signature: %i\n", have_signature);
     }
@@ -695,7 +720,7 @@ uint64_t fw_with_fingerprint (char *filename){
 
 
   //local_20 = FUN_1000b510;
-  //pcVar2 = (char *)FUN_1000b510(); //returns filename
+  //pcVar2 = (char *)DAT_10022c2c /* pointer to file name */
   
   file= fopen(filename,"rb");
   if (file == (FILE *)0x0) {
@@ -4168,126 +4193,1013 @@ int get_free_loop(void){
   return loopdev[0]+1;
   
 }
+
+
+
+
+unsigned int DAT_10022c90;
+
+void FUN_1000bbac(unsigned int param_1){
+  DAT_10022c90 = param_1;
+  return;
+}
+
+
+
+unsigned int FUN_1000bbd8(void) {
+  return DAT_10022c90;
+}
+
+
+
+unsigned char FUN_1000bc00(char *param_1) {
+  size_t sVar1;
+  unsigned int uVar2;
+  int iVar3;
+  char *local_24;
+  unsigned int local_20;
   
-#if 0  
+  if (param_1 == (char *)0x0) {
+    local_20 = 0;
+  }
+  else {
+    sVar1 = strlen(param_1);
 
-//DAT_10022c28=calloc(0x80,sizeof(unsigned char));
-//unsigned char *DAT_10022c28;
-//unsigned char *DAT_10022a68;
-//char *DAT_10022c2c; // waarschijnlijk naam van flash image 
+    FUN_1000c6f4((size_t)(sVar1 + 1),local_24,"stobool");
+    strcpy(local_24,param_1);
+    uVar2 = FUN_1000be80(local_24);
+    trimSpaces(uVar2);
+    iVar3 = strcmp(local_24,"true");
+    if ((((iVar3 == 0) || (iVar3 = strcmp(local_24,"yes"), iVar3 == 0)) ||
+        (iVar3 = strcmp(local_24,"y"), iVar3 == 0)) || (iVar3 = strcmp(local_24,"1"), iVar3 == 0)) {
+      FUN_1000c7dc(local_24,"stobool");
+      local_20 = 1;
+    }
+    else {
+      iVar3 = strcmp(local_24,"false");
+      if (((iVar3 == 0) || (iVar3 = strcmp(local_24,"no"), iVar3 == 0)) ||
+         ((iVar3 = strcmp(local_24,"n"), iVar3 == 0 || (iVar3 = strcmp(local_24,"0"), iVar3 == 0))))
+      {
+        FUN_1000c7dc(local_24,"stobool");
+        local_20 = 0;
+      }
+      else {
+        FUN_1000c7dc(local_24,"stobool");
+        local_20 = 0;
+      }
+    }
+  }
+  return local_20;
+}
 
 
+
+char * FUN_1000bdd4(int param_1){
+  char *local_14;
   
-  unsigned int *local_5c;
-  local_5c=calloc(6,sizeof(uint));
-
-  unsigned int      partition_nr;  //was unsigned char, was uVar9
-
-
-
-
-unsigned int jump_size=0;             //mag uiteindelijk ook weg  /* _Var12*/
-  unsigned int current_location=0;
+  if (param_1 == 0) {
+    local_14 = "False";
+  }
+  else {
+    local_14 = "True";
+  }
+  return local_14;
+}
 
 
-  int iVar5 = 0;
-  int iVar8 = 0;
-  int iVar9 = 0;
+
+void FUN_1000be20(unsigned int param_1,char *param_2){
+  if (param_2 != (char *)0x0) {
+    sprintf(param_2,"%d",param_1);
+  }
+  return;
+}
+
+
+
+int FUN_1000be80(int param_1){
+  int local_24;
+  int local_20;
+  
+  if (param_1 == 0) {
+    local_20 = 0;
+  }
+  else {
+    for (local_24 = 0; local_20 = param_1, *(char *)(param_1 + local_24) != '\0';
+        local_24 = local_24 + 1) {
+      if ((0x40 < *(unsigned char *)(param_1 + local_24)) && (*(unsigned char *)(param_1 + local_24) < 0x5b)) {
+        *(char *)(param_1 + local_24) = *(char *)(param_1 + local_24) + ' ';
+      }
+    }
+  }
+  return local_20;
+}
+
+
+
+void FUN_1000bf58(void *param_1,uint param_2,unsigned char *param_3,int param_4)
+
+{
+  void *local_38;
+  uint local_34;
+  unsigned char *local_30;
+  unsigned char auStack_28 [36];
+  
+  local_38 = param_1;
+  local_34 = param_2;
+  local_30 = param_3;
+  if (param_4 - 1U < (param_2 + 2) / 3 << 2) {
+    printf("Can\'t encode data to BASE-64.  Buffer too small\n");
+  }
+  for (; 2 < local_34; local_34 = local_34 - 3) {
+    FUN_1000c09c(local_38,local_30);
+    local_38 = (void *)((int)local_38 + 3);
+    local_30 = local_30 + 4;
+  }
+  if (local_34 != 0) {
+    memset(auStack_28,0,3);
+    memcpy(auStack_28,local_38,local_34);
+    FUN_1000c09c(auStack_28,local_30);
+    local_30[3] = 0x3d;
+    if (local_34 == 1) {
+      local_30[2] = 0x3d;
+    }
+    local_30 = local_30 + 4;
+  }
+  *local_30 = 0;
+  return;
+}
+
+char* DAT_10022bf8 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+void FUN_1000c09c(unsigned char *param_1,int param_2){
+  int local_20;
+  int local_1c;
+  
+  local_20 = ((uint)*param_1 * 0x100 + (uint)param_1[1]) * 0x100 + (uint)param_1[2];
+  for (local_1c = 0; local_1c < 4; local_1c = local_1c + 1) {
+    *(unsigned char *)((param_2 - local_1c) + 3) =
+         DAT_10022bf8[local_20 + (local_20 >> 6) * -0x40];
+    local_20 = local_20 >> 6;
+  }
+  return;
+}
+
+
+
+int FUN_1000c18c(char *param_1,void *param_2,uint param_3){
+  size_t sVar1;
+  int iVar2;
+  void *local_44;
+  uint local_40;
+  char *local_3c;
+  char *local_38;
+  char acStack_34 [4];
+  unsigned char auStack_30 [16];
+  int local_20;
+  uint local_1c;
+  int local_18;
+  int local_14;
+  
+  local_20 = 0;
+  local_1c = 3;
+  local_18 = 0;
+  sVar1 = strlen(param_1);
+  FUN_1000c6f4(sVar1 + 5,&local_3c,"base64_decode");
+  if (local_3c == (char *)0x0) {
+    local_14 = -1;
+  }
+  else {
+    strcpy(local_3c,param_1);
+    strcat(local_3c,"====");
+    local_38 = local_3c;
+    local_44 = param_2;
+    local_40 = param_3;
+    while (local_1c == 3) {
+      for (local_20 = 0; local_20 < 4; local_20 = local_20 + 1) {
+        while ((*local_38 != '=' && (iVar2 = FUN_1000c384(*local_38), iVar2 < 0))) {
+          local_38 = local_38 + 1;
+        }
+        acStack_34[local_20] = *local_38;
+        local_38 = local_38 + 1;
+      }
+      local_1c = FUN_1000c488(acStack_34,auStack_30);
+      if (local_40 < local_1c) {
+        free(local_3c);
+        return -1;
+      }
+      memcpy(local_44,auStack_30,local_1c);
+      local_44 = (void *)((int)local_44 + local_1c);
+      local_40 = local_40 - local_1c;
+      local_18 = local_18 + local_1c;
+    }
+    free(local_3c);
+    local_14 = local_18;
+  }
+  return local_14;
+}
+
+
+
+int FUN_1000c384(unsigned char *param_1){
+
+  unsigned int local_14;
+  
+  if ((param_1 < 0x41) || (0x5a < param_1)) {
+    if ((param_1 < 0x61) || (0x7a < param_1)) {
+      if ((param_1 < 0x30) || (0x39 < param_1)) {
+        if (param_1 == 0x2b) {
+          local_14 = 0x3e;
+        }
+        else if (param_1 == 0x2f) {
+          local_14 = 0x3f;
+        }
+        else {
+          local_14 = -1;
+        }
+      }
+      else {
+        local_14 = param_1 + 4;
+      }
+    }
+    else {
+      local_14 = param_1 - 0x47;
+    }
+  }
+  else {
+    local_14 = param_1 - 0x41;
+  }
+  return local_14;
+}
+
+
+
+int FUN_1000c488(int param_1,int param_2){
   bool bVar1;
-
-
-
-
-
-
-
-int jsa_index=0;
-  while( false ) {
-    current_location = lseek(fd,0,SEEK_CUR);
-    current_location_array[index]=current_location;
-    index++;
-
-    //printf("current location: 0x%X\n",current_location);
-    
-    iVar5 = iVar8;
-    bVar1 = (3 < iVar9);
-    iVar9 = iVar9 + 1;
-
-    if ( ( bVar1 || (local_5c[0] != 0) ) || ( *(read_buffer+1+iVar5) == '\0') ) break;
-
-    partition_nr = (unsigned int) *(read_buffer+1+iVar5);  
-    partition_name = partition_selector(partition_nr);      
-
-    jump_size= *(__off_t*)(read_buffer+1+iVar5+1);
-    if(!is_bigendian()) jump_size = __htobe32(jump_size);
-    jump_size_array[jsa_index]=jump_size;
-    jsa_index++;
-    
-    /* write mtd partition */
-    local_5c[0] = open_mtd_for_output_internal(fd, partition_name,jump_size);
-
-    iVar8 = iVar5 + 0x15;
-
-    if(modify && strcmp(partition_name,"initrd")==0) {
-
-      md5_sum  = calloc( 0x10,sizeof(char));
-      nr_partitions= modify_partition(partition_name,&partition_size);
-      /* update md5sum int read_buffer, should also be updated in file */
-
-      for(i=0;i<MD5_DIGEST_LENGTH;i++){
-	*(uint8_t*)(read_buffer + 1 + iVar5 + 5 + i)= *(uint8_t*)(md5_sum+i);
-	}
-
-      sprintf(mtd_name,"dev/mtd-%s",partition_name);
-
-      fp=fopen(mtd_name,"r");
-      partition_size=fseek(fp,0, SEEK_END);
-      partition_size = ftell(fp);
-      fclose(fp);
-    }
-
-    if (local_5c[0] == 0) {
-      local_5c[0] = open_mtd_for_input_internal(partition_name,jump_size,(read_buffer + 1 + iVar5 + 5));
-    }
-    printf("\n");
+  int iVar2;
+  int local_40;
+  uint local_3c;
+  int local_38;
+  int local_30 [9];
+  
+  local_38 = 3;
+  bVar1 = true;
+  for (local_40 = 0; local_40 < 4; local_40 = local_40 + 1) {
+    iVar2 = FUN_1000c384(*(unsigned char *)(param_1 + local_40));
+    local_30[local_40] = iVar2;
   }
+  local_40 = 3;
+  do {
+    if (local_40 < 0) {
+      if (local_38 < 0) {
+        local_38 = 0;
+      }
+      local_3c = ((local_30[0] * 0x40 + local_30[1]) * 0x40 + local_30[2]) * 0x40 + local_30[3];
+      for (local_40 = local_38; iVar2 = local_38, local_40 < 3; local_40 = local_40 + 1) {
+        local_3c = ((int)local_3c >> 8) + (uint)((int)local_3c < 0 && (local_3c & 0xff) != 0);
+      }
+      while (local_40 = iVar2 + -1, -1 < local_40) {
+        *(char *)(param_2 + local_40) = (char)local_3c;
+        local_3c = ((int)local_3c >> 8) + (uint)((int)local_3c < 0 && (local_3c & 0xff) != 0);
+        iVar2 = local_40;
+      }
+      return local_38;
+    }
+    if (local_30[local_40] < 0) {
+      if ((!bVar1) || (*(char *)(param_1 + local_40) != '=')) {
+        return 0;
+      }
+      local_30[local_40] = 0;
+      local_38 = local_38 + -1;
+    }
+    else {
+      bVar1 = false;
+    }
+    local_40 = local_40 + -1;
+  } while( true );
+}
 
 
 
-
+unsigned int FUN_1000c6f4(size_t param_1,char *param_2,unsigned char* param_3) {
+  void *pvVar1;
+  unsigned int local_1c;
   
-  if(!burn){
-    //system("rm -rf dev/*");
+  if (param_3 == 0) {
+    local_1c = 0xffffffff;
   }
+  else if (param_1 == 0) {
+    local_1c = 0xffffffff;
+  }
+  else if (param_2 == (int *)0x0) {
+    local_1c = 0xffffffff;
+  }
+  else {
+    pvVar1 = malloc(param_1);
+    *param_2 = (int)pvVar1;
+    if (*param_2 == 0) {
+      printf("failed to acquire memory for [%s]",param_3);
+      local_1c = 0xffffffff;
+    }
+    else {
+      memset((void *)*param_2,0,param_1);
+      local_1c = 0;
+    }
+  }
+  return local_1c;
+}
 
 
 
-
-  /* what is DAT_10022c28? */
-  uint uVar9 = memcmp(argv[optind], "file://",7);  //is file:// somewhere in filename?
-  //printf("uVar9: 0x%08X, %i\n",uVar9,uVar9);
-  uint uVar10 = (int)uVar9 >> 0x1f;
-  //printf("uVar10: 0x%08X, %i\n",uVar10, uVar10);
-  uint uVar21=1;  // is initialised as 1
-  char *pcVar27 = (char *)0xc; // devfined  right here
-  uint tmp1 = (int) (uVar10 - (uVar10 ^ uVar9 )) >> 0x1f;
-  //printf("tmp1: %i\n",tmp1);
+unsigned int FUN_1000c7dc(int *param_1,char *param_2){
+  unsigned int local_20;
   
-  char pcVar22 = (uVar21 & tmp1);  //1 & -1: 0x00000001 & 0xFFFFFFFF = 1
+  if (param_2 == 0) {  // empty string or 0 pointer?
+    local_20 = 0xffffffff;
+  }
+  else if (*param_1 == 0) {
+    local_20 = 0;
+  }
+  else {
+    free((void *)*param_1);
+    *param_1 = 0;
+    local_20 = 0;
+  }
+  return local_20;
+}
+
+
+
+void FUN_1000c868(int param_1,int param_2,int param_3) {
+  if (param_1 == 0) {
+    printf("File path supplied to split_path is NULL. Will abort!");
+  }
+  if (param_2 == 0) {
+    printf("Buffer passed to split_path() to store directory name is NULL!");
+  }
+  if (param_3 == 0) {
+    printf("Buffer passed to split_path() to store file name is NULL!");
+  }
+  return;
+}
+
   
-  char pcVar22 = 0x00000001 & 0xFFFFFFFF
-  //printf("pcVar22: 0x%08X\n",pcVar22);
+
+unsigned int FUN_1000c8e8(char *param_1,char *param_2,char *param_3,char *param_4,char *param_5)
+
+{
+  int iVar1;
+  unsigned int local_14;
+  
+  if (param_1 == (char *)0x0) {
+    local_14 = 0;
+  }
+  else if ((param_2 == (char *)0x0) || (iVar1 = strcmp(param_1,param_2), iVar1 != 0)) {
+    if ((param_3 == (char *)0x0) || (iVar1 = strcmp(param_1,param_3), iVar1 != 0)) {
+      if ((param_4 == (char *)0x0) || (iVar1 = strcmp(param_1,param_4), iVar1 != 0)) {
+        if ((param_5 == (char *)0x0) || (iVar1 = strcmp(param_1,param_5), iVar1 != 0)) {
+          local_14 = 0;
+        }
+        else {
+          local_14 = 1;
+        }
+      }
+      else {
+        local_14 = 1;
+      }
+    }
+    else {
+      local_14 = 1;
+    }
+  }
+  else {
+    local_14 = 1;
+  }
+  return local_14;
+}
+
+
+
+unsigned int FUN_1000ca0c(void) {
+  unsigned int iVar1;
+  unsigned int uVar2;
+  X509 *uVar3;
+  char *__file;
+  unsigned int iVar4;
+  unsigned int local_14;
+  
+  iVar1 = FUN_1000d6e0();
+  if (iVar1 == 0) {
+    uVar2 = DAT_10022c44;
+    uVar3 = FUN_1000bac8();
+    iVar1 = FUN_1000ddd4(uVar2,uVar3);
+    if (iVar1 == 0) {
+      iVar1 = FUN_1000da30();
+      if (iVar1 == 0) {
+        __file = (char *)DAT_10022c2c; // file name
+        iVar1 = open(__file,0);
+        if (iVar1 == -1) {
+          uVar2 = DAT_10022c2c; // file name
+          syslog(3,"Can\'t open [%s] to check\n",uVar2);
+          local_14 = 0xffffffff;
+        }
+        else {
+          iVar4 = FUN_1000dae4(iVar1);
+          if (iVar4 == 0) {
+            iVar1 = FUN_1000dc8c();
+            if (iVar1 == 0) {
+              FUN_1000de80();
+              local_14 = 0;
+            }
+            else {
+              local_14 = 0xffffffff;
+            }
+          }
+          else {
+            close(iVar1);
+            local_14 = 0xffffffff;
+          }
+        }
+      }
+      else {
+        local_14 = 0xffffffff;
+      }
+    }
+    else {
+      syslog(3,"Certificates validation failed. Cannot trust the signed file!");
+      local_14 = 0xffffffff;
+    }
+  }
+  else {
+    local_14 = 0xffffffff;
+  }
+  return local_14;
+}
+
+
+
+unsigned char FUN_1000cb68(void){ // same as fw_with_fingerprint (char *filename)
+  unsigned char uVar1;
+  char *pcVar2;
+  FILE *__stream;
+  int *piVar3;
+  int iVar4;
+  char acStack_420 [1024];
+  void *local_20;
+  
+  uVar1 = 0;
+  memset(acStack_420,0,0x400);
+  local_20 = DAT_10022c2c; // file name 
+  pcVar2 = (char *)DAT_10022c2c; // file name 
+  __stream = fopen(pcVar2,"rb");
+  if (__stream == (FILE *)0x0) {
+    syslog(3,"could not open the signed file for parsing");
+    uVar1 = 0;
+  }
+  else {
+    memset(acStack_420,0,0x400);
+    fgets(acStack_420,0x400,__stream);
+    piVar3 = __errno_location();
+    *piVar3 = 0;
+    iVar4 = fseek(__stream,-0x2800,2);
+    if ((iVar4 == -1) && (piVar3 = __errno_location(), *piVar3 == 0x16)) {
+      rewind(__stream);
+    }
+    memset(acStack_420,0,0x400);
+    while (pcVar2 = fgets(acStack_420,0x400,__stream), pcVar2 != (char *)0x0) {
+      pcVar2 = strstr(acStack_420,"Fingerprint Length:");
+      if (pcVar2 != (char *)0x0) {
+        uVar1 = 1;
+        break;
+      }
+      memset(acStack_420,0,0x400);
+    }
+    fclose(__stream);
+  }
+  return uVar1;
+}
+
+
+
+int FUN_1000cd38(void){
+  unsigned int local_18;
+  unsigned char local_14;
+
+  local_14 = 0xb5;
+  if (DAT_10022c98 == 0) {
+    DAT_10022ab4 = 0x794;
+    FUN_1000c6f4(0x794,&DAT_10022c98,"get_embeded_signing_cert");
+  }
+  for (local_18 = 0; local_18 < 0x78c; local_18 = local_18 + 1) {
+    *(unsigned char *)(DAT_10022c98 + local_18) = DAT_10011a40[local_18]^local_14;
+    local_14 = local_14 + 1;
+  }
+  return DAT_10022c98;
+}
 
 
 
 
+void FUN_1000ce10(void){
+  if (DAT_10022c98 != (void *)0x0) {
+    memset(DAT_10022c98,0,DAT_10022ab4);
+    FUN_1000c7dc(DAT_10022c98,"release_embeded_signing_cert");
+    DAT_10022c98 = (void *)0x0;
+    DAT_10022ab4 = 0xffffffff;
+  }
+  return;
+}
 
-#endif
 
 
-#if 0
-FUN_1000610c ==  FUN_10005c4
+long FUN_1000ce94(FILE *param_1,char *param_2)
+
+{
+  char *pcVar1;
+  size_t sVar2;
+  long local_420;
+  char acStack_418 [1024];
+  long local_18;
+  
+  local_420 = 0;
+  memset(acStack_418,0,0x400);
+  if ((param_1 == (FILE *)0x0) || (param_2 == (char *)0x0)) {
+    printf("find_block_length():  invalid file stream pointer or the pattern");
+    local_18 = 0;
+  }
+  else {
+    while (pcVar1 = fgets(acStack_418,0x400,param_1), pcVar1 != (char *)0x0) {
+      pcVar1 = strstr(acStack_418,param_2);
+      if (pcVar1 != (char *)0x0) {
+        sVar2 = strlen(param_2);
+        local_420 = strtol(pcVar1 + sVar2,(char **)0x0,10);
+        if (local_420 == 0) {
+          printf("[%s]: could not retrieve [%s]","parse_signed_file",param_2);
+        }
+        break;
+      }
+      memset(acStack_418,0,0x400);
+    }
+    local_18 = local_420;
+  }
+  return local_18;
+}
 
 
-    
-#endif
+
+int FUN_1000cff0(FILE *param_1)
+
+{
+  int iVar1;
+  int iVar2;
+  char *pcVar3;
+  int local_434;
+  size_t local_428;
+  char *local_424;
+  char acStack_420 [1024];
+  int local_20;
+  
+  local_434 = 0;
+  local_428 = 0;
+  local_424 = (char *)0x0;
+  memset(acStack_420,0,0x400);
+  if (param_1 == (FILE *)0x0) {
+    printf("split_cert_chain():  invalid file stream pointer.\n");
+    local_20 = 0;
+  }
+  else {
+    iVar1 = FUN_1000b628();
+    iVar2 = FUN_1000b6e8();
+    fseek(param_1,iVar1 + iVar2,0);
+    local_428 = 0x800;
+    iVar1 = FUN_1000c6f4(0x800,&local_424,"split_cert_chain");
+    if (iVar1 == -1) {
+      local_20 = -1;
+    }
+    else {
+      do {
+        while( true ) {
+          while( true ) {
+            pcVar3 = fgets(acStack_420,0x400,param_1);
+            if (pcVar3 == (char *)0x0) goto LAB_1000d1ec;
+            iVar1 = strcmp(acStack_420,"-----BEGIN CERTIFICATE----- ");
+            if (iVar1 != 0) break;
+            strcat(local_424,"-----BEGIN CERTIFICATE----- ");
+          }
+          iVar1 = strcmp(acStack_420,"-----END CERTIFICATE-----\n");
+          if (iVar1 == 0) break;
+          FUN_1000d22c(&local_428,acStack_420);
+          memset(acStack_420,0,0x400);
+        }
+        strcat(local_424,"-----END CERTIFICATE-----\n");
+        if (DAT_10022c9c == 0) {
+          DAT_10022c9c = 1;
+          local_434 = FUN_1000b9f4(local_424);
+        }
+        else {
+          local_434 = FUN_1000b770(local_424);
+        }
+        memset(local_424,0,local_428);
+      } while (local_434 != -1);
+LAB_1000d1ec:
+      FUN_1000c7dc(local_424,"split_cert_chain()");
+      local_20 = local_434;
+    }
+  }
+  return local_20;
+}
+
+
+
+void FUN_1000d22c(size_t *param_1,char *param_2)
+
+{
+  size_t sVar1;
+  size_t sVar2;
+  size_t sVar3;
+  void *pvVar4;
+  
+  if (*param_1 == 0) {
+    printf("append_PEM_buff was told an invalid size of malloc\'d cert buffer.\n");
+  }
+  else if (param_2 == (char *)0x0) {
+    printf("append_PEM_buff received a NULL pointer to append to cert buffer.\n");
+  }
+  else {
+    sVar2 = strlen((char *)param_1[1]);
+    sVar1 = *param_1;
+    sVar3 = strlen(param_2);
+    if (sVar3 < sVar1 - sVar2) {
+      strcat((char *)param_1[1],param_2);
+    }
+    else {
+      *param_1 = *param_1 + 0x200;
+      pvVar4 = realloc((void *)param_1[1],*param_1);
+      if (pvVar4 == (void *)0x0) {
+        printf("memory allocated to cert was insufficient, and attempt to reallocate failed.");
+      }
+      else {
+        param_1[1] = (size_t)pvVar4;
+        strcat((char *)param_1[1],param_2);
+      }
+    }
+  }
+  return;
+}
+
+
+
+void FUN_1000d4dc(void)
+
+{
+  int iVar1;
+  char *pcVar2;
+  unsigned int uVar3;
+  unsigned int uVar4;
+  char *local_28;
+  char *local_24;
+  int local_20;
+  
+  local_28 = (char *)0x0;
+  local_24 = (char *)0x0;
+  local_20 = FUN_1000b6e8();
+  local_20 = local_20 + 1;
+  if ((1 < local_20) &&
+     (iVar1 = FUN_1000c6f4(local_20,&local_28,"parse_fingerprint()"), iVar1 != -1)) {
+    pcVar2 = (char *)FUN_1000b5c8();
+    strcpy(local_28,pcVar2);
+    local_24 = strtok(local_28,"\n");
+    while ((local_24 != (char *)0x0 &&
+           (pcVar2 = strstr(local_24,"End HP Signed File Fingerprint"), pcVar2 == (char *)0x0))) {
+      local_24 = strtok((char *)0x0,":\n");
+      if ((local_24 != (char *)0x0) && (iVar1 = strcmp(local_24,"Key"), iVar1 == 0)) {
+        local_24 = strtok((char *)0x0,"\n");
+        FUN_1000e064(local_24);
+      }
+      if ((local_24 != (char *)0x0) && (iVar1 = strcmp(local_24,"Hash"), iVar1 == 0)) {
+        local_24 = strtok((char *)0x0,"\n");
+        FUN_1000e410(2);
+      }
+      if (((local_24 != (char *)0x0) && (iVar1 = strcmp(local_24,"Signature"), iVar1 == 0)) &&
+         (local_24 = strtok((char *)0x0,"\n"), local_24 != (char *)0x0)) {
+        iVar1 = DAT_10022c44;
+        FUN_1000e2b4(**(unsigned int **)(iVar1 + 8));
+        uVar3 = FUN_1000e33c();
+        uVar4 = FUN_1000e364();
+        FUN_1000c18c(local_24,uVar3,uVar4);
+      }
+    }
+    FUN_1000c7dc(local_28,"parse_fingerprint()");
+  }
+  return;
+}
+
+
+void FUN_1000d988(void)
+
+{
+  int iVar1;
+  
+  iVar1 = FUN_1000e43c();
+  if (iVar1 == 1) {
+    DAT_10022cb0 = FIPS_evp_sha256();
+  }
+  else if (iVar1 == 0) {
+    DAT_10022cb0 = FIPS_evp_sha1();
+  }
+  else if (iVar1 == 2) {
+    DAT_10022cb0 = FIPS_evp_sha512();
+  }
+  else {
+    printf("Unknown message digest\n");
+  }
+  return;
+}
+
+
+
+unsigned int FUN_1000da30(void){
+  int iVar1;
+  unsigned int local_18;
+  
+  OPENSSL_add_all_algorithms_noconf();
+  DAT_10022cb4 = FIPS_md_ctx_create();
+  if (DAT_10022cb4 == 0) {
+    printf("Can\'t initialize the message digest\n");
+    local_18 = 0xffffffff;
+  }
+  else {
+    FUN_1000d988();
+    iVar1 = FIPS_digestinit(DAT_10022cb4,DAT_10022cb0);
+    if (iVar1 == 0) {
+      printf("Can\'t initialize the verifier\n");
+      local_18 = 0xffffffff;
+    }
+    else {
+      local_18 = 0;
+    }
+  }
+  return local_18;
+}
+
+
+
+unsigned int FUN_1000dae4(unsigned int param_1){
+  int iVar1;
+  char *local_24;
+  int local_20;
+  int local_1c;
+  unsigned int local_18;
+  
+  local_24 = (void *)0x0;
+  local_20 = 1;
+  local_1c = 0;
+  iVar1 = FUN_1000c6f4(0x1000,&local_24,"validate_stream");
+  if (iVar1 == -1) {
+    local_18 = 0xffffffff;
+  }
+  else {
+    while (iVar1 = FUN_1000b628(), local_1c < iVar1) {
+      iVar1 = FUN_1000b628();
+      if (local_1c + 0x1000 < iVar1) {
+        local_20 = read(param_1,local_24,0x1000);
+      }
+      else {
+        iVar1 = FUN_1000b628();
+        local_20 = read(param_1,local_24,iVar1 - local_1c);
+      }
+      if (local_20 < 0) break;
+      local_1c = local_1c + local_20;
+      iVar1 = FIPS_digestupdate(DAT_10022cb4,local_24,local_20);
+      if (iVar1 == 0) {
+        printf("Verify failed during string processing\n");
+        FUN_1000c7dc(local_24,"validate_stream");
+        return 0xffffffff;
+      }
+      memset(local_24,0,0x1000);
+    }
+    memset(local_24,0,0x1000);
+    FUN_1000c7dc(local_24,"validate_stream");
+    local_18 = 0;
+  }
+  return local_18;
+}
+
+
+
+
+unsigned int FUN_1000d368(FILE *param_1,void *param_2){
+  unsigned char *puVar1;
+  long __off;
+  int iVar2;
+  void *local_1c;
+  size_t local_18;
+  unsigned int local_14;
+  
+  local_1c = NULL;
+  local_18 = 0;
+  if (param_1 == NULL) {
+    puVar1 = *(unsigned char *)(param_2)();  // call to function how??????????
+    FUN_100029e8(7,"findblock:  invalid file stream pointer to [%s].\n",*puVar1);
+    local_14 = 0xffffffff;
+  }
+  else {
+    __off = FUN_1000b628();
+    fseek(param_1,__off,0);
+    iVar2 = FUN_1000b6e8();
+    local_18 = iVar2 + 1;
+    if (local_18 != 0) {
+      iVar2 = FUN_1000c6f4(local_18,&local_1c,"split_signed_file():fingerprint");
+      if (iVar2 == -1) {
+        return 0xffffffff;
+      }
+      fread(local_1c,local_18,1,param_1);
+      *(unsigned char *)((int)local_1c + (local_18 - 1)) = 0;
+      FUN_1000b538(local_1c);
+      FUN_1000c7dc(&local_1c,"split_signed_file():fingerprint");
+    }
+    iVar2 = FUN_1000cff0(param_1);
+    if (iVar2 == -1) {
+      local_14 = 0xffffffff;
+    }
+    else {
+      FUN_1000d4dc();
+      local_14 = 0;
+    }
+  }
+  return local_14;
+}
+
+
+
+void FUN_1000b6b0(int param_1){
+  if (-1 < param_1) {
+    DAT_10022c84 = param_1;
+  }
+  return;
+}
+
+
+void FUN_1000b5f0(int param_1){
+  if (-1 < param_1) {
+    DAT_10022c7c = param_1;
+  }
+  return;
+}
+
+
+unsigned int FUN_1000dc8c(void){
+  unsigned char *sigbuf;
+  int iVar1;
+  unsigned char auStack_a0 [128];
+  uint local_20;
+  X509 *local_1c;
+  EVP_PKEY *local_18;
+  unsigned int local_14;
+  
+  memset(auStack_a0,0,0x78);
+  local_20 = 0;
+  local_1c = (X509 *)0x0;
+  local_18 = (EVP_PKEY *)0x0;
+  local_1c = (X509 *)DAT_10022c44;
+
+  if (local_1c == (X509 *)0x0) {
+    printf("Can\'t make public key\n");
+    local_14 = 0xffffffff;
+  }
+  else {
+    local_20 = local_1c->signature->length;
+    local_18 = X509_get_pubkey(local_1c);
+    if (local_18 == (EVP_PKEY *)0x0) {
+      printf("Can\'t make public key\n");
+      local_14 = 0xffffffff;
+    }
+    else {
+      sigbuf = (unsigned char *)FUN_1000e33c();
+      iVar1 = EVP_VerifyFinal(DAT_10022cb4,sigbuf,local_20,local_18);
+      if (iVar1 == 1) {
+        printf("validate_finalize: Verification succeeded\n");
+        local_14 = 0;
+      }
+      else {
+        printf("validate_finalize: Verification of signed file failed\n");
+        local_14 = 0xffffffff;
+      }
+    }
+  }
+  return local_14;
+}
+
+
+
+int FUN_1000ddd4(X509 *param_1,X509 *param_2)
+
+{
+  unsigned int local_20;
+  
+  if ((param_1 == NULL) || (param_2 == NULL)) {
+    local_20 = -1;
+  }
+  else {
+    local_20 = X509_cmp(param_1,param_2);
+  }
+  return local_20;
+}
+
+
+X509* FUN_1000bac8(void){
+  BIO_METHOD *type;
+  BIO *bp;
+  char *buf;
+  int iVar1;
+  X509 *local_14;
+  
+  type = BIO_s_mem();
+  bp = BIO_new(type);
+  buf = (char *)FUN_1000cd38();
+  BIO_puts(bp,buf);
+  DAT_10022c48 = PEM_read_bio_X509(bp,(X509 **)0x0,(unsigned char *)0x0,(void *)0x0);
+  if (DAT_10022c48 == NULL) {
+    local_14 = NULL;
+  }
+  else {
+    iVar1 = BIO_free(bp);
+    if (iVar1 == 1) {
+      local_14 = DAT_10022c48;
+    }else{
+      local_14 = NULL;
+    }
+  }
+  return local_14;
+}
+
+
+
+unsigned int FUN_1000d6e0(void){
+  bool bVar1;
+  char *pcVar2;
+  FILE *__stream;
+  int *piVar3;
+  int iVar4;
+  size_t sVar5;
+  unsigned int uVar6;
+  char acStack_428 [1024];
+  void *local_28;
+  int local_24;
+  unsigned int local_20;
+  
+  bVar1 = false;
+  memset(acStack_428,0,0x400);
+  local_24 = 0;
+  local_28 = DAT_10022c2c; //probably pointer
+  pcVar2 = (char *)DAT_10022c2c;
+  __stream = fopen(pcVar2,"rb");
+  if (__stream == (FILE *)0x0) {
+    printf("could not open the signed file for parsing");
+    local_20 = 0xffffffff;
+  }
+  else {
+    memset(acStack_428,0,0x400);
+    fgets(acStack_428,0x400,__stream);
+    piVar3 = __errno_location();
+    *piVar3 = 0;
+    iVar4 = fseek(__stream,-0x2800,2);
+    if ((iVar4 == -1) && (piVar3 = __errno_location(), *piVar3 == 0x16)) {
+      rewind(__stream);
+    }
+    memset(acStack_428,0,0x400);
+    while (pcVar2 = fgets(acStack_428,0x400,__stream), pcVar2 != (char *)0x0) {
+      pcVar2 = strstr(acStack_428,"Fingerprint Length:");
+      if (pcVar2 != (char *)0x0) {
+        bVar1 = true;
+        local_24 = ftell(__stream);
+        sVar5 = strlen(acStack_428);
+        local_24 = (local_24 - sVar5) + -0x2b;
+        break;
+      }
+      memset(acStack_428,0,0x400);
+    }
+    if (bVar1) {
+      FUN_1000b5f0(local_24);
+      local_24 = 0;
+      uVar6 = FUN_1000ce94(__stream,"Fingerprint Length:");
+      FUN_1000b6b0(uVar6);
+      iVar4 = FUN_1000d368(__stream,local_28);
+      if (iVar4 == -1) {
+        fclose(__stream);
+        local_20 = 0xffffffff;
+      }
+      else {
+        fclose(__stream);
+        local_20 = 0;
+      }
+    }
+    else {
+      printf("could not find signed blocks in the file. File is not a valid signed file!.\n"
+                  );
+      fclose(__stream);
+      local_20 = 0xffffffff;
+    }
+  }
+  return local_20;
+}
