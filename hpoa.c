@@ -1,19 +1,33 @@
 #include "hpoa.h"
-#include <openssl/pem.h> //have to fix this, should be local
+
 
 /* glocal variables */
 unsigned char *DAT_10012738=0;  //doesn't change anywhere should be calloced
-X509 *DAT_10022c44;
-char *DAT_10022c2c;
-X509 *DAT_10022c48;
-EVP_MD_CTX *DAT_10022cb4;
-const EVP_MD *DAT_10022cb0;
-int *DAT_10022c98;
-int DAT_10022c84;
-int DAT_10022c7c;
-int DAT_10022ab4;
+
+
+
 unsigned char *DAT_10011a40;
-int DAT_10022c9c;
+
+
+int   DAT_10022ab4;
+char *DAT_10022c2c;
+char *DAT_10022c40;
+X509 *DAT_10022c44;
+X509 *DAT_10022c48;
+void *DAT_10022c60;
+int   DAT_10022c78;
+int   DAT_10022c74;
+int   DAT_10022c78;
+int   DAT_10022c7c;
+int   DAT_10022c84;
+int  *DAT_10022c98;
+int   DAT_10022c9c;
+const EVP_MD *DAT_10022cb0;
+EVP_MD_CTX   *DAT_10022cb4;
+char *DAT_10022cbc;
+char *DAT_10022cc4;
+int   DAT_10022cc8;
+int   DAT_10022ccc;
 
 
 
@@ -4214,7 +4228,7 @@ unsigned int FUN_1000bbd8(void) {
 
 unsigned char FUN_1000bc00(char *param_1) {
   size_t sVar1;
-  unsigned int uVar2;
+  char *uVar2;
   int iVar3;
   char *local_24;
   unsigned int local_20;
@@ -4277,18 +4291,17 @@ void FUN_1000be20(unsigned int param_1,char *param_2){
 
 
 
-int FUN_1000be80(int param_1){
-  int local_24;
-  int local_20;
+char *FUN_1000be80(char *param_1){
+  int i;
+  char *local_20;
   
   if (param_1 == 0) {
     local_20 = 0;
   }
   else {
-    for (local_24 = 0; local_20 = param_1, *(char *)(param_1 + local_24) != '\0';
-        local_24 = local_24 + 1) {
-      if ((0x40 < *(unsigned char *)(param_1 + local_24)) && (*(unsigned char *)(param_1 + local_24) < 0x5b)) {
-        *(char *)(param_1 + local_24) = *(char *)(param_1 + local_24) + ' ';
+    for (i= 0; local_20 = param_1, *(char *)(param_1 + i) != '\0';i++) {
+      if ((0x40 < *(unsigned char *)(param_1 + i)) && (*(unsigned char *)(param_1 + i) < 0x5b)) {
+        *(char *)(param_1 + i) = *(char *)(param_1 + i) + ' ';
       }
     }
   }
@@ -4296,10 +4309,22 @@ int FUN_1000be80(int param_1){
 }
 
 
+char* DAT_10022bf8 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-void FUN_1000bf58(void *param_1,uint param_2,unsigned char *param_3,int param_4)
+void FUN_1000c09c(unsigned char *param_1,unsigned char *param_2){  
+  int local_20;
+  int i;
+  
+  local_20 = ((uint)param_1[0] * 0x100 + (uint)param_1[1]) * 0x100 + (uint)param_1[2];
+  for (i = 0; i < 4; i++) {
+    *(char *)(param_2 +3 - i) =
+         DAT_10022bf8[local_20 + (local_20 >> 6) * -0x40];
+    local_20 = local_20 >> 6;
+  }
+  return;
+}
 
-{
+void FUN_1000bf58(void *param_1,uint param_2,unsigned char *param_3,int param_4){
   void *local_38;
   uint local_34;
   unsigned char *local_30;
@@ -4313,7 +4338,7 @@ void FUN_1000bf58(void *param_1,uint param_2,unsigned char *param_3,int param_4)
   }
   for (; 2 < local_34; local_34 = local_34 - 3) {
     FUN_1000c09c(local_38,local_30);
-    local_38 = (void *)((int)local_38 + 3);
+    local_38 = (void *)((int*)local_38 + 3);  // big endian to small endian, or char*?
     local_30 = local_30 + 4;
   }
   if (local_34 != 0) {
@@ -4330,20 +4355,6 @@ void FUN_1000bf58(void *param_1,uint param_2,unsigned char *param_3,int param_4)
   return;
 }
 
-char* DAT_10022bf8 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-void FUN_1000c09c(unsigned char *param_1,int param_2){
-  int local_20;
-  int local_1c;
-  
-  local_20 = ((uint)*param_1 * 0x100 + (uint)param_1[1]) * 0x100 + (uint)param_1[2];
-  for (local_1c = 0; local_1c < 4; local_1c = local_1c + 1) {
-    *(unsigned char *)((param_2 - local_1c) + 3) =
-         DAT_10022bf8[local_20 + (local_20 >> 6) * -0x40];
-    local_20 = local_20 >> 6;
-  }
-  return;
-}
 
 
 
@@ -4352,10 +4363,12 @@ int FUN_1000c18c(char *param_1,void *param_2,uint param_3){
   int iVar2;
   void *local_44;
   uint local_40;
-  char *local_3c;
+  
   char *local_38;
+  char *local_3c;
+
   char acStack_34 [4];
-  unsigned char auStack_30 [16];
+  char auStack_30 [16];
   int local_20;
   uint local_1c;
   int local_18;
@@ -4365,7 +4378,7 @@ int FUN_1000c18c(char *param_1,void *param_2,uint param_3){
   local_1c = 3;
   local_18 = 0;
   sVar1 = strlen(param_1);
-  FUN_1000c6f4(sVar1 + 5,&local_3c,"base64_decode");
+  FUN_1000c6f4(sVar1 + 5,local_3c,"base64_decode");
   if (local_3c == (char *)0x0) {
     local_14 = -1;
   }
@@ -4377,19 +4390,19 @@ int FUN_1000c18c(char *param_1,void *param_2,uint param_3){
     local_40 = param_3;
     while (local_1c == 3) {
       for (local_20 = 0; local_20 < 4; local_20 = local_20 + 1) {
-        while ((*local_38 != '=' && (iVar2 = FUN_1000c384(*local_38), iVar2 < 0))) {
+        while ((*local_38 != '=' && (iVar2 = FUN_1000c384(local_38), iVar2 < 0))) {
           local_38 = local_38 + 1;
         }
         acStack_34[local_20] = *local_38;
         local_38 = local_38 + 1;
       }
-      local_1c = FUN_1000c488(acStack_34,auStack_30);
+      local_1c = FUN_1000c488((int*)acStack_34,(int*)auStack_30);
       if (local_40 < local_1c) {
         free(local_3c);
         return -1;
       }
       memcpy(local_44,auStack_30,local_1c);
-      local_44 = (void *)((int)local_44 + local_1c);
+      local_44 = (void *)((int*)local_44 + local_1c);
       local_40 = local_40 - local_1c;
       local_18 = local_18 + local_1c;
     }
@@ -4401,17 +4414,17 @@ int FUN_1000c18c(char *param_1,void *param_2,uint param_3){
 
 
 
-int FUN_1000c384(unsigned char *param_1){
+int FUN_1000c384(char *param_1){
 
   unsigned int local_14;
   
-  if ((param_1 < 0x41) || (0x5a < param_1)) {
-    if ((param_1 < 0x61) || (0x7a < param_1)) {
-      if ((param_1 < 0x30) || (0x39 < param_1)) {
-        if (param_1 == 0x2b) {
+  if ((*param_1 < 0x41) || (0x5a < *param_1)) {
+    if ((*param_1 < 0x61) || (0x7a < *param_1)) {
+      if ((*param_1 < 0x30) || (0x39 < *param_1)) {
+        if (*param_1 == 0x2b) {
           local_14 = 0x3e;
         }
-        else if (param_1 == 0x2f) {
+        else if (*param_1 == 0x2f) {
           local_14 = 0x3f;
         }
         else {
@@ -4419,22 +4432,22 @@ int FUN_1000c384(unsigned char *param_1){
         }
       }
       else {
-        local_14 = param_1 + 4;
+        local_14 = *param_1 + 4;
       }
     }
     else {
-      local_14 = param_1 - 0x47;
+      local_14 = *param_1 - 0x47;
     }
   }
   else {
-    local_14 = param_1 - 0x41;
+    local_14 = *param_1 - 0x41;
   }
   return local_14;
 }
 
 
 
-int FUN_1000c488(int param_1,int param_2){
+int FUN_1000c488(int *param_1,int *param_2){
   bool bVar1;
   int iVar2;
   int local_40;
@@ -4445,7 +4458,7 @@ int FUN_1000c488(int param_1,int param_2){
   local_38 = 3;
   bVar1 = true;
   for (local_40 = 0; local_40 < 4; local_40 = local_40 + 1) {
-    iVar2 = FUN_1000c384(*(unsigned char *)(param_1 + local_40));
+    iVar2 = FUN_1000c384((char *)(param_1 + local_40));
     local_30[local_40] = iVar2;
   }
   local_40 = 3;
@@ -4475,13 +4488,13 @@ int FUN_1000c488(int param_1,int param_2){
     else {
       bVar1 = false;
     }
-    local_40 = local_40 + -1;
+    local_40 = local_40 -1;
   } while( true );
 }
 
 
 
-unsigned int FUN_1000c6f4(size_t param_1,char *param_2,unsigned char* param_3) {
+unsigned int FUN_1000c6f4(size_t param_1,char *param_2,char* param_3) {
   void *pvVar1;
   unsigned int local_1c;
   
@@ -4491,18 +4504,18 @@ unsigned int FUN_1000c6f4(size_t param_1,char *param_2,unsigned char* param_3) {
   else if (param_1 == 0) {
     local_1c = 0xffffffff;
   }
-  else if (param_2 == (int *)0x0) {
+  else if (param_2 == NULL) {
     local_1c = 0xffffffff;
   }
   else {
     pvVar1 = malloc(param_1);
-    *param_2 = (int)pvVar1;
+    *param_2 = *(int*)pvVar1;
     if (*param_2 == 0) {
       printf("failed to acquire memory for [%s]",param_3);
       local_1c = 0xffffffff;
     }
     else {
-      memset((void *)*param_2,0,param_1);
+      memset((void *)param_2,0,param_1);
       local_1c = 0;
     }
   }
@@ -4511,7 +4524,7 @@ unsigned int FUN_1000c6f4(size_t param_1,char *param_2,unsigned char* param_3) {
 
 
 
-unsigned int FUN_1000c7dc(int *param_1,char *param_2){
+unsigned int FUN_1000c7dc(char *param_1,char *param_2){
   unsigned int local_20;
   
   if (param_2 == 0) {  // empty string or 0 pointer?
@@ -4521,7 +4534,7 @@ unsigned int FUN_1000c7dc(int *param_1,char *param_2){
     local_20 = 0;
   }
   else {
-    free((void *)*param_1);
+    free((void *)param_1);
     *param_1 = 0;
     local_20 = 0;
   }
@@ -4582,7 +4595,7 @@ unsigned int FUN_1000c8e8(char *param_1,char *param_2,char *param_3,char *param_
 
 unsigned int FUN_1000ca0c(void) {
   unsigned int iVar1;
-  unsigned int uVar2;
+  X509 *uVar2;
   X509 *uVar3;
   char *__file;
   unsigned int iVar4;
@@ -4600,7 +4613,7 @@ unsigned int FUN_1000ca0c(void) {
         iVar1 = open(__file,0);
         if (iVar1 == -1) {
           uVar2 = DAT_10022c2c; // file name
-          syslog(3,"Can\'t open [%s] to check\n",uVar2);
+          printf("Can\'t open [%s] to check\n",uVar2);
           local_14 = 0xffffffff;
         }
         else {
@@ -4626,7 +4639,7 @@ unsigned int FUN_1000ca0c(void) {
       }
     }
     else {
-      syslog(3,"Certificates validation failed. Cannot trust the signed file!");
+      printf("Certificates validation failed. Cannot trust the signed file!\n");
       local_14 = 0xffffffff;
     }
   }
@@ -4653,7 +4666,7 @@ unsigned char FUN_1000cb68(void){ // same as fw_with_fingerprint (char *filename
   pcVar2 = (char *)DAT_10022c2c; // file name 
   __stream = fopen(pcVar2,"rb");
   if (__stream == (FILE *)0x0) {
-    syslog(3,"could not open the signed file for parsing");
+    printf("could not open the signed file for parsing\n");
     uVar1 = 0;
   }
   else {
@@ -4681,20 +4694,20 @@ unsigned char FUN_1000cb68(void){ // same as fw_with_fingerprint (char *filename
 
 
 
-int FUN_1000cd38(void){
+int FUN_1000cd38(void){ //returns pointer or value???
   unsigned int local_18;
   unsigned char local_14;
 
   local_14 = 0xb5;
   if (DAT_10022c98 == 0) {
     DAT_10022ab4 = 0x794;
-    FUN_1000c6f4(0x794,&DAT_10022c98,"get_embeded_signing_cert");
+    FUN_1000c6f4(0x794,(char*)DAT_10022c98,"get_embeded_signing_cert");
   }
   for (local_18 = 0; local_18 < 0x78c; local_18 = local_18 + 1) {
     *(unsigned char *)(DAT_10022c98 + local_18) = DAT_10011a40[local_18]^local_14;
     local_14 = local_14 + 1;
   }
-  return DAT_10022c98;
+  return *DAT_10022c98;
 }
 
 
@@ -4703,8 +4716,8 @@ int FUN_1000cd38(void){
 void FUN_1000ce10(void){
   if (DAT_10022c98 != (void *)0x0) {
     memset(DAT_10022c98,0,DAT_10022ab4);
-    FUN_1000c7dc(DAT_10022c98,"release_embeded_signing_cert");
-    DAT_10022c98 = (void *)0x0;
+    FUN_1000c7dc((char*)DAT_10022c98,"release_embeded_signing_cert");
+    DAT_10022c98 = NULL;
     DAT_10022ab4 = 0xffffffff;
   }
   return;
@@ -4747,9 +4760,87 @@ long FUN_1000ce94(FILE *param_1,char *param_2)
 
 
 
-int FUN_1000cff0(FILE *param_1)
+unsigned int  FUN_1000b9f4(char *param_1){
+  BIO_METHOD *type;
+  BIO *bp;
+  int iVar1;
+  unsigned int local_20;
+  
+  type = BIO_s_mem();
+  bp = BIO_new(type);
+  BIO_puts(bp,param_1);
+  local_20 = 0;
+  DAT_10022c44 = PEM_read_bio_X509(bp,(X509 **)0x0,(char *)0x0,(void *)0x0);
+  if (DAT_10022c44 == (X509 *)0x0) {
+    printf("Can\'t convert signing certificate into a data structure\n");
+    local_20 = 0xffffffff;
+  }
+  iVar1 = BIO_free(bp);
+  if (iVar1 != 1) {
+    printf("Can\'t free BIO memory\n");
+    local_20 = 0xffffffff;
+  }
+  return local_20;
+}
 
-{
+
+
+unsigned int FUN_1000b770(char *param_1){
+  BIO_METHOD *type;
+  BIO *bp;
+  X509 *data;
+  int iVar1;
+  unsigned int local_20;
+  unsigned int local_14;
+  
+  local_20 = 0;
+  if (DAT_10022c74 < 4) {
+    if (param_1 == NULL) {
+      printf("Pointer to certificates chain is NULL\n");
+      local_14 = 0xffffffff;
+    }
+    else {
+      type = BIO_s_mem();
+      bp = BIO_new(type);
+      BIO_puts(bp,param_1);
+      
+      data = PEM_read_bio_X509(bp,(X509 **)0x0,(unsigned char*)0x0,(void *)0x0);
+      
+      if (data == (X509 *)0x0) {
+        printf("Can\'t convert intermediate certificate into a data structure\n");
+        local_20 = 0xffffffff;
+      }
+      iVar1 = BIO_free(bp);
+      if (iVar1 != 1) {
+        printf("Can\'t free BIO memory\n");
+        local_20 = 0xffffffff;
+      }
+      if (DAT_10022c78 == 0) {
+        DAT_10022c60 = sk_new((void *)DAT_10022c60);
+        if (DAT_10022c60 == (_STACK *)0x0) {
+          FUN_100029e8(7,"Can\'t create intermediate certificate stack\n");
+          local_20 = 0xffffffff;
+        }
+        DAT_10022c78 = 1;
+      }
+      iVar1 = sk_push(DAT_10022c60,data);
+      if (iVar1 < 1) {
+        printf("Intermediate certificate could not be added to the stack\n");
+        local_20 = 0xffffffff;
+      }
+      DAT_10022c74 = DAT_10022c74 + 1;
+      local_14 = local_20;
+    }
+  }
+  else {
+    printf("exceeded MAX no of allowed certificates [5].\n");
+    local_14 = 0xffffffff;
+  }
+  return local_14;
+}
+
+
+int FUN_1000cff0(FILE *param_1){
   int iVar1;
   int iVar2;
   char *pcVar3;
@@ -4768,8 +4859,8 @@ int FUN_1000cff0(FILE *param_1)
     local_20 = 0;
   }
   else {
-    iVar1 = FUN_1000b628();
-    iVar2 = FUN_1000b6e8();
+    iVar1 = DAT_10022c7c;
+    iVar2 = DAT_10022c84;
     fseek(param_1,iVar1 + iVar2,0);
     local_428 = 0x800;
     iVar1 = FUN_1000c6f4(0x800,&local_424,"split_cert_chain");
@@ -4811,9 +4902,7 @@ LAB_1000d1ec:
 
 
 
-void FUN_1000d22c(size_t *param_1,char *param_2)
-
-{
+void FUN_1000d22c(size_t *param_1,char *param_2){
   size_t sVar1;
   size_t sVar2;
   size_t sVar3;
@@ -4849,9 +4938,51 @@ void FUN_1000d22c(size_t *param_1,char *param_2)
 
 
 
-void FUN_1000d4dc(void)
 
-{
+void FUN_1000e064(char *param_1){
+  size_t sVar1;
+  int iVar2;
+  
+  if (param_1 == (char *)0x0) {
+    printf("Can\'t set private keyID to NULL\n");
+  }
+  else {
+    if (DAT_10022cbc != NULL) {
+      FUN_1000c7dc(DAT_10022cbc,"set_private_keyID");
+    }
+    sVar1 = strlen(param_1);
+    iVar2 = FUN_1000c6f4(sVar1 + 1,DAT_10022cbc,"set_private_keyID");
+    if (iVar2 != -1) {
+      strcpy(DAT_10022cbc,param_1);
+      trimSpaces(DAT_10022cbc);
+      if (*DAT_10022cbc == '\0') {
+        FUN_1000c7dc(DAT_10022cbc,"set_private_keyID");
+      }
+    }
+  }
+  return;
+}
+
+
+
+void FUN_1000e2b4(int param_1) {
+  if (0 < param_1) {
+    if (DAT_10022cc4 != 0) {
+      FUN_1000c7dc(&DAT_10022cc4,"init_signed_hash");
+    }
+    DAT_10022cc8 = param_1;
+    FUN_1000c6f4(param_1,&DAT_10022cc4,"init_signed_hash");
+  }
+  return;
+}
+
+ 
+void FUN_1000e410(int param_1){
+  DAT_10022ccc = param_1;
+  return;
+}
+
+void FUN_1000d4dc(void){
   int iVar1;
   char *pcVar2;
   unsigned int uVar3;
@@ -4862,11 +4993,11 @@ void FUN_1000d4dc(void)
   
   local_28 = (char *)0x0;
   local_24 = (char *)0x0;
-  local_20 = FUN_1000b6e8();
+  local_20 = DAT_10022c84;
   local_20 = local_20 + 1;
   if ((1 < local_20) &&
      (iVar1 = FUN_1000c6f4(local_20,&local_28,"parse_fingerprint()"), iVar1 != -1)) {
-    pcVar2 = (char *)FUN_1000b5c8();
+    pcVar2 = (char *)DAT_10022c40;
     strcpy(local_28,pcVar2);
     local_24 = strtok(local_28,"\n");
     while ((local_24 != (char *)0x0 &&
@@ -4884,8 +5015,8 @@ void FUN_1000d4dc(void)
          (local_24 = strtok((char *)0x0,"\n"), local_24 != (char *)0x0)) {
         iVar1 = DAT_10022c44;
         FUN_1000e2b4(**(unsigned int **)(iVar1 + 8));
-        uVar3 = FUN_1000e33c();
-        uVar4 = FUN_1000e364();
+        uVar3 = DAT_10022cc4;
+        uVar4 = DAT_10022cc8;
         FUN_1000c18c(local_24,uVar3,uVar4);
       }
     }
@@ -4900,7 +5031,7 @@ void FUN_1000d988(void)
 {
   int iVar1;
   
-  iVar1 = FUN_1000e43c();
+  iVar1 = DAT_10022ccc;
   if (iVar1 == 1) {
     DAT_10022cb0 = FIPS_evp_sha256();
   }
@@ -4954,18 +5085,18 @@ unsigned int FUN_1000dae4(unsigned int param_1){
   local_24 = (void *)0x0;
   local_20 = 1;
   local_1c = 0;
-  iVar1 = FUN_1000c6f4(0x1000,&local_24,"validate_stream");
+  iVar1 = FUN_1000c6f4(0x1000,local_24,"validate_stream");
   if (iVar1 == -1) {
     local_18 = 0xffffffff;
   }
   else {
-    while (iVar1 = FUN_1000b628(), local_1c < iVar1) {
-      iVar1 = FUN_1000b628();
+    while (iVar1 = DAT_10022c7c, local_1c < iVar1) {
+      iVar1 = DAT_10022c7c;
       if (local_1c + 0x1000 < iVar1) {
         local_20 = read(param_1,local_24,0x1000);
       }
       else {
-        iVar1 = FUN_1000b628();
+        iVar1 = DAT_10022c7c;
         local_20 = read(param_1,local_24,iVar1 - local_1c);
       }
       if (local_20 < 0) break;
@@ -4988,6 +5119,21 @@ unsigned int FUN_1000dae4(unsigned int param_1){
 
 
 
+void FUN_1000b538(char *param_1){
+  size_t sVar1;
+  int iVar2;
+  
+  if (param_1 != (char *)0x0) {
+    sVar1 = strlen(param_1);
+    iVar2 = FUN_1000c6f4(sVar1 + 1,&DAT_10022c40,"set_checker_fingerprint()");
+    if (iVar2 != -1) {
+      strcpy(DAT_10022c40,param_1);
+    }
+  }
+  return;
+}
+
+
 unsigned int FUN_1000d368(FILE *param_1,void *param_2){
   unsigned char *puVar1;
   long __off;
@@ -5000,23 +5146,23 @@ unsigned int FUN_1000d368(FILE *param_1,void *param_2){
   local_18 = 0;
   if (param_1 == NULL) {
     puVar1 = *(unsigned char *)(param_2)();  // call to function how??????????
-    FUN_100029e8(7,"findblock:  invalid file stream pointer to [%s].\n",*puVar1);
+    printf("findblock:  invalid file stream pointer to [%s].\n",puVar1);
     local_14 = 0xffffffff;
   }
   else {
-    __off = FUN_1000b628();
+    __off = DAT_10022c7c;
     fseek(param_1,__off,0);
-    iVar2 = FUN_1000b6e8();
+    iVar2 =  DAT_10022c84;
     local_18 = iVar2 + 1;
     if (local_18 != 0) {
-      iVar2 = FUN_1000c6f4(local_18,&local_1c,"split_signed_file():fingerprint");
+      iVar2 = FUN_1000c6f4(local_18,local_1c,"split_signed_file():fingerprint");
       if (iVar2 == -1) {
         return 0xffffffff;
       }
       fread(local_1c,local_18,1,param_1);
-      *(unsigned char *)((int)local_1c + (local_18 - 1)) = 0;
+      *(unsigned char *)((int)local_1c + local_18 - 1) = 0;
       FUN_1000b538(local_1c);
-      FUN_1000c7dc(&local_1c,"split_signed_file():fingerprint");
+      FUN_1000c7dc(local_1c,"split_signed_file():fingerprint");
     }
     iVar2 = FUN_1000cff0(param_1);
     if (iVar2 == -1) {
@@ -5075,7 +5221,7 @@ unsigned int FUN_1000dc8c(void){
       local_14 = 0xffffffff;
     }
     else {
-      sigbuf = (unsigned char *)FUN_1000e33c();
+      sigbuf = (unsigned char *)DAT_10022cc4;
       iVar1 = EVP_VerifyFinal(DAT_10022cb4,sigbuf,local_20,local_18);
       if (iVar1 == 1) {
         printf("validate_finalize: Verification succeeded\n");
@@ -5092,9 +5238,7 @@ unsigned int FUN_1000dc8c(void){
 
 
 
-int FUN_1000ddd4(X509 *param_1,X509 *param_2)
-
-{
+int FUN_1000ddd4(X509 *param_1,X509 *param_2){
   unsigned int local_20;
   
   if ((param_1 == NULL) || (param_2 == NULL)) {
@@ -5202,4 +5346,53 @@ unsigned int FUN_1000d6e0(void){
     }
   }
   return local_20;
+}
+
+
+void truncateSpaces(char *param_1){
+  size_t sVar1;
+  
+  if ((param_1 != (char *)0x0) && (*param_1 != '\0')) {
+    sVar1 = strlen(param_1);
+    while ((sVar1 = sVar1 - 1, -1 < (int)sVar1 &&
+           ((*(ushort *)((uint)(unsigned char)param_1[sVar1] * 2 + __ctype_b) & 0x20) != 0))) {
+      param_1[sVar1] = '\0';
+    }
+  }
+  return;
+}
+
+
+void trimSpaces(char *param_1) {
+  int iVar1;
+  size_t sVar2;
+  int iVar3;
+  int iVar4;
+  
+  if ((param_1 != (char *)0x0) && (*param_1 != '\0')) {
+    sVar2 = strlen(param_1);
+    iVar4 = 0;
+    if (0 < (int)sVar2) {
+      do {
+        iVar3 = iVar4;
+        if ((*(ushort *)((uint)(unsigned char)param_1[iVar3] * 2 + __ctype_b) & 0x20) == 0) break;
+        iVar4 = iVar3 + 1;
+        iVar3 = 0;
+      } while (iVar4 < (int)sVar2);
+      if (0 < iVar3) {
+        iVar4 = 0;
+        iVar1 = iVar3;
+        while (iVar1 < (int)sVar2) {
+          param_1[iVar4] = param_1[iVar3 + iVar4];
+          iVar4 = iVar4 + 1;
+          iVar1 = iVar3 + iVar4;
+        }
+        param_1[iVar4] = '\0';
+      }
+    }
+    if (*param_1 != '\0') {
+      truncateSpaces(param_1);
+    }
+  }
+  return;
 }

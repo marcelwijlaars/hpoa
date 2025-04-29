@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
+#include <ctype.h>
+#include <openssl/pem.h> //have to fix this, should be local
+#include <openssl/fips.h> // have to fix this
 
 //#include <linux/loop.h>
 #include <fcntl.h>
@@ -122,9 +125,21 @@ int only_modify_hash(char*, char*, unsigned char*);
 unsigned int FUN_1000ca0c(void);
 unsigned int FUN_1000d6e0(void);
 unsigned int FUN_1000dae4(unsigned int);
-unsigned int FUN_1000c6f4(size_t,char *,unsigned char*);
-unsigned int FUN_1000c7dc(int *,char *);
+unsigned int FUN_1000c6f4(size_t,char *,char*);
+unsigned int FUN_1000c7dc(char *,char *);
 unsigned int FUN_1000da30(void);
+char *FUN_1000be80(char*);
+void trimSpaces(char*);
+int FUN_1000c384(char*);
+int FUN_1000c488(int*,int*);
+X509* FUN_1000bac8(void);
+int FUN_1000ddd4(X509*,X509*);
+unsigned int FUN_1000dc8c(void);
+void FUN_1000d22c(size_t*,char*);
+
+
+
+
 
 
 
