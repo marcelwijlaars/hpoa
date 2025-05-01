@@ -3,9 +3,6 @@
 
 /* glocal variables */
 unsigned char *DAT_10012738=0;  //doesn't change anywhere should be calloced
-
-
-
 unsigned char *DAT_10011a40;
 
 
@@ -28,8 +25,6 @@ char *DAT_10022cbc;
 char *DAT_10022cc4;
 int   DAT_10022cc8;
 int   DAT_10022ccc;
-
-
 
 
 
@@ -4694,7 +4689,7 @@ unsigned char FUN_1000cb68(void){ // same as fw_with_fingerprint (char *filename
 
 
 
-int FUN_1000cd38(void){ //returns pointer or value???
+int *FUN_1000cd38(void){ //returns pointer or value???
   unsigned int local_18;
   unsigned char local_14;
 
@@ -4761,13 +4756,11 @@ long FUN_1000ce94(FILE *param_1,char *param_2)
 
 
 unsigned int  FUN_1000b9f4(char *param_1){
-  BIO_METHOD *type;
   BIO *bp;
   int iVar1;
   unsigned int local_20;
   
-  type = BIO_s_mem();
-  bp = BIO_new(type);
+  bp = BIO_new(BIO_s_mem());
   BIO_puts(bp,param_1);
   local_20 = 0;
   DAT_10022c44 = PEM_read_bio_X509(bp,(X509 **)0x0,(char *)0x0,(void *)0x0);
@@ -4786,7 +4779,6 @@ unsigned int  FUN_1000b9f4(char *param_1){
 
 
 unsigned int FUN_1000b770(char *param_1){
-  BIO_METHOD *type;
   BIO *bp;
   X509 *data;
   int iVar1;
@@ -4800,8 +4792,7 @@ unsigned int FUN_1000b770(char *param_1){
       local_14 = 0xffffffff;
     }
     else {
-      type = BIO_s_mem();
-      bp = BIO_new(type);
+      bp = BIO_new(BIO_s_mem());
       BIO_puts(bp,param_1);
       
       data = PEM_read_bio_X509(bp,(X509 **)0x0,(unsigned char*)0x0,(void *)0x0);
@@ -5252,17 +5243,15 @@ int FUN_1000ddd4(X509 *param_1,X509 *param_2){
 
 
 X509* FUN_1000bac8(void){
-  BIO_METHOD *type;
   BIO *bp;
   char *buf;
   int iVar1;
   X509 *local_14;
   
-  type = BIO_s_mem();
-  bp = BIO_new(type);
+  bp = BIO_new(BIO_s_mem());
   buf = (char *)FUN_1000cd38();
   BIO_puts(bp,buf);
-  DAT_10022c48 = PEM_read_bio_X509(bp,(X509 **)0x0,(unsigned char *)0x0,(void *)0x0);
+  DAT_10022c48 = PEM_read_bio_X509(bp,(X509 **)0x0,NULL,(void *)0x0);
   if (DAT_10022c48 == NULL) {
     local_14 = NULL;
   }

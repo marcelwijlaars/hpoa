@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <ctype.h>
+
+
 #include <openssl/pem.h> //have to fix this, should be local
 #include <openssl/fips.h> // have to fix this
 
@@ -79,6 +81,13 @@ const int __i__ = 1;
 #define INDEX_KERNEL_UDOG   0x04
 #define INDEX_STORAGE       0x05
 #define INDEX_CERTS         0x06
+
+
+
+extern const unsigned short int **__ctype_b_loc(void);
+#define __ctype_b (*__ctype_b_loc())
+
+
 
 typedef struct partition{
   uint8_t  nr;

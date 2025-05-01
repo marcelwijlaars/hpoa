@@ -1,0 +1,77 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <ctype.h>
+#include <errno.h>
+#include <string.h>
+
+
+//#include "../../openssl-OpenSSL_1_0_1-stable/crypto/fips_err.h"
+#include "openssl/evp.h"
+#include "openssl/x509.h"
+#include "openssl/pem.h"
+
+extern const unsigned short int **__ctype_b_loc(void);
+#define __ctype_b (*__ctype_b_loc())
+
+extern EVP_MD *FIPS_evp_sha1(void);
+extern EVP_MD *FIPS_evp_sha256(void);
+extern EVP_MD *FIPS_evp_sha512(void);
+extern EVP_MD_CTX *FIPS_md_ctx_create(void);
+extern int FIPS_digestinit(EVP_MD_CTX *, const EVP_MD *);
+extern int FIPS_digestupdate(EVP_MD_CTX *, const void *, size_t);
+
+//X509 *PEM_read_bio_X509(BIO *, X509 **, pem_password_cb *, void *);
+
+
+
+unsigned char *DAT_10012738=0;  //doesn't change anywhere should be calloced
+unsigned char *DAT_10011a40;
+
+int           DAT_10022ab4;
+char         *DAT_10022c2c;
+char         *DAT_10022c40;
+X509         *DAT_10022c44;
+X509         *DAT_10022c48;
+void         *DAT_10022c60;
+int           DAT_10022c78;
+int           DAT_10022c74;
+int           DAT_10022c78;
+int           DAT_10022c7c;
+int           DAT_10022c84;
+unsigned int  DAT_10022c90;
+int          *DAT_10022c98;
+int           DAT_10022c9c;
+const EVP_MD *DAT_10022cb0;
+EVP_MD_CTX   *DAT_10022cb4;
+char         *DAT_10022cbc;
+char         *DAT_10022cc0;
+char         *DAT_10022cc4;
+int           DAT_10022cc8;
+int           DAT_10022ccc;
+
+
+
+unsigned int FUN_1000ca0c(void);
+unsigned int FUN_1000d6e0(void);
+unsigned int FUN_1000dae4(unsigned int);
+unsigned int FUN_1000c6f4(size_t,char *,char*);
+unsigned int FUN_1000c7dc(char *,char *);
+unsigned int FUN_1000da30(void);
+char *FUN_1000be80(char*);
+void trimSpaces(char*);
+int FUN_1000c384(char*);
+int FUN_1000c488(int*,int*);
+X509* FUN_1000bac8(void);
+int FUN_1000ddd4(X509*,X509*);
+unsigned int FUN_1000dc8c(void);
+void FUN_1000d22c(size_t*,char*);
+
+
+
+
+
