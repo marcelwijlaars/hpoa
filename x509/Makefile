@@ -1,2 +1,5 @@
 all:
-	gcc -Wall -c -I ../../openssl-OpenSSL_1_0_1-stable/include x509.c
+	gcc -Wall  -Wno-unused-variable -Wno-unused-but-set-variable -c x509.c
+
+clean:
+	rm *.o

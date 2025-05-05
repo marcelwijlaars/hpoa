@@ -1,0 +1,14 @@
+Crypto stuff in hpoa is dependent on libcrypt of openssl-1.0.1u.tar.gz
+libcrypt needs fips support so also need openssl-fips-2.0.13.tar.gz
+
+configure openssl-fips:
+./config --prefix=/home/marcelw/ia64/src/C/ssl/fips-2.0 --openssldir=/home/marcelw/ia64/src/C/ssl/fips-2.0 shared
+make
+make install
+
+
+configure openssl:
+ ./config --prefix=/home/marcelw/ia64/src/C/ssl/openssl --openssldir=/home/marcelw/ia64/src/C/ssl/openssl fips shared
+Need to edit the Makefile so FIPSDIR and FIPSLIBDIR point to the correct folder
+make
+make install
