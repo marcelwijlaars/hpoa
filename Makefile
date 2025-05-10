@@ -1,4 +1,6 @@
-LDFLAGS =  -L /home/marcelw/ia64/src/C/ssl/openssl/lib/ -lcrypto
+LDFLAGS  = -L /home/marcelw/ia64/src/C/ssl/openssl/lib/ -lcrypto
+LDFLAGS += -I /home/marcelw/ia64/src/C/ssl/openssl/include/
+LDFLAGS += -I /home/marcelw/ia64/src/C/ssl/fips-2.0/include/ 
 
 
 all:
@@ -8,7 +10,7 @@ all:
 	gcc -std=c99 -D _GNU_SOURCE -Wall -Wno-unused-variable -Wno-unused-but-set-variable -o watchdog watchdog.c
 
 asan:
-	gcc -std=c99 -fsanitize=address -g3 -D _GNU_SOURCE -Wall -Wno-unused-variable -Wno-unused-but-set-variable -o hpoa md5/md5.c sha2/sha2.c crc32/crc32.c hpoa.c
+	gcc $(LDFLAGS) -std=c99 -fsanitize=address -g3 -D _GNU_SOURCE -Wall -Wno-unused-variable -Wno-unused-but-set-variable -o hpoa md5/md5.c sha2/sha2.c crc32/crc32.c x509/x509.c hpoa.c
 
 undef:
 	gcc -std=c99 -fsanitize=undefined -g3 -D _GNU_SOURCE -Wall -Wno-unused-variable -Wno-unused-but-set-variable -o hpoa md5/md5.c sha2/sha2.c crc32/crc32.c hpoa.c

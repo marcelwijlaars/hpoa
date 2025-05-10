@@ -1,4 +1,7 @@
 #include "x509.h"
+#include "../colors.h"
+//#include "x509_types.h"
+#include "x509_functions.h"
 
 /*
  * X.509 Certificate Handling Functions
@@ -31,6 +34,10 @@ unsigned char OPENSSL_str2bool(char *param_1) {
   int iVar3;
   char *local_24;
   unsigned int local_20;
+
+  printf(RED);
+  printf("FUN_1000bc00\n");
+  printf(DEFAULT);
 
   local_24=calloc(0x100,sizeof(char));
   
@@ -72,6 +79,11 @@ unsigned char OPENSSL_str2bool(char *param_1) {
 /* Original function name: FUN_1000bdd4 */
 char * OPENSSL_bool2str(int param_1){
   char *local_14;
+
+  printf(RED);
+  printf("FUN_1000bdd4\n");
+  printf(DEFAULT);
+
   
   if (param_1 == 0) {
     local_14 = "False";
@@ -86,6 +98,11 @@ char * OPENSSL_bool2str(int param_1){
 
 /* Original function name: FUN_1000be20 */
 void OPENSSL_ui2str(unsigned int param_1,char *param_2){
+
+  printf(RED);
+  printf("FUN_1000be20\n");
+  printf(DEFAULT);
+
   if (param_2 != (char *)0x0) {
     sprintf(param_2,"%d",param_1);
   }
@@ -98,7 +115,11 @@ void OPENSSL_ui2str(unsigned int param_1,char *param_2){
 char *OPENSSL_strlwr(char *param_1){
   int i;
   char *local_20;
-  
+
+  printf(RED);
+  printf("FUN_1000be80\n");
+  printf(DEFAULT);
+
   if (param_1 == 0) {
     local_20 = 0;
   }
@@ -119,6 +140,10 @@ char* DAT_10022bf8 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345
 void BIO_base64_encode_block(unsigned char *param_1,unsigned char *param_2){
   int local_20;
   int i;
+
+  printf(RED);
+  printf("FUN_1000c09c\n");
+  printf(DEFAULT);
   
   local_20 = ((uint)param_1[0] * 0x100 + (uint)param_1[1]) * 0x100 + (uint)param_1[2];
   for (i = 0; i < 4; i++) {
@@ -135,7 +160,11 @@ void BIO_base64_encode(void *param_1,uint param_2,unsigned char *param_3,int par
   uint local_34;
   unsigned char *local_30;
   unsigned char auStack_28 [36];
-  
+
+  printf(RED);
+  printf("FUN_1000bf58\n");
+  printf(DEFAULT);
+
   local_38 = param_1;
   local_34 = param_2;
   local_30 = param_3;
@@ -181,6 +210,11 @@ int BIO_base64_decode(char *param_1,void *param_2,uint param_3){
   int local_18;
   int local_14;
 
+  printf(RED);
+  printf("FUN_1000c18c\n");
+  printf(DEFAULT);
+
+  
   local_3c=calloc(0x100,sizeof(char));
   
   local_20 = 0;
@@ -227,7 +261,11 @@ int BIO_base64_decode(char *param_1,void *param_2,uint param_3){
 int BIO_base64_char_value(char *param_1){
 
   unsigned int local_14;
-  
+
+  printf(RED);
+  printf("FUN_1000c384\n");
+  printf(DEFAULT);
+
   if ((*param_1 < 0x41) || (0x5a < *param_1)) {
     if ((*param_1 < 0x61) || (0x7a < *param_1)) {
       if ((*param_1 < 0x30) || (0x39 < *param_1)) {
@@ -265,6 +303,11 @@ int BIO_base64_decode_block(int *param_1,int *param_2){
   uint local_3c;
   int local_38;
   int local_30 [9];
+
+  printf(RED);
+  printf("FUN_1000c488\n");
+  printf(DEFAULT);
+
   
   local_38 = 3;
   bVar1 = true;
@@ -310,6 +353,10 @@ unsigned int OPENSSL_malloc_wrapper(size_t param_1,char *param_2,char* param_3) 
   void *pvVar1;
   unsigned int local_1c;
 
+  printf(RED);
+  printf("FUN_1000c6f4\n");
+  printf(DEFAULT);
+
   if (param_3 == 0) {
     local_1c = 0xffffffff;
   }
@@ -339,7 +386,11 @@ unsigned int OPENSSL_malloc_wrapper(size_t param_1,char *param_2,char* param_3) 
 /* Original function name: FUN_1000c7dc */
 unsigned int OPENSSL_free_wrapper(char *param_1,char *param_2){
   unsigned int local_20;
-  
+
+  printf(RED);
+  printf("FUN_1000c7dc\n");
+  printf(DEFAULT);
+
   if (param_2 == 0) {  // empty string or 0 pointer?
     local_20 = 0xffffffff;
   }
@@ -357,6 +408,11 @@ unsigned int OPENSSL_free_wrapper(char *param_1,char *param_2){
 
 
 void FUN_1000c868(int param_1,int param_2,int param_3) {
+
+  printf(RED);
+  printf("FUN_1000c868\n");
+  printf(DEFAULT);
+
   if (param_1 == 0) {
     printf("File path supplied to split_path is NULL. Will abort!");
   }
@@ -371,12 +427,14 @@ void FUN_1000c868(int param_1,int param_2,int param_3) {
 
   
 
-unsigned int FUN_1000c8e8(char *param_1,char *param_2,char *param_3,char *param_4,char *param_5)
-
-{
+unsigned int FUN_1000c8e8(char *param_1,char *param_2,char *param_3,char *param_4,char *param_5){
   int iVar1;
   unsigned int local_14;
-  
+
+  printf(RED);
+  printf("FUN_1000c8e8\n");
+  printf(DEFAULT);
+
   if (param_1 == (char *)0x0) {
     local_14 = 0;
   }
@@ -406,6 +464,11 @@ unsigned int FUN_1000c8e8(char *param_1,char *param_2,char *param_3,char *param_
 
 
 void FUN_1000e38c(void){
+
+  printf(RED);
+  printf("FUN_1000e38c\n");
+  printf(DEFAULT);
+
   if (DAT_10022cc4 != (void *)0x0) {
     memset(DAT_10022cc4,0,DAT_10022cc8);
     OPENSSL_free_wrapper(DAT_10022cc4,"close_signed_hash");
@@ -417,6 +480,11 @@ void FUN_1000e38c(void){
 
 
 void FUN_1000de80(void){
+
+  printf(RED);
+  printf("FUN_1000de80\n");
+  printf(DEFAULT);
+
   if (DAT_10022cbc != 0) {
     OPENSSL_free_wrapper(DAT_10022cbc,"close_config");
   }
@@ -429,7 +497,7 @@ void FUN_1000de80(void){
 
 
 
-unsigned int FUN_1000ca0c(void) {
+unsigned int FUN_1000ca0c(char *filename) {
   unsigned int iVar1;
   char *uVar2;
   X509 *uVar3;
@@ -437,7 +505,14 @@ unsigned int FUN_1000ca0c(void) {
   unsigned int iVar4;
   unsigned int local_14;
 
-  uVar2=calloc(0x100, sizeof(char));
+  printf(RED);
+  printf("FUN_1000ca0c\n");
+  printf(DEFAULT);
+
+  //uVar2=calloc(0x100, sizeof(char));
+  DAT_10022c2c=calloc(0x100, sizeof(char));
+  strcpy(DAT_10022c2c,filename);
+  printf("DAT_10022c2c: %s\n",DAT_10022c2c);
   
   iVar1 = X509_parse_signed_file();
   if (iVar1 == 0) {
@@ -487,60 +562,6 @@ unsigned int FUN_1000ca0c(void) {
 }
 
 
-#if 0
-
-unsigned int new_FUN_1000ca0c(void) {
-  unsigned int iVar1;
-  char *uVar2;
-  X509 *uVar3;
-  char *__file;
-  unsigned int iVar4;
-  unsigned int local_14;
-  
-  iVar1 = X509_parse_signed_file();
-  if(iVar1 == 0) {
-    uVar2 = (char*)DAT_10022c44;
-    uVar3 = X509_get_embedded_cert();
-    iVar1 = X509_certificate_compare((X509*)uVar2,uVar3);
-    if (iVar1 == 0) {
-      iVar1 = FUN_1000da30();
-      if (iVar1 == 0) {
-        __file = (char *)DAT_10022c2c; // file name
-        iVar1 = open(__file,0);
-        if (iVar1 == -1) {
-          uVar2 = DAT_10022c2c; // file name
-          printf("Can\'t open [%s] to check\n",uVar2);
-          local_14 = 0xffffffff;
-        } else {
-          iVar4 = FUN_1000dae4(iVar1);
-          iVar1 = X509_verify_signature();
-	  /* This is a duplicate/redundant call, commenting out */
-	  /* iVar1 = FUN_1000dc8c(); */
-	  if (iVar1 == 0) {
-	    FUN_1000de80();
-	    local_14 = 0;
-	  } else {
-	    local_14 = 0xffffffff;
-	  }
-	} else {
-	  close(iVar1);
-	  local_14 = 0xffffffff;
-	}
-      }
-    } else {
-      local_14 = 0xffffffff;
-    }
-  } else {
-    printf("Certificates validation failed. Cannot trust the signed file!\n");
-    local_14 = 0xffffffff;
-  } else {
-    local_14 = 0xffffffff;
-  }
-  return local_14;
-}
-
-#endif
-
 unsigned char FUN_1000cb68(void){ // same as fw_with_fingerprint (char *filename)
   unsigned char uVar1;
   char *pcVar2;
@@ -549,6 +570,10 @@ unsigned char FUN_1000cb68(void){ // same as fw_with_fingerprint (char *filename
   int iVar4;
   char acStack_420 [1024];
   //void *local_20;
+
+  printf(RED);
+  printf("FUN_1000cb68\n");
+  printf(DEFAULT);
   
   uVar1 = 0;
   memset(acStack_420,0,0x400);
@@ -588,6 +613,11 @@ unsigned char FUN_1000cb68(void){ // same as fw_with_fingerprint (char *filename
 int *X509_get_embedded_signing_cert_data(void){
   unsigned int local_18;
   unsigned char local_14;
+
+  printf(RED);
+  printf("FUN_1000cd38\n");
+  printf(DEFAULT);
+
   
   local_14 = 0xb5;
   if (DAT_10022c98 == 0) {
@@ -607,6 +637,11 @@ int *X509_get_embedded_signing_cert_data(void){
 
 
 void FUN_1000ce10(void){
+
+  printf(RED);
+  printf("FUN_1000ce10\n");
+  printf(DEFAULT);
+
   if (DAT_10022c98 != (void *)0x0) {
     memset(DAT_10022c98,0,DAT_10022ab4);
     OPENSSL_free_wrapper((char*)DAT_10022c98,"release_embeded_signing_cert");
@@ -627,6 +662,11 @@ long PEM_find_section_length(FILE *param_1,char *param_2)
   long local_420;
   char acStack_418 [1024];
   long local_18;
+
+  printf(RED);
+  printf("FUN_1000ce94\n");
+  printf(DEFAULT);
+
   
   local_420 = 0;
   memset(acStack_418,0,0x400);
@@ -659,7 +699,11 @@ unsigned int PEM_read_bio_X509_CERT(char *param_1){
   BIO *bp;
   int iVar1;
   unsigned int local_20;
-  
+
+  printf(RED);
+  printf("FUN_1000b9f4\n");
+  printf(DEFAULT);
+
   bp = BIO_new(BIO_s_mem());
   BIO_puts(bp,param_1);
   local_20 = 0;
@@ -685,7 +729,11 @@ unsigned int X509_add_cert_to_stack(char *param_1){
   int iVar1;
   unsigned int local_20;
   unsigned int local_14;
-  
+
+  printf(RED);
+  printf("FUN_1000b770\n");
+  printf(DEFAULT);
+
   local_20 = 0;
   if (DAT_10022c74 < 4) {
     if (param_1 == NULL) {
@@ -742,6 +790,10 @@ int X509_split_certificate_chain(FILE *param_1){
   char *local_424;
   char acStack_420 [1024];
   int local_20;
+
+  printf(RED);
+  printf("FUN_1000cff0\n");
+  printf(DEFAULT);
   
   local_434 = 0;
   local_428 = 0;
@@ -801,6 +853,11 @@ void PEM_buffer_append(size_t *param_1,char *param_2){
   size_t sVar2;
   size_t sVar3;
   void *pvVar4;
+
+  printf(RED);
+  printf("FUN_1000d22c\n");
+  printf(DEFAULT);
+
   
   if (*param_1 == 0) {
     printf("append_PEM_buff was told an invalid size of malloc\'d cert buffer.\n");
@@ -836,6 +893,10 @@ void PEM_buffer_append(size_t *param_1,char *param_2){
 void FUN_1000e064(char *param_1){
   size_t sVar1;
   int iVar2;
+
+  printf(RED);
+  printf("FUN_1000e064\n");
+  printf(DEFAULT);
   
   if (param_1 == (char *)0x0) {
     printf("Can\'t set private keyID to NULL\n");
@@ -860,6 +921,11 @@ void FUN_1000e064(char *param_1){
 
 
 void FUN_1000e2b4(int param_1) {
+
+  printf(RED);
+  printf("FUN_1000e2b4\n");
+  printf(DEFAULT);
+
   if (0 < param_1) {
     if (DAT_10022cc4 != 0) {
       OPENSSL_free_wrapper(DAT_10022cc4,"init_signed_hash");
@@ -872,6 +938,10 @@ void FUN_1000e2b4(int param_1) {
 
  
 void FUN_1000e410(int param_1){
+  printf(RED);
+  printf("FUN_1000e410\n");
+  printf(DEFAULT);
+
   DAT_10022ccc = param_1;
   return;
 }
@@ -885,6 +955,11 @@ void X509_parse_fingerprint(void){
   char *local_28;
   char *local_24;
   int local_20;
+
+  printf(RED);
+  printf("FUN_1000d4dc\n");
+  printf(DEFAULT);
+
 
   iVar1=calloc(0x10,sizeof(unsigned int));
   uVar3=calloc(0x10,sizeof(unsigned int));
@@ -929,6 +1004,11 @@ void X509_parse_fingerprint(void){
 /* Original function name: FUN_1000d988 */
 void EVP_get_digestbytype(void){
   int iVar1;
+
+  printf(RED);
+  printf("FUN_1000d988\n");
+  printf(DEFAULT);
+
   
   iVar1 = DAT_10022ccc;
   if (iVar1 == 1) {
@@ -949,7 +1029,11 @@ void EVP_get_digestbytype(void){
 unsigned int FUN_1000da30(void){
   int iVar1;
   unsigned int local_18;
-  
+
+  printf(RED);
+  printf("FUN_1000da30\n");
+  printf(DEFAULT);
+
   OPENSSL_add_all_algorithms_noconf();
   DAT_10022cb4 = FIPS_md_ctx_create();
   if (DAT_10022cb4 == 0) {
@@ -977,6 +1061,11 @@ unsigned int FUN_1000dae4(unsigned int param_1){
   int local_20;
   int local_1c;
   unsigned int local_18;
+
+  printf(RED);
+  printf("FUN_1000dae4\n");
+  printf(DEFAULT);
+
   
   local_24 = (void *)0x0;
   local_20 = 1;
@@ -1021,6 +1110,10 @@ unsigned int FUN_1000dae4(unsigned int param_1){
 void X509_set_fingerprint_data(char *param_1){
   size_t sVar1;
   int iVar2=0;
+
+  printf(RED);
+  printf("FUN_1000b538\n");
+  printf(DEFAULT);
   
   if (param_1 != (char *)0x0) {
     sVar1 = strlen(param_1);
@@ -1039,7 +1132,11 @@ unsigned int X509_extract_fingerprint_block(FILE *param_1,void *param_2){
   void *local_1c;
   size_t local_18;
   unsigned int local_14;
-  
+
+  printf(RED);
+  printf("FUN_1000d368\n");
+  printf(DEFAULT);
+
   local_1c = NULL;
   local_18 = 0;
   if (param_1 == NULL) {
@@ -1085,6 +1182,10 @@ void X509_set_block_length(int param_1){
 
 /* Original function name: FUN_1000b5f0 */
 void X509_set_file_offset(int param_1){
+  printf(RED);
+  printf("FUN_1000b5f0\n");
+  printf(DEFAULT);
+
   if (-1 < param_1) {
     DAT_10022c7c = param_1;
   }
@@ -1101,7 +1202,11 @@ unsigned int X509_verify_signature(void){
   X509 *local_1c;
   EVP_PKEY *local_18;
   unsigned int local_14;
-  
+
+  printf(RED);
+  printf("FUN_1000dc8c\n");
+  printf(DEFAULT);
+
   memset(auStack_a0,0,0x78);
   local_20 = 0;
   local_1c = (X509 *)0x0;
@@ -1139,7 +1244,11 @@ unsigned int X509_verify_signature(void){
 /* Original function name: FUN_1000ddd4 */
 int X509_certificate_compare(X509 *param_1,X509 *param_2){
   unsigned int local_20;
-  
+
+  printf(RED);
+  printf("FUN_1000ddd4\n");
+  printf(DEFAULT);
+
   if ((param_1 == NULL) || (param_2 == NULL)) {
     local_20 = -1;
   }
@@ -1156,6 +1265,10 @@ X509* X509_get_embedded_cert(void){
   char *buf;
   int iVar1;
   X509 *local_14;
+  
+  printf(RED);
+  printf("FUN_1000bac8\n");
+  printf(DEFAULT);
   
   bp = BIO_new(BIO_s_mem());
   buf = (char *)X509_get_embedded_signing_cert_data();
@@ -1189,6 +1302,10 @@ unsigned int X509_parse_signed_file(void){
   void *local_28;
   int local_24;
   unsigned int local_20;
+
+  printf(RED);
+  printf("FUN_1000d6e0\n");
+  printf(DEFAULT);
   
   bVar1 = false;
   memset(acStack_428,0,0x400);
@@ -1279,6 +1396,11 @@ void trimSpaces(char *param_1){
   int iVar1;
   int iVar3;
   int iVar4;
+
+  printf(RED);
+  printf("trimSpaces\n");
+  printf(DEFAULT);
+
   
   if (param_1 != (char *)0x0) {
     sVar2 = strlen(param_1);

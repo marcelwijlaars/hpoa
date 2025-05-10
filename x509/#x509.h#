@@ -22,9 +22,6 @@ extern const unsigned short int **__ctype_b_loc(void);
 extern EVP_MD_CTX  *FIPS_md_ctx_create(void);
 
 
-
-
-
 //unsigned char *DAT_10012738=0;  //doesn't change anywhere should be calloced
 unsigned char *DAT_10011a40;
 

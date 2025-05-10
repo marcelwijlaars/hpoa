@@ -7,8 +7,8 @@
 #include <ctype.h>
 
 
-#include <openssl/pem.h> //have to fix this, should be local
-#include <openssl/fips.h> // have to fix this
+//#include <openssl/pem.h> //have to fix this, should be local
+//#include <openssl/fips.h> // have to fix this
 
 //#include <linux/loop.h>
 #include <fcntl.h>
@@ -19,6 +19,8 @@
 //#include <openssl/sha.h>
 #include "md5/md5.h"
 #include "crc32/crc32.h"
+#include "x509/x509_types.h"
+#include "x509/x509_functions.h"
 //#include "data_0x10010100.h"
 
 #define HEADER_SIZE 0xD5
@@ -131,7 +133,9 @@ void FUN_10009374(int*, uint);
 void FUN_10008fe4(void *,void *,size_t);
 void simple_md5sum(char*, int, bool);
 int only_modify_hash(char*, char*, unsigned char*);
-unsigned int FUN_1000ca0c(void);
+
+#if 0
+unsigned int FUN_1000ca0c(char*);
 unsigned int FUN_1000d6e0(void);
 unsigned int FUN_1000dae4(unsigned int);
 unsigned int FUN_1000c6f4(size_t,char *,char*);
@@ -146,7 +150,7 @@ int FUN_1000ddd4(X509*,X509*);
 unsigned int FUN_1000dc8c(void);
 void FUN_1000d22c(size_t*,char*);
 
-
+#endif
 
 
 

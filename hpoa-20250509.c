@@ -165,6 +165,8 @@ int main(int argc,char **argv){
    * if not found should user signature at 0x55-0xd5 of the file
    * version >= 450 should have x509 certificates
    */
+
+
   
   have_fingerprint=fw_with_fingerprint (argv[optind]);
 
@@ -177,14 +179,16 @@ int main(int argc,char **argv){
     printf("Hpoa uses hardcoded RSA key\n");
     printf(DEFAULT);
   }
-  
+
+  printf("have_fingerprint: 0x%lX\n",have_fingerprint);
   if(signature){
     if (have_fingerprint == 1) {
       /* X.509 *functions */
       //ret = FUN_1000ca0c: x509 signature check -1 is fail, 0 is ok
       have_signature = FUN_1000ca0c(argv[optind]);
-    }
-    else {
+      printf("have_signature: %i\n",have_signature);
+    } else {
+
       /* SHA256 functions */
       /* 
        * in main parm_4=0 in FUN_100061f4 param_4 =  vVar7
@@ -195,8 +199,8 @@ int main(int argc,char **argv){
        * however FUN_100061f4 is not used strangely enough
        */ 
       have_signature = rsa_verify_signature(fd,fd_location,read_buffer,0,pcVar22);
+      printf("have_signature: %i\n", have_signature);
     }
-    printf("have_signature: %i\n", have_signature);    
 
   }
 
@@ -448,8 +452,7 @@ uint32_t  *read_crc32(int fd,uint32_t offset){
   uint8_t *data;
   data=calloc(HEADER_SIZE,sizeof(uint8_t));
   crc=calloc(0x02,sizeof(uint32_t));
-  
-  lseek(fd,offset,SEEK_SET);
+    lseek(fd,offset,SEEK_SET);
   read(fd,data,0x40);
 #if 0
   int i;
@@ -700,9 +703,8 @@ uint64_t fw_with_fingerprint (char *filename){
   int iVar3;
   int iVar4;
   char *acStack_420;
+
   acStack_420=calloc(0x410,sizeof(char));
-  //pcVar2=calloc(0x100,sizeof(char));
-  
   memset(acStack_420,0,0x400);
 
   //code *local_20;
@@ -714,13 +716,14 @@ uint64_t fw_with_fingerprint (char *filename){
 
   //local_20 = FUN_1000b510;
   //pcVar2 = (char *)DAT_10022c2c /* pointer to file name */
-  
+
+  printf("1.0: cb68: filename: %s\n",filename);
   file= fopen(filename,"rb");
   if (file == (FILE *)0x0) {
-    printf("could not open the signed file for parsing\n");
+    free(acStack_420);
+    exit(-1);
     uVar1 = 0;
   } else {
-    printf("Opened the signed file for parsing\n");
     memset(acStack_420,0,0x400);
     fgets(acStack_420,0x400,file);
     iVar3 = errno;
@@ -740,13 +743,6 @@ uint64_t fw_with_fingerprint (char *filename){
       }
       memset(acStack_420,0,0x400);
     }
-
-
-    if(uVar1==1)
-      printf("fingerprint Lenghth found\n");
-    else
-      printf("No Fingerprint Length found\n");
-
     fclose(file);
   }
   free(acStack_420);
